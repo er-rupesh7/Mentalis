@@ -15,12 +15,15 @@ import {
 /**
  * Generates an integer in range [min, max] inclusive.
  */
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+export function randomInt(min: number, max: number): number {
+  const low = Math.ceil(min);
+  const high = Math.floor(max);
+  if (low > high) return low;
+  return Math.floor(Math.random() * (high - low + 1)) + low;
 }
 
 /**
- * Curated Level Definitions for Progressive Addition & Subtraction
+ * Curated Level Definitions for Progressive Addition & Subtraction (Levels 1 to 6)
  */
 export const ADD_SUB_LEVELS: LevelDefinition[] = [
   {
@@ -87,52 +90,88 @@ export const ADD_SUB_LEVELS: LevelDefinition[] = [
 
 /**
  * Module A: Generates Left-to-Right Addition & Subtraction questions
+ * - Handles Level 1 bridging vs. non-bridging rigorously
+ * - Strictly guarantees non-negative results for subtraction drills
  */
-export function generateAddSubQuestion(levelNumber: number = 2): Question {
-  const isAddition = Math.random() > 0.45; // 55% addition, 45% subtraction
+export function generateAddSubQuestion(
+  levelNumber: number = 2,
+  options?: {
+    forceBridging?: boolean;
+    forceOperator?: '+' | '-';
+  }
+): Question {
+  const isAddition = options?.forceOperator ? options.forceOperator === '+' : Math.random() > 0.45;
   let a = 0;
   let b = 0;
   let targetTime = 3.0;
 
   switch (levelNumber) {
     case 1: {
+      // 2-digit ± 1-digit. a in [10, 99], b in [1, 9]
       targetTime = 1.8;
-      a = randomInt(11, 98);
-      // 50% chance of non-bridging, 50% bridging
-      const bridging = Math.random() > 0.5;
-      const unitA = a % 10;
+      const bridging = options?.forceBridging !== undefined ? options.forceBridging : Math.random() > 0.5;
+
       if (isAddition) {
-        b = bridging ? randomInt(10 - unitA, 9) : randomInt(1, Math.max(1, 9 - unitA));
+        if (bridging) {
+          // Bridging requires unitA + b >= 10. Since b in [1, 9], unitA must be in [1, 9]
+          const unitA = randomInt(1, 9);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA; // [11, 99]
+          b = randomInt(10 - unitA, 9); // b in [1, 9], unitA + b >= 10
+        } else {
+          // Non-bridging requires unitA + b < 10. Since b >= 1, unitA must be in [0, 8]
+          const unitA = randomInt(0, 8);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA; // [10, 98]
+          b = randomInt(1, 9 - unitA); // b in [1, 9 - unitA], unitA + b <= 9
+        }
       } else {
-        b = bridging ? randomInt(unitA + 1, 9) : randomInt(1, Math.max(1, unitA));
+        if (bridging) {
+          // Subtraction bridging requires unitA - b < 0 (borrowing). Since b in [1, 9], unitA in [0, 8]
+          const unitA = randomInt(0, 8);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA; // [10, 98]
+          b = randomInt(unitA + 1, 9); // b in [unitA + 1, 9], unitA - b < 0
+        } else {
+          // Non-bridging requires unitA - b >= 0 (no borrowing). Since b >= 1, unitA must be in [1, 9]
+          const unitA = randomInt(1, 9);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA; // [11, 99]
+          b = randomInt(1, unitA); // b in [1, unitA], unitA - b >= 0
+        }
       }
       break;
     }
+
     case 2: {
       targetTime = 2.5;
       a = randomInt(12, 99);
       b = randomInt(11, 99);
       break;
     }
+
     case 3: {
       targetTime = 3.2;
       a = randomInt(105, 995);
-      b = randomInt(12, 98);
+      b = randomInt(12, 99);
       break;
     }
+
     case 4: {
       targetTime = 4.5;
       a = randomInt(110, 990);
       b = randomInt(110, 990);
       break;
     }
+
     case 5: {
       targetTime = 6.0;
       a = randomInt(1100, 9900);
-      b = Math.random() > 0.5 ? randomInt(120, 990) : randomInt(1100, 9900);
+      b = Math.random() > 0.4 ? randomInt(120, 990) : randomInt(1100, 9900);
       break;
     }
-    case 6: // Master
+
+    case 6:
     default: {
       targetTime = 8.0;
       a = randomInt(10500, 99500);
@@ -141,11 +180,15 @@ export function generateAddSubQuestion(levelNumber: number = 2): Question {
     }
   }
 
-  // Ensure minuend >= subtrahend for clean subtraction drills
-  if (!isAddition && a < b) {
-    const temp = a;
-    a = b;
-    b = temp;
+  // Ensure minuend > subtrahend so subtraction NEVER produces negative or zero results
+  if (!isAddition) {
+    if (a < b) {
+      const temp = a;
+      a = b;
+      b = temp;
+    } else if (a === b) {
+      a += randomInt(1, 9);
+    }
   }
 
   if (isAddition) {
@@ -164,6 +207,7 @@ export function generateAddSubQuestion(levelNumber: number = 2): Question {
       mentalTip,
       targetTimeSeconds: targetTime,
       difficultyRating: levelNumber,
+      subTrack: `level_${levelNumber}`,
     };
   } else {
     const diff = a - b;
@@ -181,6 +225,7 @@ export function generateAddSubQuestion(levelNumber: number = 2): Question {
       mentalTip,
       targetTimeSeconds: targetTime,
       difficultyRating: levelNumber,
+      subTrack: `level_${levelNumber}`,
     };
   }
 }
@@ -188,22 +233,25 @@ export function generateAddSubQuestion(levelNumber: number = 2): Question {
 /**
  * Module B: Generates Multiplication Table questions (Tables 1 to 100)
  */
-export function generateMultiplicationQuestion(targetTable?: number): Question {
-  // If targetTable is provided, generate a question for that specific table.
-  // Otherwise pick a random table weighted towards practical mastery.
-  const table = targetTable && targetTable >= 2 && targetTable <= 100
-    ? targetTable
-    : Math.random() > 0.6
-    ? randomInt(2, 20)
-    : randomInt(21, 99);
+export function generateMultiplicationQuestion(targetTable?: number, targetMultiplier?: number): Question {
+  const table =
+    targetTable && targetTable >= 1 && targetTable <= 100
+      ? targetTable
+      : Math.random() > 0.55
+      ? randomInt(2, 20)
+      : randomInt(21, 100);
 
-  const multiplier = randomInt(2, 12);
+  const multiplier =
+    targetMultiplier && targetMultiplier >= 1 && targetMultiplier <= 12
+      ? targetMultiplier
+      : randomInt(2, 12);
+
   const product = table * multiplier;
   const { strategyTitle, steps, mentalTip } = getMultiplicationStrategy(table, multiplier);
 
-  // Target time based on table tier
+  // Target time based on documented pedagogy tiers
   const targetTime = table <= 12 ? 1.5 : table <= 20 ? 2.2 : table <= 50 ? 3.5 : 4.5;
-  const difficulty = table <= 12 ? 1 : table <= 20 ? 3 : table <= 50 ? 6 : 8;
+  const difficulty = table <= 12 ? 2 : table <= 20 ? 4 : table <= 50 ? 7 : 9;
 
   return {
     id: `mul_${table}_${multiplier}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -218,6 +266,7 @@ export function generateMultiplicationQuestion(targetTable?: number): Question {
     mentalTip,
     targetTimeSeconds: targetTime,
     difficultyRating: difficulty,
+    subTrack: `table_${table}`,
   };
 }
 
@@ -231,8 +280,12 @@ export type SquareCubeSubTrack =
 
 /**
  * Module C: Generates Squares & Cubes questions (1 to 100)
+ * Fully supports cubes from 1 through 100 with difficulty calibration.
  */
-export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Question {
+export function generateSquareCubeQuestion(
+  subTrack?: SquareCubeSubTrack,
+  specificOperand?: number
+): Question {
   const tracks: SquareCubeSubTrack[] = [
     'ending_5',
     'near_50',
@@ -246,7 +299,10 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
   switch (selectedTrack) {
     case 'ending_5': {
       // 5, 15, 25, 35, 45, 55, 65, 75, 85, 95
-      const n = randomInt(1, 9) * 10 + 5;
+      const n =
+        specificOperand !== undefined && specificOperand % 10 === 5
+          ? specificOperand
+          : randomInt(1, 9) * 10 + 5;
       const { strategyTitle, steps, mentalTip } = getSquareStrategy(n);
       return {
         id: `sq_end5_${n}_${Date.now()}`,
@@ -261,11 +317,12 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
         mentalTip,
         targetTimeSeconds: 2.0,
         difficultyRating: 3,
+        subTrack: 'ending_5',
       };
     }
     case 'near_50': {
       // 41 to 59 excluding 50
-      let n = randomInt(41, 59);
+      let n = specificOperand !== undefined ? specificOperand : randomInt(41, 59);
       if (n === 50) n = 51;
       const { strategyTitle, steps, mentalTip } = getSquareStrategy(n);
       return {
@@ -281,11 +338,12 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
         mentalTip,
         targetTimeSeconds: 2.8,
         difficultyRating: 4,
+        subTrack: 'near_50',
       };
     }
     case 'near_100': {
       // 81 to 99
-      const n = randomInt(81, 99);
+      const n = specificOperand !== undefined ? specificOperand : randomInt(81, 99);
       const { strategyTitle, steps, mentalTip } = getSquareStrategy(n);
       return {
         id: `sq_near100_${n}_${Date.now()}`,
@@ -300,11 +358,12 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
         mentalTip,
         targetTimeSeconds: 3.0,
         difficultyRating: 5,
+        subTrack: 'near_100',
       };
     }
     case 'general_duplex': {
       // Any 2-digit number 11 to 99
-      const n = randomInt(12, 98);
+      const n = specificOperand !== undefined ? specificOperand : randomInt(12, 98);
       const { strategyTitle, steps, mentalTip } = getSquareStrategy(n);
       return {
         id: `sq_duplex_${n}_${Date.now()}`,
@@ -319,11 +378,12 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
         mentalTip,
         targetTimeSeconds: 4.5,
         difficultyRating: 6,
+        subTrack: 'general_duplex',
       };
     }
     case 'cubes_anchor': {
       // Cubes 1 to 20
-      const n = randomInt(2, 20);
+      const n = specificOperand !== undefined ? specificOperand : randomInt(1, 20);
       const { strategyTitle, steps, mentalTip } = getCubeStrategy(n);
       return {
         id: `cube_anchor_${n}_${Date.now()}`,
@@ -336,15 +396,18 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
         strategyTitle,
         steps,
         mentalTip,
-        targetTimeSeconds: 2.5,
+        targetTimeSeconds: 2.0,
         difficultyRating: 4,
+        subTrack: 'cubes_anchor',
       };
     }
     case 'cubes_advanced':
     default: {
-      // Cubes 21 to 99
-      const n = randomInt(21, 50); // Keep in reachable cognitive range
+      // Cubes 21 to 100
+      const n = specificOperand !== undefined ? specificOperand : randomInt(21, 100);
       const { strategyTitle, steps, mentalTip } = getCubeStrategy(n);
+      const targetTime = n <= 30 ? 5.0 : n <= 60 ? 6.5 : 8.0;
+      const difficulty = n <= 30 ? 7 : n <= 60 ? 8 : 10;
       return {
         id: `cube_adv_${n}_${Date.now()}`,
         module: 'squares_cubes',
@@ -356,8 +419,9 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
         strategyTitle,
         steps,
         mentalTip,
-        targetTimeSeconds: 6.5,
-        difficultyRating: 9,
+        targetTimeSeconds: targetTime,
+        difficultyRating: difficulty,
+        subTrack: 'cubes_advanced',
       };
     }
   }
@@ -365,26 +429,48 @@ export function generateSquareCubeQuestion(subTrack?: SquareCubeSubTrack): Quest
 
 /**
  * Cognitive Working Memory / Anzan Sequence Generator
+ * - Accurately models sequential mental accumulator hold.
+ * - Supports optional negative numbers without ever allowing intermediate accumulator to fall below zero.
  */
 export function generateAnzanSequence(config: AnzanConfig): AnzanSequence {
-  const { count, digits, intervalMs } = config;
+  const { count, digits, intervalMs, allowNegatives } = config;
   const numbers: number[] = [];
-  let expectedSum = 0;
 
   const min = digits === 1 ? 1 : digits === 2 ? 10 : 100;
   const max = digits === 1 ? 9 : digits === 2 ? 99 : 999;
 
-  for (let i = 0; i < count; i++) {
-    const num = randomInt(min, max);
-    numbers.push(num);
-    expectedSum += num;
+  // First number is always positive
+  const first = randomInt(min, max);
+  numbers.push(first);
+  let runningSum = first;
+
+  for (let i = 1; i < count; i++) {
+    const shouldBeNegative = allowNegatives && Math.random() < 0.35;
+    if (shouldBeNegative) {
+      // Max possible subtraction must leave runningSum >= 1
+      const maxSub = Math.min(max, runningSum - 1);
+      if (maxSub >= min) {
+        const subVal = randomInt(min, maxSub);
+        numbers.push(-subVal);
+        runningSum -= subVal;
+      } else {
+        const addVal = randomInt(min, max);
+        numbers.push(addVal);
+        runningSum += addVal;
+      }
+    } else {
+      const addVal = randomInt(min, max);
+      numbers.push(addVal);
+      runningSum += addVal;
+    }
   }
 
   return {
     id: `anzan_${Date.now()}_${count}_${digits}`,
     numbers,
-    expectedSum,
+    expectedSum: runningSum,
     intervalMs,
     digits,
+    allowNegatives: !!allowNegatives,
   };
 }

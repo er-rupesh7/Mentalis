@@ -15,19 +15,51 @@ import {
   Brain,
   Layers,
   Timer,
+  Sliders,
+  Award,
+  Eye,
+  EyeOff,
+  History,
   Info,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { generateAnzanSequence } from '../core/calcEngine';
-import { AnzanSequence } from '../core/types';
+import { AnzanSequence, AnzanConfig } from '../core/types';
 import { soundEngine } from '../core/soundEngine';
+
+const PRESETS: { name: string; description: string; config: AnzanConfig }[] = [
+  {
+    name: 'Novice Warmup',
+    description: '5 numbers, 1-digit, 1200ms. Ideal for gentle phonological buffer pacing.',
+    config: { count: 5, digits: 1, intervalMs: 1200, allowNegatives: false, presetName: 'Novice Warmup' },
+  },
+  {
+    name: 'Standard Flow',
+    description: '5 numbers, 2-digit, 800ms. Standard rhythm for active working memory.',
+    config: { count: 5, digits: 2, intervalMs: 800, allowNegatives: false, presetName: 'Standard Flow' },
+  },
+  {
+    name: 'Soroban Pro',
+    description: '8 numbers, 2-digit, 500ms, with negatives. Fast sub-vocal bypass.',
+    config: { count: 8, digits: 2, intervalMs: 500, allowNegatives: true, presetName: 'Soroban Pro' },
+  },
+  {
+    name: 'Grandmaster Flash',
+    description: '10 numbers, 3-digit, 300ms, with negatives. Elite mental soroban speed.',
+    config: { count: 10, digits: 3, intervalMs: 300, allowNegatives: true, presetName: 'Grandmaster Flash' },
+  },
+];
 
 export const AnzanFlashScreen: React.FC = () => {
   const {
     anzanConfig,
     updateAnzanConfig,
+    anzanStats,
+    recordAnzanRun,
     soundEnabled,
     toggleSound,
+    reducedMotion,
+    toggleReducedMotion,
     setViewMode,
   } = useQuizStore();
 
@@ -38,60 +70,68 @@ export const AnzanFlashScreen: React.FC = () => {
   const [currentNumber, setCurrentNumber] = useState<number | null>(null);
   const [userBuffer, setUserBuffer] = useState<string>('');
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [showReview, setShowReview] = useState<boolean>(false);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isMountedRef = useRef<boolean>(true);
+  const timersRef = useRef<NodeJS.Timeout[]>([]);
+  const flashStartTimeRef = useRef<number>(Date.now());
 
-  // Clear timers on unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+  const clearAllTimers = useCallback(() => {
+    timersRef.current.forEach((t) => clearTimeout(t));
+    timersRef.current = [];
   }, []);
 
-  const handleStartFlash = () => {
-    const seq = generateAnzanSequence(anzanConfig);
-    setActiveSequence(seq);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      clearAllTimers();
+    };
+  }, [clearAllTimers]);
+
+  const scheduleTimeout = useCallback((fn: () => void, delayMs: number) => {
+    const id = setTimeout(() => {
+      if (isMountedRef.current) fn();
+    }, delayMs);
+    timersRef.current.push(id);
+    return id;
+  }, []);
+
+  const handleCancel = useCallback(() => {
+    clearAllTimers();
+    setPhase('idle');
+    setCurrentNumber(null);
+    setCurrentFlashIndex(-1);
     setUserBuffer('');
     setIsCorrect(null);
-    setPhase('countdown');
-    setCountdown(3);
+    setShowReview(false);
+  }, [clearAllTimers]);
 
-    // 3 second countdown
-    let count = 3;
-    const countInterval = setInterval(() => {
-      count -= 1;
-      if (count > 0) {
-        setCountdown(count);
-        soundEngine.playTick();
-      } else {
-        clearInterval(countInterval);
-        setPhase('flashing');
-        startFlashingSequence(seq);
-      }
-    }, 1000);
-  };
-
-  const startFlashingSequence = (seq: AnzanSequence) => {
+  const startFlashingSequence = useCallback((seq: AnzanSequence) => {
     let index = 0;
+    flashStartTimeRef.current = Date.now();
 
     const flashNext = () => {
+      if (!isMountedRef.current) return;
       if (index < seq.numbers.length) {
         setCurrentFlashIndex(index);
         setCurrentNumber(seq.numbers[index]);
         soundEngine.playTick();
 
-        // Flash display duration
-        timerRef.current = setTimeout(() => {
-          // Brief blank screen gap (120ms) to trigger saccadic reset
+        // Active display duration
+        scheduleTimeout(() => {
+          if (!isMountedRef.current) return;
+          // Saccadic blank screen reset gap (140ms)
           setCurrentNumber(null);
           index += 1;
 
-          timerRef.current = setTimeout(() => {
+          scheduleTimeout(() => {
+            if (!isMountedRef.current) return;
             flashNext();
-          }, 120);
+          }, 140);
         }, seq.intervalMs);
       } else {
-        // Flashing complete, enter user input phase
+        // All numbers flashed; transition to input phase
         setCurrentFlashIndex(-1);
         setCurrentNumber(null);
         setPhase('input');
@@ -99,11 +139,42 @@ export const AnzanFlashScreen: React.FC = () => {
     };
 
     flashNext();
-  };
+  }, [scheduleTimeout]);
+
+  const handleStartFlash = useCallback((customSeq?: AnzanSequence) => {
+    clearAllTimers();
+    const seq = customSeq || generateAnzanSequence(anzanConfig);
+    setActiveSequence(seq);
+    setUserBuffer('');
+    setIsCorrect(null);
+    setShowReview(false);
+    setPhase('countdown');
+    setCountdown(3);
+    soundEngine.playTick();
+
+    // Clean 3-second countdown without setInterval leaks
+    scheduleTimeout(() => {
+      setCountdown(2);
+      soundEngine.playTick();
+      scheduleTimeout(() => {
+        setCountdown(1);
+        soundEngine.playTick();
+        scheduleTimeout(() => {
+          setPhase('flashing');
+          startFlashingSequence(seq);
+        }, 1000);
+      }, 1000);
+    }, 1000);
+  }, [anzanConfig, clearAllTimers, scheduleTimeout, startFlashingSequence]);
 
   const handleDigit = useCallback((d: string) => {
     if (phase !== 'input') return;
     setUserBuffer((prev) => (prev.length < 8 ? prev + d : prev));
+  }, [phase]);
+
+  const handleNegative = useCallback(() => {
+    if (phase !== 'input') return;
+    setUserBuffer((prev) => (prev.startsWith('-') ? prev.substring(1) : '-' + prev));
   }, [phase]);
 
   const handleBackspace = useCallback(() => {
@@ -115,6 +186,8 @@ export const AnzanFlashScreen: React.FC = () => {
     if (phase !== 'input' || !activeSequence || !userBuffer) return;
     const answer = parseInt(userBuffer.trim(), 10);
     const correct = answer === activeSequence.expectedSum;
+    const duration = Date.now() - flashStartTimeRef.current;
+
     setIsCorrect(correct);
     setPhase('result');
 
@@ -123,278 +196,348 @@ export const AnzanFlashScreen: React.FC = () => {
     } else {
       soundEngine.playError();
     }
-  }, [phase, activeSequence, userBuffer]);
 
-  // Keyboard handler for Anzan input
+    // Persist Anzan Run in Store
+    recordAnzanRun({
+      config: anzanConfig,
+      numbers: activeSequence.numbers,
+      expectedSum: activeSequence.expectedSum,
+      userAnswer: answer,
+      isCorrect: correct,
+      durationMs: duration,
+    });
+  }, [phase, activeSequence, userBuffer, anzanConfig, recordAnzanRun]);
+
+  // Physical Desktop Keyboard Listener for Anzan
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (phase === 'input') {
         if (e.key >= '0' && e.key <= '9') {
           e.preventDefault();
           handleDigit(e.key);
+        } else if (e.key === '-' || e.key === '_') {
+          e.preventDefault();
+          handleNegative();
         } else if (e.key === 'Backspace') {
           e.preventDefault();
           handleBackspace();
         } else if (e.key === 'Enter') {
           e.preventDefault();
           handleSubmit();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          handleCancel();
         }
       } else if (phase === 'result' && (e.key === 'Enter' || e.key === ' ')) {
         e.preventDefault();
         handleStartFlash();
+      } else if (phase === 'countdown' || phase === 'flashing') {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          handleCancel();
+        }
       }
     };
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [phase, handleDigit, handleBackspace, handleSubmit]);
+  }, [phase, handleDigit, handleNegative, handleBackspace, handleSubmit, handleStartFlash, handleCancel]);
 
   return (
     <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 select-none">
       {/* Top Header */}
       <div className="w-full max-w-2xl mx-auto px-4 py-3 flex items-center justify-between border-b border-slate-800/80">
         <button
-          onClick={() => setViewMode('dashboard')}
+          onClick={() => {
+            handleCancel();
+            setViewMode('dashboard');
+          }}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors border border-slate-800"
         >
           <ArrowLeft className="w-4 h-4" />
-          Dashboard
+          <span>Dashboard</span>
         </button>
 
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-violet-400" />
           <span className="text-xs font-bold text-white tracking-wide">
-            Anzan Flash Memory Engine
+            Anzan Flash Memory
           </span>
         </div>
 
-        <button
-          onClick={toggleSound}
-          className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
-        >
-          {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Audio toggle */}
+          <button
+            onClick={toggleSound}
+            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
+            title={soundEnabled ? 'Mute' : 'Unmute'}
+          >
+            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       {/* Main Container */}
       <div className="flex-1 flex flex-col justify-center items-center px-4 py-6 max-w-md mx-auto w-full">
-        {/* Setup / Config View */}
+        {/* 1. Setup / Config Phase */}
         {phase === 'idle' && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl space-y-6"
+            className="w-full p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl space-y-5"
           >
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-1.5">
               <div className="inline-flex p-3 rounded-2xl bg-violet-600/20 text-violet-400 border border-violet-500/30 mb-1">
-                <Zap className="w-7 h-7" />
+                <Zap className="w-6 h-6" />
               </div>
-              <h2 className="text-xl font-extrabold text-white">Cognitive Working Memory</h2>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Numbers flash on screen and vanish. Hold the running accumulator using the{' '}
-                <span className="text-violet-300 font-semibold">Auditory Echo</span> loop without visual crutches.
+              <h2 className="text-xl font-extrabold text-white">Working Memory Engine</h2>
+              <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
+                Numbers flash sequentially and vanish. Hold the running sum in your{' '}
+                <span className="text-violet-300 font-semibold">phonological loop</span> without paper.
               </p>
             </div>
 
-            {/* Config Options */}
-            <div className="space-y-4 text-xs">
-              {/* Sequence Count */}
-              <div>
-                <label className="text-slate-400 font-medium block mb-2 flex items-center gap-1.5">
-                  <Layers className="w-3.5 h-3.5 text-violet-400" />
-                  Sequence Length (Numbers to Add)
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {[3, 5, 8, 10].map((count) => (
+            {/* Quick Presets */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
+                Select Training Preset
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {PRESETS.map((p) => {
+                  const isSelected = anzanConfig.presetName === p.name;
+                  return (
                     <button
-                      key={count}
-                      onClick={() => updateAnzanConfig({ count })}
-                      className={`py-2 rounded-xl font-mono font-bold transition-all ${
-                        anzanConfig.count === count
-                          ? 'bg-violet-600 text-white shadow-md shadow-violet-600/40'
-                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+                      key={p.name}
+                      onClick={() => updateAnzanConfig(p.config)}
+                      className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
+                        isSelected
+                          ? 'bg-violet-600/20 border-violet-500 text-white font-bold shadow-md shadow-violet-600/20'
+                          : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:bg-slate-800/60'
                       }`}
                     >
-                      {count}
+                      <div className="font-semibold">{p.name}</div>
+                      <div className="text-[10px] text-slate-400 font-normal mt-0.5 line-clamp-1">
+                        {p.config.count}n • {p.config.digits}d • {p.config.intervalMs}ms
+                      </div>
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Digits Magnitude */}
-              <div>
-                <label className="text-slate-400 font-medium block mb-2 flex items-center gap-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                  Digit Magnitude
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: '1-Digit', val: 1 as const },
-                    { label: '2-Digit', val: 2 as const },
-                    { label: '3-Digit', val: 3 as const },
-                  ].map((item) => (
-                    <button
-                      key={item.val}
-                      onClick={() => updateAnzanConfig({ digits: item.val })}
-                      className={`py-2 rounded-xl font-medium transition-all ${
-                        anzanConfig.digits === item.val
-                          ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/40'
-                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Flash Speed Interval */}
-              <div>
-                <label className="text-slate-400 font-medium block mb-2 flex items-center gap-1.5">
-                  <Timer className="w-3.5 h-3.5 text-amber-400" />
-                  Flash Interval (Cadence)
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    { label: '1.2s (Gentle)', val: 1200 },
-                    { label: '800ms (Std)', val: 800 },
-                    { label: '500ms (Fast)', val: 500 },
-                    { label: '300ms (Zen)', val: 300 },
-                  ].map((speed) => (
-                    <button
-                      key={speed.val}
-                      onClick={() => updateAnzanConfig({ intervalMs: speed.val })}
-                      className={`py-2 px-1 text-[11px] rounded-xl font-medium transition-all text-center ${
-                        anzanConfig.intervalMs === speed.val
-                          ? 'bg-amber-600 text-white shadow-md shadow-amber-600/40'
-                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
-                      }`}
-                    >
-                      {speed.label}
-                    </button>
-                  ))}
-                </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Launch Button */}
+            {/* Custom Controls */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Numbers in Flash</span>
+                <div className="flex gap-1 font-mono">
+                  {[3, 5, 8, 10].map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => updateAnzanConfig({ count: c, presetName: undefined })}
+                      className={`px-2.5 py-1 rounded-lg ${
+                        anzanConfig.count === c
+                          ? 'bg-violet-600 text-white font-bold'
+                          : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                      }`}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Digit Magnitude</span>
+                <div className="flex gap-1 font-mono">
+                  {([1, 2, 3] as const).map((d) => (
+                    <button
+                      key={d}
+                      onClick={() => updateAnzanConfig({ digits: d, presetName: undefined })}
+                      className={`px-3 py-1 rounded-lg ${
+                        anzanConfig.digits === d
+                          ? 'bg-violet-600 text-white font-bold'
+                          : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                      }`}
+                    >
+                      {d}-digit
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Flash Interval</span>
+                <div className="flex gap-1 font-mono">
+                  {[1200, 800, 500, 300].map((ms) => (
+                    <button
+                      key={ms}
+                      onClick={() => updateAnzanConfig({ intervalMs: ms, presetName: undefined })}
+                      className={`px-2 py-1 rounded-lg ${
+                        anzanConfig.intervalMs === ms
+                          ? 'bg-violet-600 text-white font-bold'
+                          : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                      }`}
+                    >
+                      {ms}ms
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-slate-850">
+                <span className="text-slate-400">Include Subtraction (Negatives)</span>
+                <button
+                  onClick={() =>
+                    updateAnzanConfig({
+                      allowNegatives: !anzanConfig.allowNegatives,
+                      presetName: undefined,
+                    })
+                  }
+                  className={`px-3 py-1 rounded-lg font-mono text-xs font-bold transition-colors ${
+                    anzanConfig.allowNegatives
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                  }`}
+                >
+                  {anzanConfig.allowNegatives ? 'Enabled' : 'Disabled'}
+                </button>
+              </div>
+            </div>
+
+            {/* Start Button */}
             <button
-              onClick={handleStartFlash}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold text-base transition-all shadow-xl shadow-violet-600/30 flex items-center justify-center gap-2"
+              onClick={() => handleStartFlash()}
+              className="w-full py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-98 text-white font-bold text-sm transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2"
             >
-              <Play className="w-5 h-5 fill-current" />
-              Begin Anzan Flash Drill
+              <Play className="w-4 h-4 fill-white" />
+              Begin Flash Countdown
+            </button>
+
+            {/* Offline Anzan Record Pill */}
+            {anzanStats.totalRuns > 0 && (
+              <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-950 border border-slate-850 text-xs font-mono text-slate-400">
+                <span>Completed: {anzanStats.totalRuns}</span>
+                <span>Accuracy: {Math.round((anzanStats.totalCorrect / anzanStats.totalRuns) * 100)}%</span>
+                <span>Streak: {anzanStats.bestStreak}</span>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* 2. Countdown Phase */}
+        {phase === 'countdown' && (
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 1.2, opacity: 0 }}
+            className="flex flex-col items-center justify-center p-12 text-center space-y-6"
+          >
+            <div className="text-8xl sm:text-9xl font-black font-mono text-violet-400 animate-pulse">
+              {countdown}
+            </div>
+            <div className="text-xs font-mono text-slate-400">
+              Clear your mind. Hold the auditory accumulator loop...
+            </div>
+            <button
+              onClick={handleCancel}
+              className="text-xs px-3 py-1 rounded-lg bg-slate-900 text-slate-500 hover:text-slate-300 border border-slate-800"
+            >
+              Cancel (Esc)
             </button>
           </motion.div>
         )}
 
-        {/* Countdown Phase */}
-        {phase === 'countdown' && (
-          <div className="flex flex-col items-center justify-center space-y-4">
-            <span className="text-xs font-mono uppercase tracking-widest text-slate-400">
-              Clear mental screen...
-            </span>
-            <motion.div
-              key={countdown}
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1.2, opacity: 1 }}
-              exit={{ scale: 1.8, opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="text-8xl font-black font-mono text-violet-400"
-            >
-              {countdown}
-            </motion.div>
-          </div>
-        )}
-
-        {/* Active Flashing Phase */}
+        {/* 3. Flashing Phase */}
         {phase === 'flashing' && (
-          <div className="w-full flex flex-col items-center justify-center space-y-8">
-            <div className="text-xs font-mono text-slate-400">
-              {currentFlashIndex >= 0 && activeSequence
-                ? `Number ${currentFlashIndex + 1} of ${activeSequence.numbers.length}`
-                : 'Processing...'}
+          <div className="flex flex-col items-center justify-center w-full min-h-[320px] relative">
+            <div className="absolute top-0 text-xs font-mono text-slate-500">
+              Step {currentFlashIndex + 1} of {activeSequence?.numbers.length}
             </div>
 
-            <div className="h-44 flex items-center justify-center">
+            <div className="h-40 flex items-center justify-center">
               <AnimatePresence mode="wait">
-                {currentNumber !== null ? (
+                {currentNumber !== null && (
                   <motion.div
                     key={`${currentFlashIndex}_${currentNumber}`}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 1.15 }}
+                    initial={reducedMotion ? { opacity: 1 } : { scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={reducedMotion ? { opacity: 0 } : { scale: 1.05, opacity: 0 }}
                     transition={{ duration: 0.08 }}
-                    className="text-7xl sm:text-8xl font-black font-mono tracking-wider text-white"
+                    className={`text-6xl sm:text-7xl font-black font-mono tracking-tight ${
+                      currentNumber < 0 ? 'text-rose-400' : 'text-white'
+                    }`}
                   >
-                    {currentNumber}
+                    {currentNumber > 0 && activeSequence?.allowNegatives ? `+${currentNumber}` : currentNumber}
                   </motion.div>
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-slate-900/60 border border-slate-800" />
                 )}
               </AnimatePresence>
             </div>
 
-            <div className="w-48 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-              <div
-                className="h-full bg-violet-500 transition-all duration-200"
-                style={{
-                  width: `${
-                    activeSequence
-                      ? ((currentFlashIndex + 1) / activeSequence.numbers.length) * 100
-                      : 0
-                  }%`,
-                }}
-              />
+            <div className="text-xs font-mono text-slate-500">
+              Saccadic reset intervals active
             </div>
           </div>
         )}
 
-        {/* Input Phase (Numpad + keyboard) */}
+        {/* 4. Input Phase */}
         {phase === 'input' && (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="w-full flex flex-col items-center"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full space-y-4"
           >
-            <div className="text-xs font-mono text-slate-400 mb-3">
-              SEQUENCE COMPLETE: Enter Final Held Total
-            </div>
-
-            <div className="w-full max-w-xs h-16 rounded-2xl bg-slate-950 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner mb-6">
-              <span className="text-4xl font-mono font-bold text-white tracking-widest">
-                {userBuffer || <span className="text-slate-600 text-xl font-normal">Total sum?</span>}
+            <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl flex flex-col items-center justify-center space-y-4">
+              <span className="text-xs font-mono text-slate-400">
+                Enter the final accumulated sum:
               </span>
-              <span className="w-0.5 h-7 bg-violet-400 ml-1 animate-pulse" />
+              <div className="w-full max-w-xs h-16 rounded-2xl bg-slate-950 border border-slate-700 flex items-center justify-center px-4">
+                <span className="text-4xl font-mono font-bold tracking-widest text-white">
+                  {userBuffer || <span className="text-slate-600 text-xl font-sans">Final sum...</span>}
+                </span>
+                <span className="w-0.5 h-7 bg-violet-400 ml-1 animate-pulse" />
+              </div>
             </div>
 
-            {/* Ergonomic Numpad */}
-            <div className="w-full grid grid-cols-3 gap-2.5">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            {/* Custom Thumb Keypad */}
+            <div className="grid grid-cols-3 gap-2">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
                 <button
-                  key={num}
-                  onClick={() => handleDigit(num.toString())}
-                  className="h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 active:bg-violet-600 border border-slate-800 text-2xl font-bold font-mono text-slate-100 transition-all flex items-center justify-center"
+                  key={n}
+                  onClick={() => handleDigit(n.toString())}
+                  className="h-13 rounded-2xl bg-slate-900 hover:bg-slate-800 active:bg-violet-600 text-2xl font-bold font-mono text-slate-100 border border-slate-800 transition-all flex items-center justify-center"
                 >
-                  {num}
+                  {n}
                 </button>
               ))}
-              <button
-                onClick={handleBackspace}
-                className="h-14 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-400 transition-all flex items-center justify-center font-bold text-sm"
-              >
-                DEL
-              </button>
+
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={handleNegative}
+                  className="h-13 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-mono font-bold text-lg border border-slate-800 flex items-center justify-center"
+                  title="Toggle negative (-)"
+                >
+                  ±
+                </button>
+                <button
+                  onClick={handleBackspace}
+                  className="h-13 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-800 flex items-center justify-center"
+                  title="Backspace"
+                >
+                  <RotateCcw className="w-5 h-5" />
+                </button>
+              </div>
+
               <button
                 onClick={() => handleDigit('0')}
-                className="h-14 rounded-2xl bg-slate-900 hover:bg-slate-800 active:bg-violet-600 border border-slate-800 text-2xl font-bold font-mono text-slate-100 transition-all flex items-center justify-center"
+                className="h-13 rounded-2xl bg-slate-900 hover:bg-slate-800 active:bg-violet-600 text-2xl font-bold font-mono text-slate-100 border border-slate-800 transition-all flex items-center justify-center"
               >
                 0
               </button>
+
               <button
                 onClick={handleSubmit}
-                disabled={!userBuffer}
-                className="h-14 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-base transition-all flex items-center justify-center shadow-lg shadow-emerald-600/20"
+                disabled={!userBuffer || userBuffer === '-'}
+                className="h-13 rounded-2xl bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-900 disabled:text-slate-600 text-white font-bold font-mono text-lg transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center"
               >
                 Submit
               </button>
@@ -402,94 +545,114 @@ export const AnzanFlashScreen: React.FC = () => {
           </motion.div>
         )}
 
-        {/* Result & Ghost Carry Eliminator Breakdown */}
+        {/* 5. Result Phase */}
         {phase === 'result' && activeSequence && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-2xl space-y-5"
+            className="w-full p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5 text-center"
           >
-            <div className="flex items-center justify-center gap-3">
+            <div className="space-y-1">
               {isCorrect ? (
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-lg">
-                  <CheckCircle2 className="w-6 h-6" />
-                  Flawless Retention!
+                <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-2">
+                  <CheckCircle2 className="w-8 h-8" />
                 </div>
               ) : (
-                <div className="flex items-center gap-2 text-rose-400 font-bold text-lg">
-                  <XCircle className="w-6 h-6" />
-                  Accumulator Deviation
+                <div className="inline-flex p-3 rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/20 mb-2">
+                  <XCircle className="w-8 h-8" />
                 </div>
               )}
+              <h3 className="text-xl font-bold text-white">
+                {isCorrect ? 'Working Memory Retained!' : 'Accumulator Slip'}
+              </h3>
+              <p className="text-xs text-slate-400">
+                {isCorrect
+                  ? 'Your phonological buffer accurately preserved the sequential flash!'
+                  : 'A number in the stream deviated. Review the breakdown to inspect each step.'}
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-center">
+            {/* Comparison */}
+            <div className="grid grid-cols-2 gap-3 text-xs font-mono">
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <div className="text-[11px] text-slate-400">Your Held Total</div>
-                <div
-                  className={`text-2xl font-mono font-bold ${
+                <span className="text-slate-500 block mb-1">Your Answer</span>
+                <span
+                  className={`text-2xl font-bold ${
                     isCorrect ? 'text-emerald-400' : 'text-rose-400'
                   }`}
                 >
                   {userBuffer}
-                </div>
+                </span>
               </div>
               <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                <div className="text-[11px] text-slate-400">Exact Sum</div>
-                <div className="text-2xl font-mono font-bold text-emerald-400">
+                <span className="text-slate-500 block mb-1">Expected Sum</span>
+                <span className="text-2xl font-bold text-emerald-400">
                   {activeSequence.expectedSum}
-                </div>
-              </div>
-            </div>
-
-            {/* Ghost Carry Eliminator: Left-to-Right Running Breakdown */}
-            <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
-              <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
-                <span className="flex items-center gap-1.5 text-violet-300 font-semibold">
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Ghost Carry Eliminator Buffer
                 </span>
-                <span>{activeSequence.intervalMs}ms flash</span>
-              </div>
-
-              {/* Running sequence steps */}
-              <div className="space-y-1.5 text-xs font-mono max-h-36 overflow-y-auto pr-1">
-                {activeSequence.numbers.map((num, i) => {
-                  const runningTotal = activeSequence.numbers
-                    .slice(0, i + 1)
-                    .reduce((a, b) => a + b, 0);
-                  return (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800/80"
-                    >
-                      <span className="text-slate-300">
-                        {i === 0 ? 'Start' : `+ Flash ${i + 1}`}:{' '}
-                        <strong className="text-white">{num}</strong>
-                      </span>
-                      <span className="text-emerald-400 font-bold">
-                        Buffer: {runningTotal}
-                      </span>
-                    </div>
-                  );
-                })}
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex items-center gap-3">
+            {/* Sequence Review Drawer */}
+            {showReview && (
+              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-left space-y-2 max-h-48 overflow-y-auto">
+                <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
+                  Step-by-Step Stream Accumulation
+                </span>
+                {(() => {
+                  let running = 0;
+                  return activeSequence.numbers.map((n, i) => {
+                    running += n;
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between text-xs font-mono py-1 border-b border-slate-900"
+                      >
+                        <span className="text-slate-400">#{i + 1}:</span>
+                        <span className={`font-bold ${n < 0 ? 'text-rose-400' : 'text-white'}`}>
+                          {n > 0 ? `+${n}` : n}
+                        </span>
+                        <span className="text-emerald-400 font-semibold">
+                          Running: {running}
+                        </span>
+                      </div>
+                    );
+                  });
+                })()}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2">
               <button
-                onClick={() => setPhase('idle')}
-                className="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 transition-colors"
+                onClick={() => handleStartFlash()}
+                className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 font-bold text-xs text-white shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2"
               >
-                Change Settings
+                <Play className="w-4 h-4 fill-white" />
+                Flash Next Sequence (Enter or Space)
               </button>
+
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => handleStartFlash(activeSequence)}
+                  className="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Replay Sequence
+                </button>
+                <button
+                  onClick={() => setShowReview(!showReview)}
+                  className="py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                  {showReview ? 'Hide Numbers' : 'Inspect Numbers'}
+                </button>
+              </div>
+
               <button
-                onClick={handleStartFlash}
-                className="flex-1 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-xs font-bold text-white transition-colors shadow-lg shadow-violet-600/30 flex items-center justify-center gap-1.5"
+                onClick={handleCancel}
+                className="text-xs text-slate-400 hover:text-slate-200 py-1 transition-colors"
               >
-                <RotateCcw className="w-4 h-4" />
-                Next Sequence (↵)
+                Back to Anzan Settings
               </button>
             </div>
           </motion.div>

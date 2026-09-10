@@ -23,33 +23,37 @@ export function getAdditionStrategy(a: number, b: number): {
     const bridges = unitsA + b >= 10;
 
     if (bridges) {
+      const neededForDecade = 10 - unitsA;
+      const remainder = b - neededForDecade;
+      const targetDecade = tensA + 10;
+
       steps.push({
         stepNumber: 1,
-        title: 'Bridge to the Next Decade',
-        subVocalization: `Target decade is ${tensA + 10}`,
-        intermediateValue: tensA + 10,
-        explanation: `${a} needs ${10 - unitsA} to reach ${tensA + 10}. Split ${b} into ${10 - unitsA} and ${b - (10 - unitsA)}.`,
+        title: `Bridge to Next Decade (${a} + ${neededForDecade} -> ${targetDecade})`,
+        subVocalization: `Target decade: "${targetDecade}"`,
+        intermediateValue: targetDecade,
+        explanation: `${a} needs ${neededForDecade} to reach ${targetDecade}. Split ${b} into ${neededForDecade} and ${remainder}.`,
       });
       steps.push({
         stepNumber: 2,
-        title: 'Add Remaining Remainder',
-        subVocalization: `Say "${sum}"`,
+        title: `Add Remaining Units (${targetDecade} + ${remainder})`,
+        subVocalization: `Resolve to: "${sum}"`,
         intermediateValue: sum,
-        explanation: `${tensA + 10} + ${b - (10 - unitsA)} = ${sum}.`,
+        explanation: `${targetDecade} + ${remainder} = ${sum}.`,
       });
     } else {
       steps.push({
         stepNumber: 1,
-        title: 'Direct Unit Addition',
-        subVocalization: `Hold ${tensA}, units are ${unitsA + b}`,
+        title: 'Direct Unit Addition (No Bridging)',
+        subVocalization: `Hold ${tensA}, add units (${unitsA} + ${b} = ${unitsA + b})`,
         intermediateValue: sum,
-        explanation: `Keep tens intact (${tensA}), add units directly: ${unitsA} + ${b} = ${unitsA + b}. Final sum = ${sum}.`,
+        explanation: `Tens remain unchanged (${tensA}). Add units directly: ${unitsA} + ${b} = ${unitsA + b}. Final sum = ${sum}.`,
       });
     }
     return {
-      strategyTitle: 'Left-to-Right Decade Bridging',
+      strategyTitle: bridges ? 'Decade Bridging Method' : 'Direct Unit Addition',
       steps,
-      mentalTip: 'Always anchor the decade first. Do not carry paper-style; step forward along the number line.',
+      mentalTip: 'Always anchor the decade first. Step forward along the mental number line instead of paper carries.',
     };
   }
 
@@ -84,7 +88,7 @@ export function getAdditionStrategy(a: number, b: number): {
     steps.push({
       stepNumber: stepCount++,
       title: `Accumulate ${placeName} (${digitA * power} + ${digitB * power})`,
-      subVocalization: `Hear the echo: "${accumulator}"`,
+      subVocalization: `Hold echo: "${accumulator}"`,
       intermediateValue: accumulator,
       explanation: `Add place values: ${digitA * power} + ${digitB * power} = ${valPart}. Running accumulator becomes ${accumulator}.`,
     });
@@ -108,9 +112,54 @@ export function getSubtractionStrategy(a: number, b: number): {
   const steps: CalculationStep[] = [];
   const diff = a - b;
 
-  // Check if b ends in 7, 8, or 9 (ideal for Complements / Rounding Up)
+  // Level 1: 2-digit - 1-digit
+  if (a < 100 && b < 10) {
+    const unitA = a % 10;
+    const tensA = Math.floor(a / 10) * 10;
+
+    if (unitA >= b) {
+      // Direct unit subtraction (no borrow)
+      steps.push({
+        stepNumber: 1,
+        title: 'Direct Unit Subtraction (No Borrowing)',
+        subVocalization: `Hold ${tensA}, units are ${unitA} - ${b} = ${unitA - b}`,
+        intermediateValue: diff,
+        explanation: `Keep tens unchanged (${tensA}). Subtract units directly: ${unitA} - ${b} = ${unitA - b}. Final diff = ${diff}.`,
+      });
+      return {
+        strategyTitle: 'Direct Unit Subtraction',
+        steps,
+        mentalTip: 'When units digit is larger than subtrahend, subtract units directly without altering tens.',
+      };
+    } else {
+      // Borrowing across decade
+      const stepDown = a - unitA; // reaches tensA
+      const remainingSub = b - unitA;
+      steps.push({
+        stepNumber: 1,
+        title: `Step Down to Base Decade (${a} - ${unitA} = ${stepDown})`,
+        subVocalization: `Anchor decade: "${stepDown}"`,
+        intermediateValue: stepDown,
+        explanation: `Drop units to reach decade base ${stepDown}. Remaining to subtract: ${b} - ${unitA} = ${remainingSub}.`,
+      });
+      steps.push({
+        stepNumber: 2,
+        title: `Subtract Remaining (${stepDown} - ${remainingSub} = ${diff})`,
+        subVocalization: `Resolve to: "${diff}"`,
+        intermediateValue: diff,
+        explanation: `${stepDown} - ${remainingSub} = ${diff}.`,
+      });
+      return {
+        strategyTitle: 'Decade Step-Down Subtraction',
+        steps,
+        mentalTip: 'Step down to the clean decade first, then subtract the remaining units from 10.',
+      };
+    }
+  }
+
+  // Complements method for numbers ending in 7, 8, 9 with 2 or more digits
   const lastDigitB = b % 10;
-  if (lastDigitB >= 6 && b >= 16) {
+  if (lastDigitB >= 7 && b >= 17) {
     const nearestDecade = Math.ceil(b / 10) * 10;
     const complement = nearestDecade - b;
     const intermediate = a - nearestDecade;
@@ -118,21 +167,21 @@ export function getSubtractionStrategy(a: number, b: number): {
     steps.push({
       stepNumber: 1,
       title: `Round Subtrahend to Decade (${b} -> ${nearestDecade})`,
-      subVocalization: `Overshot by ${complement}`,
+      subVocalization: `Overshot by +${complement}`,
       intermediateValue: nearestDecade,
-      explanation: `It is far easier to subtract clean ${nearestDecade} than awkward ${b}.`,
+      explanation: `It is much simpler to subtract clean ${nearestDecade} than ${b}. Complement is ${nearestDecade} - ${b} = ${complement}.`,
     });
     steps.push({
       stepNumber: 2,
-      title: `Subtract Decade from ${a}`,
-      subVocalization: `Hold "${intermediate}"`,
+      title: `Subtract Decade (${a} - ${nearestDecade})`,
+      subVocalization: `Hold intermediate: "${intermediate}"`,
       intermediateValue: intermediate,
       explanation: `${a} - ${nearestDecade} = ${intermediate}.`,
     });
     steps.push({
       stepNumber: 3,
-      title: `Compensate: Add Back the ${complement}`,
-      subVocalization: `Say "${diff}"`,
+      title: `Refund Complement (${intermediate} + ${complement})`,
+      subVocalization: `Resolve to: "${diff}"`,
       intermediateValue: diff,
       explanation: `Because we subtracted ${complement} too much, add it back: ${intermediate} + ${complement} = ${diff}.`,
     });
@@ -140,26 +189,26 @@ export function getSubtractionStrategy(a: number, b: number): {
     return {
       strategyTitle: 'Complements & Compensation Method',
       steps,
-      mentalTip: `Round ${b} up to ${nearestDecade}, subtract cleanly, then refund the +${complement}. Eliminates all borrowing.`,
+      mentalTip: `Round ${b} up to ${nearestDecade}, subtract cleanly, then refund the +${complement}. Eliminates all column borrowing.`,
     };
   }
 
-  // Left-to-right decade breakdown
+  // General Left-to-Right Step Subtraction
   const tensB = Math.floor(b / 10) * 10;
   const unitsB = b % 10;
   const step1 = a - tensB;
 
   steps.push({
     stepNumber: 1,
-    title: `Subtract Tens First (${a} - ${tensB})`,
-    subVocalization: `Hold "${step1}"`,
+    title: `Subtract Higher Place Values (${a} - ${tensB})`,
+    subVocalization: `Hold: "${step1}"`,
     intermediateValue: step1,
-    explanation: `Subtract the largest chunk first: ${a} - ${tensB} = ${step1}.`,
+    explanation: `Subtract largest chunk first: ${a} - ${tensB} = ${step1}.`,
   });
   steps.push({
     stepNumber: 2,
     title: `Subtract Remaining Units (${step1} - ${unitsB})`,
-    subVocalization: `Resolve to "${diff}"`,
+    subVocalization: `Resolve to: "${diff}"`,
     intermediateValue: diff,
     explanation: `Subtract units from running total: ${step1} - ${unitsB} = ${diff}.`,
   });
@@ -167,12 +216,12 @@ export function getSubtractionStrategy(a: number, b: number): {
   return {
     strategyTitle: 'Left-to-Right Step Subtraction',
     steps,
-    mentalTip: 'Subtract the largest place values first so your estimate is immediately accurate.',
+    mentalTip: 'Subtract the largest place values first so your estimate is immediately anchored.',
   };
 }
 
 /**
- * Decomposes Multiplication
+ * Decomposes Multiplication (1 to 100 Tables)
  */
 export function getMultiplicationStrategy(a: number, b: number): {
   strategyTitle: string;
@@ -189,12 +238,38 @@ export function getMultiplicationStrategy(a: number, b: number): {
       title: 'Associative Reflex Anchor',
       subVocalization: `Instant recall: "${prod}"`,
       intermediateValue: prod,
-      explanation: `${a} × ${b} is a foundation anchor fact. Internalize through flash rhythm.`,
+      explanation: `${a} × ${b} is a fundamental associative anchor fact. Internalize through rapid flash rhythm.`,
     });
     return {
       strategyTitle: 'Direct Associative Recall',
       steps,
       mentalTip: 'Trigger direct phonological recall without intermediate computation.',
+    };
+  }
+
+  // Decade multiplier (e.g., 30 × 7, 70 × 6)
+  if (a % 10 === 0 || b % 10 === 0) {
+    const dec = a % 10 === 0 ? a : b;
+    const other = a % 10 === 0 ? b : a;
+    const baseMult = (dec / 10) * other;
+    steps.push({
+      stepNumber: 1,
+      title: `Multiply Base Digits (${dec / 10} × ${other} = ${baseMult})`,
+      subVocalization: `Base product: "${baseMult}"`,
+      intermediateValue: baseMult,
+      explanation: `Multiply core non-zero digits: ${dec / 10} × ${other} = ${baseMult}.`,
+    });
+    steps.push({
+      stepNumber: 2,
+      title: 'Append Decade Zero (× 10)',
+      subVocalization: `Append zero: "${prod}"`,
+      intermediateValue: prod,
+      explanation: `${baseMult} × 10 = ${prod}.`,
+    });
+    return {
+      strategyTitle: 'Decade Scale Strategy',
+      steps,
+      mentalTip: 'Scale down by 10, calculate base multiplication, then append the trailing zero.',
     };
   }
 
@@ -215,7 +290,7 @@ export function getMultiplicationStrategy(a: number, b: number): {
     steps.push({
       stepNumber: 2,
       title: 'Execute Simplified Multiplication',
-      subVocalization: `Say "${prod}"`,
+      subVocalization: `Say: "${prod}"`,
       intermediateValue: prod,
       explanation: `${doubled} × ${halved} = ${prod}.`,
     });
@@ -237,7 +312,7 @@ export function getMultiplicationStrategy(a: number, b: number): {
 
     steps.push({
       stepNumber: 1,
-      title: `Round ${a} to ${rounded} and Multiply`,
+      title: `Round ${a} to ${rounded} and Multiply (${rounded} × ${b})`,
       subVocalization: `Base: "${baseProd}"`,
       intermediateValue: baseProd,
       explanation: `${rounded} × ${b} = ${baseProd}.`,
@@ -245,7 +320,7 @@ export function getMultiplicationStrategy(a: number, b: number): {
     steps.push({
       stepNumber: 2,
       title: `Subtract Overhang (${deficit} × ${b} = ${compVal})`,
-      subVocalization: `Say "${prod}"`,
+      subVocalization: `Resolve to: "${prod}"`,
       intermediateValue: prod,
       explanation: `${baseProd} - ${compVal} = ${prod}.`,
     });
@@ -267,22 +342,22 @@ export function getMultiplicationStrategy(a: number, b: number): {
 
   steps.push({
     stepNumber: 1,
-    title: `Multiply Tens (${tens} × ${smallNum})`,
-    subVocalization: `Hold "${part1}"`,
+    title: `Multiply Tens Chunk (${tens} × ${smallNum})`,
+    subVocalization: `Hold: "${part1}"`,
     intermediateValue: part1,
     explanation: `${tens} × ${smallNum} = ${part1}.`,
   });
   steps.push({
     stepNumber: 2,
-    title: `Multiply Units (${units} × ${smallNum})`,
-    subVocalization: `Part 2: "${part2}"`,
+    title: `Multiply Units Chunk (${units} × ${smallNum})`,
+    subVocalization: `Units product: "${part2}"`,
     intermediateValue: part2,
     explanation: `${units} × ${smallNum} = ${part2}.`,
   });
   steps.push({
     stepNumber: 3,
-    title: `Combine Left-to-Right (${part1} + ${part2})`,
-    subVocalization: `Say "${prod}"`,
+    title: `Accumulate Left-to-Right (${part1} + ${part2})`,
+    subVocalization: `Say: "${prod}"`,
     intermediateValue: prod,
     explanation: `${part1} + ${part2} = ${prod}.`,
   });
@@ -305,6 +380,31 @@ export function getSquareStrategy(n: number): {
   const steps: CalculationStep[] = [];
   const sq = n * n;
 
+  // Decade square anchor (10, 20, ..., 100)
+  if (n % 10 === 0) {
+    const base = n / 10;
+    const baseSq = base * base;
+    steps.push({
+      stepNumber: 1,
+      title: `Square Base Leading Digit (${base}² = ${baseSq})`,
+      subVocalization: `Base square: "${baseSq}"`,
+      intermediateValue: baseSq,
+      explanation: `${base}² = ${baseSq}.`,
+    });
+    steps.push({
+      stepNumber: 2,
+      title: 'Append Two Zeros (× 100)',
+      subVocalization: `Append 00: "${sq}"`,
+      intermediateValue: sq,
+      explanation: `${baseSq} × 100 = ${sq}.`,
+    });
+    return {
+      strategyTitle: 'Decade Square Anchor',
+      steps,
+      mentalTip: 'Square the non-zero leading digit and append two zeros.',
+    };
+  }
+
   // Ending in 5: N5^2 = N * (N + 1) | 25
   if (n % 10 === 5) {
     const prefix = Math.floor(n / 10);
@@ -312,7 +412,7 @@ export function getSquareStrategy(n: number): {
 
     steps.push({
       stepNumber: 1,
-      title: `Multiply Leading Prefix by (Prefix + 1)`,
+      title: `Multiply Leading Prefix by (Prefix + 1): ${prefix} × ${prefix + 1}`,
       subVocalization: `${prefix} × ${prefix + 1} = ${mult}`,
       intermediateValue: mult,
       explanation: `${prefix} × (${prefix} + 1) = ${mult}. This forms the leading portion of the answer.`,
@@ -320,7 +420,7 @@ export function getSquareStrategy(n: number): {
     steps.push({
       stepNumber: 2,
       title: 'Append Constant 25',
-      subVocalization: `Prefix "${mult}" with "25" -> "${sq}"`,
+      subVocalization: `Combine "${mult}" and "25" -> "${sq}"`,
       intermediateValue: sq,
       explanation: `Every square of a number ending in 5 terminates in 25. Combine: ${mult} and 25 = ${sq}.`,
     });
@@ -348,15 +448,15 @@ export function getSquareStrategy(n: number): {
     });
     steps.push({
       stepNumber: 2,
-      title: `Square the Offset (${Math.abs(diff)}²)`,
+      title: `Square Offset (${Math.abs(diff)}²)`,
       subVocalization: `Trailing digits: "${strSq}"`,
       intermediateValue: strSq,
-      explanation: `(${diff})² = ${sqPart}. Must be represented as two digits: "${strSq}".`,
+      explanation: `(${diff})² = ${sqPart}. Pad to two digits: "${strSq}".`,
     });
     steps.push({
       stepNumber: 3,
       title: 'Merge Parts',
-      subVocalization: `Say "${sq}"`,
+      subVocalization: `Say: "${sq}"`,
       intermediateValue: sq,
       explanation: `Combine: ${basePart}${strSq} = ${sq}.`,
     });
@@ -392,7 +492,7 @@ export function getSquareStrategy(n: number): {
     steps.push({
       stepNumber: 3,
       title: 'Assemble Number',
-      subVocalization: `Say "${sq}"`,
+      subVocalization: `Say: "${sq}"`,
       intermediateValue: sq,
       explanation: `Combine: ${leading}${strDeficit} = ${sq}.`,
     });
@@ -414,7 +514,7 @@ export function getSquareStrategy(n: number): {
   steps.push({
     stepNumber: 1,
     title: `Square the Tens (${tensA}0² = ${a2})`,
-    subVocalization: `Hold "${a2}"`,
+    subVocalization: `Hold: "${a2}"`,
     intermediateValue: a2,
     explanation: `(${tensA} × 10)² = ${a2}.`,
   });
@@ -428,7 +528,7 @@ export function getSquareStrategy(n: number): {
   steps.push({
     stepNumber: 3,
     title: `Add Units Squared (${unitsB}² = ${b2})`,
-    subVocalization: `Say "${sq}"`,
+    subVocalization: `Say: "${sq}"`,
     intermediateValue: sq,
     explanation: `${a2 + twoAB} + ${b2} = ${sq}.`,
   });
@@ -467,6 +567,32 @@ export function getCubeStrategy(n: number): {
   };
   const expectedLastDigit = endingPatternMap[unitEnding];
 
+  // Decade Cube Anchor (10, 20, 30, ..., 100)
+  if (n % 10 === 0) {
+    const base = n / 10;
+    const baseCube = base * base * base;
+    steps.push({
+      stepNumber: 1,
+      title: `Cube Leading Base Digit (${base}³ = ${baseCube})`,
+      subVocalization: `Base cube: "${baseCube}"`,
+      intermediateValue: baseCube,
+      explanation: `${base}³ = ${baseCube}.`,
+    });
+    steps.push({
+      stepNumber: 2,
+      title: 'Append Three Zeros (× 1000)',
+      subVocalization: `Append 000: "${cube}"`,
+      intermediateValue: cube,
+      explanation: `${baseCube} × 1000 = ${cube}.`,
+    });
+    return {
+      strategyTitle: 'Decade Cube Anchor',
+      steps,
+      mentalTip: 'Cube the non-zero leading digit and append three zeros.',
+    };
+  }
+
+  // Foundation cubes 1 to 20
   if (n <= 20) {
     steps.push({
       stepNumber: 1,
@@ -480,7 +606,7 @@ export function getCubeStrategy(n: number): {
       title: 'Unit-Digit Consistency Check',
       subVocalization: `Last digit must be ${expectedLastDigit}`,
       intermediateValue: expectedLastDigit,
-      explanation: `In base 10, cubing ${unitEnding} always ends in ${expectedLastDigit}.`,
+      explanation: `In base 10, cubing a number ending in ${unitEnding} always terminates in ${expectedLastDigit}.`,
     });
 
     return {
@@ -501,21 +627,21 @@ export function getCubeStrategy(n: number): {
   steps.push({
     stepNumber: 1,
     title: `Base Decade Cube (${tens}³ = ${a3})`,
-    subVocalization: `Base: "${a3}"`,
+    subVocalization: `Hold base: "${a3}"`,
     intermediateValue: a3,
     explanation: `${tens}³ = ${a3}.`,
   });
   steps.push({
     stepNumber: 2,
-    title: `First Binomial Cross (3a²b = ${step2Part})`,
+    title: `First Binomial Cross: 3a²b (3 × ${tens}² × ${units} = ${step2Part})`,
     subVocalization: `Accumulator: "${a3 + step2Part}"`,
     intermediateValue: a3 + step2Part,
-    explanation: `3 × (${tens})² × ${units} = ${step2Part}. Running sum = ${a3 + step2Part}.`,
+    explanation: `3 × (${tens})² × ${units} = ${step2Part}. Running accumulator = ${a3 + step2Part}.`,
   });
   steps.push({
     stepNumber: 3,
-    title: `Second Binomial Cross & Units (3ab² + b³ = ${step3Part + b3})`,
-    subVocalization: `Say "${cube}"`,
+    title: `Second Cross & Units: 3ab² + b³ (${step3Part} + ${b3} = ${step3Part + b3})`,
+    subVocalization: `Resolve to: "${cube}"`,
     intermediateValue: cube,
     explanation: `Add 3 × ${tens} × ${units}² (${step3Part}) + ${units}³ (${b3}) = ${cube}.`,
   });

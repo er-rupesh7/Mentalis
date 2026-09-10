@@ -61,20 +61,27 @@ Mentalis/
 │   │   ├── calcEngine.ts        # Algorithmic question generators (Pure functions)
 │   │   ├── strategies.ts        # Step-by-step mental decomposition engine
 │   │   ├── mastery.ts           # Spaced repetition decay, micro-grading, CPM index
+│   │   ├── adaptive.ts          # Adaptive scheduler, weak-spot prioritization & decay analysis
 │   │   ├── soundEngine.ts       # Procedural audio synthesizer (Web Audio API)
+│   │   ├── __tests__/           # Comprehensive Vitest test suite
+│   │   │   ├── calcEngine.test.ts
+│   │   │   ├── strategies.test.ts
+│   │   │   ├── mastery.test.ts
+│   │   │   └── adaptive.test.ts
 │   │   └── store/
 │   │       └── useQuizStore.ts  # Decoupled Zustand state machine & storage sync
 │   ├── components/              # PRESENTATION LAYER
-│   │   ├── PracticeScreen.tsx   # Zen mode drill UI with custom thumb numpad
-│   │   ├── AnzanFlashScreen.tsx # Cognitive Working Memory & Anzan flash trainer
+│   │   ├── PracticeScreen.tsx   # Zen mode drill UI with custom thumb numpad & pause/resume
+│   │   ├── AnzanFlashScreen.tsx # Cognitive Working Memory & Anzan flash trainer with presets
 │   │   ├── TutorialModal.tsx    # Interactive step-by-step mental slider
-│   │   ├── TableHeatmap.tsx     # 1-100 Table mastery matrix (Red/Amber/Green)
-│   │   ├── Dashboard.tsx        # Overview metrics, CPM index, streak counter
+│   │   ├── TableHeatmap.tsx     # 1-100 Table mastery matrix with keyboard navigation
+│   │   ├── Dashboard.tsx        # Dynamic rank, recommended drills, and curriculum progress
 │   │   └── Navigation.tsx       # Mode switcher, sound toggle, streak HUD
 │   └── app/
 │       ├── layout.tsx           # Dark theme layout with Inter typography
 │       ├── page.tsx             # Root orchestration container
 │       └── globals.css          # Design system tokens, micro-animations, glass
+└── vitest.config.ts             # Vitest test runner configuration
 ```
 
 ---
