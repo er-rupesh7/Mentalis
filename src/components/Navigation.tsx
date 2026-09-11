@@ -205,6 +205,18 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </button>
 
           <button
+            onClick={() => setViewMode('memory_map')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              viewMode === 'memory_map'
+                ? 'bg-violet-600 text-white shadow-sm font-semibold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+            }`}
+          >
+            <Brain className="w-3.5 h-3.5" />
+            Memory Map
+          </button>
+
+          <button
             onClick={() => setViewMode('profile')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
               viewMode === 'profile'
@@ -323,6 +335,21 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             >
               <Grid className="w-4 h-4" />
               <span>100 Tables</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setViewMode('memory_map');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+                viewMode === 'memory_map'
+                  ? 'bg-violet-600 text-white border-violet-500'
+                  : 'bg-slate-900 text-slate-300 border-slate-800'
+              }`}
+            >
+              <Brain className="w-4 h-4" />
+              <span>Memory Map</span>
             </button>
           </div>
 

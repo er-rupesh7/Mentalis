@@ -1,6 +1,7 @@
 /**
- * Adaptive Spaced Repetition & Question Selection System
- * Prioritizes weak, decayed, slow, and unmastered skills while maintaining variety.
+ * Adaptive Spaced Retrieval & Fact-Level Question Selection System for Mentalis
+ * Prioritizes weak, decayed, slow, and unmastered facts based on demonstrated accuracy,
+ * latency, error confusion patterns, forgetting risk, and session fatigue.
  */
 
 import { ModuleId, Question, UserProgressItem } from './types';
@@ -11,6 +12,10 @@ import {
   SquareCubeSubTrack,
 } from './calcEngine';
 import { SEVEN_DAYS_MS } from './mastery';
+import { FactKey, FactMemoryState } from './factModel';
+import { selectNextFact } from './memoryScheduler';
+import { generateQuestionFromFact, getCandidateFactKeysForTarget } from './factEngine';
+import { FatigueSignal } from './learnerModel';
 
 export interface AdaptiveAnalysis {
   decayedSkills: UserProgressItem[];
@@ -151,11 +156,17 @@ export interface AdaptiveQuestionOptions {
   activeTable: number;
   activeSquareTrack: SquareCubeSubTrack;
   progressMap: Record<string, UserProgressItem>;
-  mode?: 'standard' | 'targeted_refresh' | 'weak_spots';
+  factMemoryMap?: Record<string, FactMemoryState>;
+  recentAskedKeys?: FactKey[];
+  fatigue?: FatigueSignal;
+  delayedReviewQueue?: { factKey: FactKey; dueAtCount: number }[];
+  currentSessionQuestionCount?: number;
+  mode?: 'standard' | 'targeted_refresh' | 'weak_spots' | 'review' | 'repair' | 'speed';
 }
 
 /**
- * Generates an adaptive question taking user performance and spaced repetition into account.
+ * Generates an adaptive question taking individual fact-level memory,
+ * forgetting curves, and error confusion into account.
  */
 export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question {
   const {
@@ -164,12 +175,44 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
     activeTable,
     activeSquareTrack,
     progressMap,
+    factMemoryMap,
+    recentAskedKeys = [],
+    fatigue,
+    delayedReviewQueue = [],
+    currentSessionQuestionCount = 0,
     mode = 'standard',
   } = options;
 
+  // If factMemoryMap is available, perform fact-level adaptive selection
+  if (factMemoryMap && (module === 'multiplication' || module === 'squares_cubes')) {
+    const candidateKeys = getCandidateFactKeysForTarget(
+      module,
+      activeTable,
+      activeSquareTrack
+    );
+
+    if (candidateKeys.length > 0) {
+      const selection = selectNextFact(
+        candidateKeys,
+        factMemoryMap,
+        recentAskedKeys,
+        fatigue,
+        delayedReviewQueue,
+        currentSessionQuestionCount
+      );
+
+      const q = generateQuestionFromFact(selection.factKey);
+      // Attach factKey to question id or custom property for easy tracking
+      return {
+        ...q,
+        subTrack: selection.factKey,
+      };
+    }
+  }
+
+  // Fallback to progressive generation
   const analysis = analyzeProgress(progressMap);
 
-  // If in targeted refresh mode and decayed skills exist for this module, target that skill
   if (mode === 'targeted_refresh' && analysis.decayedSkills.length > 0) {
     const candidate = analysis.decayedSkills.find((s) => s.module === module) || analysis.decayedSkills[0];
     if (candidate.module === 'multiplication') {
@@ -181,7 +224,6 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
     }
   }
 
-  // If in weak spots mode and weak skills exist, target candidate
   if (mode === 'weak_spots' && analysis.weakSkills.length > 0) {
     const candidate = analysis.weakSkills.find((s) => s.module === module) || analysis.weakSkills[0];
     if (candidate.module === 'multiplication') {
@@ -193,23 +235,6 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
     }
   }
 
-  // In standard mode, 80% focus on active selection, 20% interleave weak or decayed
-  if (mode === 'standard' && Math.random() < 0.2) {
-    if (analysis.weakSkills.length > 0 && Math.random() < 0.5) {
-      const weakItem = analysis.weakSkills[Math.floor(Math.random() * analysis.weakSkills.length)];
-      if (weakItem.module === module) {
-        if (module === 'multiplication') {
-          const t = parseInt(weakItem.itemId.replace('table_', ''), 10);
-          if (!isNaN(t)) return generateMultiplicationQuestion(t);
-        } else if (module === 'add_sub') {
-          const lvl = parseInt(weakItem.itemId.replace('add_sub_level_', ''), 10);
-          if (!isNaN(lvl)) return generateAddSubQuestion(lvl);
-        }
-      }
-    }
-  }
-
-  // Standard generation
   switch (module) {
     case 'add_sub':
       return generateAddSubQuestion(activeAddSubLevel);

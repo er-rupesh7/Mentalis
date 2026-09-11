@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { isValidDrillId } from '@/core/catalog';
 import { CoachingInsight, SkillDimension } from '@/core/learnerModel';
+import { isValidFactKey, FactKey } from '@/core/factModel';
+import { STRATEGY_CATALOG } from '@/core/strategyCatalog';
 
 interface RequestSkillSummary {
   dimension: SkillDimension;
@@ -20,90 +22,97 @@ interface RequestSkillSummary {
 
 interface RequestPayload {
   skills: RequestSkillSummary[];
-  recentErrors?: { dimension: string; patternType: string; count: number }[];
+  recentErrors?: { dimension: string; patternType: string; count: number; factKey?: string }[];
   fatigue?: { level: string; consecutiveErrors: number; latencyDilationRatio: number };
   requestedMinutes?: number;
   currentStreak?: number;
+  candidateFacts?: string[];
+  recentFactFailures?: string[];
 }
 
-const AI_COACH_SCHEMA = {
-  name: 'ai_coach_insight',
-  strict: true,
-  schema: {
-    type: 'object',
-    properties: {
-      summary: {
-        type: 'string',
-        description: 'A 1-2 sentence high-level overview of the learner’s cognitive state.',
-      },
-      encouragement: {
-        type: 'string',
-        description: 'An uplifting, pedagogical note acknowledging effort and rhythm.',
-      },
-      observed_strengths: {
-        type: 'array',
-        items: { type: 'string' },
-        description: '2-3 specific arithmetic strengths identified from the ability metrics.',
-      },
-      priority_gaps: {
-        type: 'array',
-        items: { type: 'string' },
-        description: '1-2 high-leverage growth areas with technique suggestions.',
-      },
-      recommended_focus: {
-        type: 'string',
-        description: 'Clear primary focus for today’s practice session.',
-      },
-      explanation_for_user: {
-        type: 'string',
-        description: 'Clear mental arithmetic explanation of the cognitive strategy.',
-      },
-      suggested_coaching_message: {
-        type: 'string',
-        description: 'Direct pedagogical message to the learner before they begin.',
-      },
-      plan_adjustments: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            suggested_drill_id: {
-              type: 'string',
-              description: 'Canonical drill ID from the allowed curriculum.',
-            },
-            reason: {
-              type: 'string',
-              description: 'Pedagogical justification for this drill.',
-            },
-          },
-          required: ['suggested_drill_id', 'reason'],
-          additionalProperties: false,
-        },
-        description: 'Optional fine-tuning of drill targets.',
-      },
-      confidence: {
-        type: 'number',
-        description: 'Confidence in this diagnostic recommendation (0.0 to 1.0).',
-      },
-      safety_note: {
-        type: 'string',
-        description: 'Confirmation that all suggestions are within valid curriculum boundaries.',
-      },
+const AI_COACH_RESPONSES_SCHEMA = {
+  type: 'object',
+  properties: {
+    learner_summary: {
+      type: 'string',
+      description: 'A 1-2 sentence high-level overview of the learner’s cognitive and memory state.',
     },
-    required: [
-      'summary',
-      'encouragement',
-      'observed_strengths',
-      'priority_gaps',
-      'recommended_focus',
-      'explanation_for_user',
-      'suggested_coaching_message',
-      'plan_adjustments',
-      'confidence',
-      'safety_note',
-    ],
-    additionalProperties: false,
+    priority_fact_families: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Canonical fact keys (e.g., mul:17:6, square:47, cube:12) prioritized for immediate review.',
+    },
+    recommended_learning_mode: {
+      type: 'string',
+      description: 'Pedagogical mode: teach_then_recall, recall, speed, or repair.',
+    },
+    recommended_strategies: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          strategy_id: {
+            type: 'string',
+            description: 'Canonical strategy ID from the allowed strategy catalog.',
+          },
+          applies_to: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Fact keys this strategy applies to.',
+          },
+          reason: {
+            type: 'string',
+            description: 'Concise explanation of why this strategy reduces working memory load.',
+          },
+        },
+        required: ['strategy_id', 'applies_to', 'reason'],
+        additionalProperties: false,
+      },
+      description: 'Targeted mental math strategies for the priority facts.',
+    },
+    next_queue_policy: {
+      type: 'object',
+      properties: {
+        focus_ratio: {
+          type: 'number',
+          description: 'Fraction of weak/due facts (e.g. 0.55).',
+        },
+        review_ratio: {
+          type: 'number',
+          description: 'Fraction of recently learned consolidation facts (e.g. 0.25).',
+        },
+        interleave_ratio: {
+          type: 'number',
+          description: 'Fraction of interleaved stronger facts (e.g. 0.20).',
+        },
+        difficulty_adjustment: {
+          type: 'string',
+          enum: ['step_down', 'hold', 'step_up'],
+          description: 'Whether to adjust question difficulty based on accuracy and fatigue.',
+        },
+      },
+      required: ['focus_ratio', 'review_ratio', 'interleave_ratio', 'difficulty_adjustment'],
+      additionalProperties: false,
+    },
+    coach_message: {
+      type: 'string',
+      description: 'Direct, encouraging pedagogical message to the learner.',
+    },
+    confidence: {
+      type: 'number',
+      description: 'Diagnostic confidence rating (0.0 to 1.0).',
+    },
   },
+  required: [
+    'learner_summary',
+    'priority_fact_families',
+    'recommended_learning_mode',
+    'recommended_strategies',
+    'next_queue_policy',
+    'coach_message',
+    'confidence',
+  ],
+  additionalProperties: false,
 };
 
 /**
@@ -118,11 +127,34 @@ function generateDeterministicInsight(payload: RequestPayload): CoachingInsight 
   const weakest = sortedByTheta[0];
   const strongest = sortedByTheta[sortedByTheta.length - 1];
 
-  const focusLabel = weakest ? weakest.dimension.replace(/_/g, ' ') : 'core addition and subtraction';
+  const focusLabel = weakest ? weakest.dimension.replace(/_/g, ' ') : 'core tables and teen multipliers';
   const strengthLabel = strongest ? strongest.dimension.replace(/_/g, ' ') : 'foundations';
+
+  const defaultFacts = (payload.candidateFacts && payload.candidateFacts.length > 0)
+    ? payload.candidateFacts.slice(0, 3)
+    : ['mul:7:8', 'mul:17:6', 'square:48'];
+
+  const defaultStrategy = 'multiplication_split_add';
 
   return {
     summary: `Cognitive profile indicates solid fluency in ${strengthLabel}, with targeted opportunity in ${focusLabel}.`,
+    learner_summary: `Solid fluency in ${strengthLabel}; targeted reinforcement active for ${focusLabel}.`,
+    priority_fact_families: defaultFacts,
+    recommended_learning_mode: 'teach_then_recall',
+    recommended_strategies: [
+      {
+        strategy_id: defaultStrategy,
+        applies_to: [defaultFacts[0] || 'mul:17:6'],
+        reason: 'Decomposes multi-digit operands into tens and units to reduce working memory load.',
+      },
+    ],
+    next_queue_policy: {
+      focus_ratio: 0.55,
+      review_ratio: 0.25,
+      interleave_ratio: 0.20,
+      difficulty_adjustment: payload.fatigue?.level === 'high_fatigue' ? 'step_down' : 'hold',
+    },
+    coach_message: 'Anchor tens first before adding units. Let your phonological loop hold the running sum.',
     encouragement: 'Consistent daily retrieval builds permanent mental math representations. Keep the accumulator steady!',
     observedStrengths: [
       `High accuracy and automaticity in ${strengthLabel}.`,
@@ -132,7 +164,7 @@ function generateDeterministicInsight(payload: RequestPayload): CoachingInsight 
       `Technique refinement in ${focusLabel} to reduce calculation latency.`,
     ],
     recommendedFocus: `Dedicate today's core focus block to mastering ${focusLabel}.`,
-    suggestedCoachingMessage: `Focus on clean visualization rather than raw speed. When bridging, mentally hold the running decade in working memory.`,
+    suggestedCoachingMessage: 'Focus on clean visualization rather than raw speed. When bridging, mentally hold the running decade in working memory.',
     planAdjustments: [],
     confidence: 0.88,
     generatedAt: Date.now(),
@@ -160,22 +192,23 @@ export async function POST(req: NextRequest) {
     const openai = new OpenAI({ apiKey });
     const model = process.env.OPENAI_MODEL?.trim() || 'gpt-4o-mini';
 
-    const systemPrompt = `You are Mentalis AI Coach, an expert cognitive arithmetic pedagogue.
-Your role is to analyze a mental math learner's skill ratings (theta on a -3.0 to +3.0 scale), accuracy, latency, and fatigue state.
-Recommend high-leverage cognitive focus areas using proven techniques:
-- Left-to-right accumulator method
-- Vedic shortcuts: (50±d)², (100±d)², ending in 5
-- Base-100 complements
-- Auditory sub-vocalization loops
-- Anzan working memory pacing
+    const validStrategyKeys = Object.keys(STRATEGY_CATALOG);
+    const candidateFactList = payload.candidateFacts || ['mul:7:8', 'mul:17:6', 'square:48', 'cube:12'];
 
-CRITICAL RULES:
-1. All drill suggestions must use canonical drill IDs (e.g., 'add_sub_l2', 'table_7', 'sq_near_50', 'sq_ending_5', 'anzan_standard').
-2. Keep explanations encouraging, concise, and focused on working memory load.
-3. Be precise with cognitive diagnostics based on provided numbers.`;
+    const systemPrompt = `You are Mentalis AI Coach, an expert cognitive arithmetic pedagogue.
+Analyze the learner's skill ability (theta on -3.0 to +3.0), accuracy, latency, and fatigue state.
+Recommend high-leverage cognitive focus areas and strategies.
+
+NON-NEGOTIABLE RULES:
+1. ONLY choose priority_fact_families from the provided candidate fact set: [${candidateFactList.join(', ')}].
+2. ONLY choose strategy_id from the allowed strategy catalog: [${validStrategyKeys.join(', ')}].
+3. Do not make medical, neurological, or IQ claims. Focus strictly on mental math techniques.
+4. Keep explanations concise, practical, and focused on working memory load.`;
 
     const userPrompt = `Learner Assessment & Progress Data:
 Skills: ${JSON.stringify(payload.skills)}
+Candidate Facts: ${JSON.stringify(candidateFactList)}
+Recent Failures: ${JSON.stringify(payload.recentFactFailures || [])}
 Fatigue State: ${JSON.stringify(payload.fatigue || { level: 'fresh' })}
 Recent Errors: ${JSON.stringify(payload.recentErrors || [])}
 Current Daily Streak: ${payload.currentStreak || 0} days
@@ -183,45 +216,66 @@ Requested Session Minutes: ${payload.requestedMinutes || 15} min
 
 Provide structured pedagogical coaching feedback.`;
 
-    const completion = await openai.chat.completions.create({
+    // Invoke OpenAI Responses API with store: false and strict JSON Schema
+    const response = await openai.responses.create({
       model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      response_format: {
-        type: 'json_schema',
-        json_schema: AI_COACH_SCHEMA,
-      },
-      temperature: 0.3,
-      // Zero-retention privacy flag
+      instructions: systemPrompt,
+      input: userPrompt,
       store: false,
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'ai_coach_insight',
+          strict: true,
+          schema: AI_COACH_RESPONSES_SCHEMA,
+        },
+      },
+      temperature: 0.2,
     });
 
-    const rawContent = completion.choices[0]?.message?.content;
+    const rawContent = response.output_text;
     if (!rawContent) {
-      throw new Error('Empty response from AI Coach model');
+      throw new Error('Empty output from OpenAI Responses API');
     }
 
     const parsed = JSON.parse(rawContent);
 
-    // Validate suggested drill IDs against canonical catalog
-    const validatedAdjustments = (parsed.plan_adjustments || []).filter(
-      (adj: { suggested_drill_id: string }) => isValidDrillId(adj.suggested_drill_id)
+    // Validate suggested fact keys against candidate set and canonical format
+    const validatedFacts: string[] = (parsed.priority_fact_families || []).filter(
+      (k: string) => isValidFactKey(k) && (candidateFactList.includes(k) || isValidFactKey(k))
+    );
+
+    // Validate suggested strategies against canonical catalog
+    const validatedStrategies = (parsed.recommended_strategies || []).filter(
+      (s: { strategy_id: string }) => STRATEGY_CATALOG[s.strategy_id] !== undefined
     );
 
     const insight: CoachingInsight = {
-      summary: parsed.summary,
-      encouragement: parsed.encouragement,
-      observedStrengths: parsed.observed_strengths || [],
-      priorityGaps: parsed.priority_gaps || [],
-      recommendedFocus: parsed.recommended_focus,
-      suggestedCoachingMessage: parsed.suggested_coaching_message,
-      planAdjustments: validatedAdjustments.map((a: { suggested_drill_id: string; reason: string }) => ({
-        suggestedDrillId: a.suggested_drill_id,
-        reason: a.reason,
-      })),
-      confidence: parsed.confidence || 0.85,
+      summary: parsed.learner_summary || 'Cognitive review plan active.',
+      learner_summary: parsed.learner_summary,
+      priority_fact_families: validatedFacts.length > 0 ? validatedFacts : candidateFactList.slice(0, 3),
+      recommended_learning_mode: parsed.recommended_learning_mode || 'teach_then_recall',
+      recommended_strategies: validatedStrategies.length > 0 ? validatedStrategies : [
+        {
+          strategy_id: 'multiplication_split_add',
+          applies_to: [candidateFactList[0] || 'mul:17:6'],
+          reason: 'Decomposes multi-digit operands into tens and units to reduce working memory load.',
+        },
+      ],
+      next_queue_policy: parsed.next_queue_policy || {
+        focus_ratio: 0.55,
+        review_ratio: 0.25,
+        interleave_ratio: 0.20,
+        difficulty_adjustment: 'hold',
+      },
+      coach_message: parsed.coach_message,
+      encouragement: parsed.coach_message || 'Keep the accumulator steady!',
+      observedStrengths: [],
+      priorityGaps: validatedFacts.map((f) => `Targeted reinforcement for ${f}`),
+      recommendedFocus: parsed.learner_summary || 'Core tables and strategic recall.',
+      suggestedCoachingMessage: parsed.coach_message,
+      planAdjustments: [],
+      confidence: parsed.confidence || 0.88,
       generatedAt: Date.now(),
       source: 'ai',
     };
@@ -232,8 +286,8 @@ Provide structured pedagogical coaching feedback.`;
       isFallback: false,
     });
   } catch (err: unknown) {
-    console.error('AI Coach API error, falling back to deterministic engine:', err);
-    // On any error (network failure, rate limit, invalid key), seamlessly fall back
+    console.error('AI Coach Responses API error, falling back to deterministic engine:', err);
+    // On any error (network failure, rate limit, invalid key, timeout), seamlessly fall back
     const fallbackInsight = generateDeterministicInsight({ skills: [] });
     return NextResponse.json({
       success: true,

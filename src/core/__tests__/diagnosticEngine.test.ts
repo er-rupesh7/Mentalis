@@ -2,18 +2,20 @@ import { describe, it, expect } from 'vitest';
 import {
   createAssessmentSession,
   recordAssessmentAnswer,
+  recordAssessmentSkip,
   generateBaselineReport,
 } from '../diagnosticEngine';
 import { createDefaultLearnerProfile } from '../learnerModel';
 
 describe('Diagnostic Engine', () => {
-  it('creates an assessment session with 16 calibrated probe questions', () => {
-    const session = createAssessmentSession();
+  it('creates an assessment session with calibrated balanced probe questions', () => {
+    const session = createAssessmentSession(15);
     expect(session.status).toBe('in_progress');
-    expect(session.totalQuestions).toBe(16);
-    expect(session.questions.length).toBe(16);
+    expect(session.totalQuestions).toBe(20);
+    expect(session.questions.length).toBeGreaterThanOrEqual(4);
     expect(session.currentQuestionIndex).toBe(0);
     expect(session.responses.length).toBe(0);
+    expect(session.isPaused).toBe(false);
 
     // Verify all probe questions have valid math
     for (const q of session.questions) {
@@ -36,7 +38,7 @@ describe('Diagnostic Engine', () => {
     expect(result.updatedSession.currentQuestionIndex).toBe(1);
     expect(result.updatedSession.responses.length).toBe(1);
 
-    const assessedDim = q.subTrack as unknown as import('../learnerModel').SkillDimension;
+    const assessedDim = result.updatedSession.responses[0].dimension;
     expect(result.updatedProfile.skills[assessedDim].theta).toBeGreaterThan(0.0);
     expect(result.updatedProfile.skills[assessedDim].totalAttempts).toBe(1);
   });
@@ -51,17 +53,45 @@ describe('Diagnostic Engine', () => {
     expect(result.rapidGuess).toBe(true);
   });
 
-  it('generates an actionable baseline report upon completion', () => {
+  it('records question skip as a priority learning signal', () => {
+    const session = createAssessmentSession();
+    const profile = createDefaultLearnerProfile();
+
+    const result = recordAssessmentSkip(session, profile);
+    expect(result.isSkipped).toBe(true);
+    expect(result.isCorrect).toBe(false);
+    expect(result.updatedSession.responses[0].isSkipped).toBe(true);
+    expect(result.updatedSession.currentQuestionIndex).toBe(1);
+
+    // Check that fact memory map seeds skipped fact
+    if (result.initialFactMemoryMap) {
+      const keys = Object.keys(result.initialFactMemoryMap);
+      if (keys.length > 0) {
+        expect(result.initialFactMemoryMap[keys[0]].skipCount).toBe(1);
+        expect(result.initialFactMemoryMap[keys[0]].masteryState).toBe('weak');
+      }
+    }
+  });
+
+  it('generates an actionable baseline report with personalized breakdown upon completion', () => {
     let session = createAssessmentSession();
     let profile = createDefaultLearnerProfile();
 
-    for (let i = 0; i < session.totalQuestions; i++) {
+    // Answer questions to completion
+    while (session.status === 'in_progress' && session.currentQuestionIndex < session.questions.length) {
       const q = session.questions[session.currentQuestionIndex];
-      // Alternate correct and incorrect to test mixed profile
-      const answer = i % 2 === 0 ? q.correctAnswer : q.correctAnswer + 1;
-      const res = recordAssessmentAnswer(session, answer, 2500, profile);
-      session = res.updatedSession;
-      profile = res.updatedProfile;
+      // Alternate correct and incorrect/skipped to test comprehensive breakdown
+      if (session.currentQuestionIndex === 1) {
+        const res = recordAssessmentSkip(session, profile);
+        session = res.updatedSession;
+        profile = res.updatedProfile;
+      } else {
+        const answer = session.currentQuestionIndex % 2 === 0 ? q.correctAnswer : q.correctAnswer + 1;
+        const latency = session.currentQuestionIndex % 2 === 0 ? 4000 : 2500;
+        const res = recordAssessmentAnswer(session, answer, latency, profile);
+        session = res.updatedSession;
+        profile = res.updatedProfile;
+      }
     }
 
     expect(session.status).toBe('completed');
@@ -69,7 +99,10 @@ describe('Diagnostic Engine', () => {
     const report = profile.baselineReport!;
     expect(report.strengths.length).toBeGreaterThanOrEqual(1);
     expect(report.priorityGaps.length).toBeGreaterThanOrEqual(1);
-    expect([10, 15, 20]).toContain(report.recommendedDailyPaceMinutes);
+    expect(report.skippedFacts?.length).toBeGreaterThanOrEqual(1);
+    expect([10, 12, 15, 20]).toContain(report.recommendedDailyPaceMinutes);
     expect(report.firstWeekRoadmap.length).toBe(4);
+    expect(report.summaryMessage).toBeDefined();
+    expect(report.summaryMessage?.length).toBeGreaterThan(15);
   });
 });

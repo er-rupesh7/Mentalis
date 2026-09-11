@@ -8,16 +8,20 @@ Built with a **strictly decoupled architecture**, all core calculation algorithm
 
 ## 🌟 Key Features
 
+- **Fact-Level Adaptive Memory Engine**: Granular memory modeling across 2,000+ individual arithmetic facts (multiplication tables 1–100 through ×20, squares 1²–100², and cubes 1³–100³). Tracks memory stability (0–100%), forgetting risk curves, and SM-2 spaced retrieval intervals.
+- **Intelligent Error Diagnostics & Repair Cards**: Real-time identification of cognitive slips (adjacent multiplier confusion like 7×8 vs 7×9, digit transposition, decade zero omissions, and rapid careless guessing). Generates contextual Repair Cards complete with anchor landmarks, contrast facts, and automatic delayed re-testing.
+- **5 Focused Pedagogical Learning Modes**:
+  1. *Learn*: Step-by-step strategy breakdown + worked examples + guided mental accumulator.
+  2. *Recall*: Distraction-free active retrieval with optional hints.
+  3. *Speed*: Fluency pacing (<2.0s goal) without careless guessing.
+  4. *Repair*: Targeted remediation addressing active confusion patterns and recent errors.
+  5. *Review*: Spaced retrieval queue targeting facts approaching their forgetting threshold.
+- **Interactive Adaptive Memory Map**: Comprehensive visual heatmap across all multiplication families, squares, and cubes. Inspect memory stability, forgetting risk, latency, and recommended mental shortcuts per fact.
+- **Active Table Chart & Self-Test Mode**: Complete reference for multiplication tables 1–100 (×20), squares, cubes, square roots, and cube roots, featuring self-test hide/reveal toggles, strategy guides, and direct row drilling.
+- **Zero-Retention AI Coach (OpenAI Responses API)**: Server-side integration using official `openai` SDK, Responses API (`openai.responses.create`), strict JSON Schema, `store: false`, candidate fact set validation, and zero client-side secret exposure. Gracefully falls back to 100% deterministic offline coaching when unconfigured or offline.
 - **Pedagogical Left-to-Right Engine**: Replaces traditional school-style right-to-left calculation with the **Most Significant Digit (MSD) Accumulator** and **Complements Method**. Eliminates paper-based ghost carries.
-- **Adaptive Spaced Repetition**: Dynamic priority queue interleaves weak skills (<75% accuracy), slow skills, and stale skills decayed past the 7-day threshold.
-- **Calendar-Day Daily Streak**: Robust date-diff tracking based on local calendar days, accurately incrementing on consecutive days and resetting after missed days.
-- **1 to 100 Multiplication Table Matrix**: Graded progression spanning associative recall (1–12), Split-and-Add (13–20), Rounding & Compensation (21–50), and Centurions (51–100). Full keyboard arrow navigation across the matrix.
-- **Squares & Cubes (1 to 100)**: Vedic and algebraic mental shortcuts ($N5^2$, Near 50, Near 100, Algebraic Duplex, Decade Anchors, and Binomial Cubes up to 100).
 - **Cognitive Working Memory Engine (Anzan Flash)**: Flashes sequential numbers at configurable intervals (300ms–1200ms) with auditory rhythm ticks, training active phonological buffer retention. Includes presets, negative subtraction toggle, sequence replay, and step inspection.
-- **Distraction-Free Zen Practice Mode**: High-contrast arithmetic display, custom mobile thumb numpad, negative input toggle (`±`), physical keyboard support (`0-9`, `-`, `Backspace`, `Enter`, `Space`), and pause/resume session controls.
-- **Interactive Step-by-Step Breakdown**: Scannable cards illustrating exact sub-vocalizations, running accumulator state, and mental tips on errors or user request (`H`).
-- **Web Audio API Procedural Synthesizer**: Clean, latency-free chords, chimes, and metronome clicks with zero external audio assets.
-- **100% Offline & Private**: Zero external telemetry, remote APIs, tracking, or user authentication. All progress is stored locally in `localStorage` with versioned schema migrations.
+- **100% Offline & Private**: Zero external telemetry, remote tracking, or user authentication. All progress is stored locally in `localStorage` with v4 schema migration.
 
 ---
 

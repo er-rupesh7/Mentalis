@@ -242,9 +242,9 @@ export function generateMultiplicationQuestion(targetTable?: number, targetMulti
       : randomInt(21, 100);
 
   const multiplier =
-    targetMultiplier && targetMultiplier >= 1 && targetMultiplier <= 12
+    targetMultiplier && targetMultiplier >= 1 && targetMultiplier <= 20
       ? targetMultiplier
-      : randomInt(2, 12);
+      : randomInt(1, 20);
 
   const product = table * multiplier;
   const { strategyTitle, steps, mentalTip } = getMultiplicationStrategy(table, multiplier);

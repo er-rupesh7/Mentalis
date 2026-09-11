@@ -20,6 +20,7 @@ import {
   TableChartTab,
   SessionDrillConfig,
   SessionSummary,
+  LearningMode,
 } from '../types';
 import { SquareCubeSubTrack } from '../calcEngine';
 import { evaluateMasteryStatus, updateDailyStreak, calculateMedian, calculateCPM } from '../mastery';
@@ -37,8 +38,28 @@ import {
   ALL_SKILL_DIMENSIONS,
 } from '../learnerModel';
 import {
+  FactKey,
+  FactMemoryState,
+  FactAttempt,
+  createInitialFactMemoryState,
+  updateFactMemoryStateWithAttempt,
+  deriveAggregateSkillsFromFacts,
+  parseFactKey,
+} from '../factModel';
+import {
+  RepairCard,
+  detectErrorPattern,
+  generateRepairCard,
+  selectNextFact,
+} from '../memoryScheduler';
+import {
+  generateQuestionFromFact,
+  getCandidateFactKeysForTarget,
+} from '../factEngine';
+import {
   createAssessmentSession,
   recordAssessmentAnswer,
+  recordAssessmentSkip,
 } from '../diagnosticEngine';
 import {
   generateDailyTrainingPlan,
@@ -114,6 +135,14 @@ interface QuizState {
   overallStats: OverallStats;
   anzanStats: AnzanStats;
 
+  // Fact-Level Memory & Spaced Retrieval
+  factMemoryMap: Record<string, FactMemoryState>;
+  learningMode: LearningMode;
+  activeRepairCard: RepairCard | null;
+  delayedReviewQueue: { factKey: FactKey; dueAtCount: number }[];
+  recentAskedKeys: FactKey[];
+  batchAnswerCount: number;
+
   // Settings & Accessibility
   soundEnabled: boolean;
   reducedMotion: boolean;
@@ -124,6 +153,7 @@ interface QuizState {
   learnerProfile: LearnerProfile;
   activeAssessment: AssessmentSession | null;
   assessmentInputBuffer: string;
+  assessmentQuestionStartTime: number;
   activeTrainingPlan: TrainingPlan | null;
   activeTrainingBlockIndex: number;
   isPlanActive: boolean;
@@ -163,6 +193,11 @@ interface QuizState {
   recordAnzanRun: (runData: Omit<AnzanRecord, 'id' | 'timestamp'>) => void;
   resetProgress: () => void;
 
+  // Actions - Learning Mode & Fact Training
+  setLearningMode: (mode: LearningMode) => void;
+  dismissRepairCard: () => void;
+  practiceFact: (factKey: FactKey, mode?: LearningMode) => void;
+
   // Actions - Onboarding Assessment
   startAssessment: () => void;
   appendAssessmentDigit: (digit: string) => void;
@@ -170,6 +205,7 @@ interface QuizState {
   backspaceAssessment: () => void;
   clearAssessmentBuffer: () => void;
   submitAssessmentAnswer: () => void;
+  skipAssessmentQuestion: () => void;
   skipAssessment: () => void;
   pauseAssessment: () => void;
   resumeAssessment: () => void;
@@ -242,6 +278,14 @@ export const useQuizStore = create<QuizState>()(
       overallStats: initialOverallStats,
       anzanStats: initialAnzanStats,
 
+      // Fact-Level Memory & Spaced Retrieval State
+      factMemoryMap: {},
+      learningMode: 'recall',
+      activeRepairCard: null,
+      delayedReviewQueue: [],
+      recentAskedKeys: [],
+      batchAnswerCount: 0,
+
       soundEnabled: true,
       reducedMotion: false,
       timerVisible: true,
@@ -257,6 +301,7 @@ export const useQuizStore = create<QuizState>()(
       learnerProfile: createDefaultLearnerProfile(),
       activeAssessment: null,
       assessmentInputBuffer: '',
+      assessmentQuestionStartTime: 0,
       activeTrainingPlan: null,
       activeTrainingBlockIndex: 0,
       isPlanActive: false,
@@ -374,11 +419,80 @@ export const useQuizStore = create<QuizState>()(
               lastResult: null,
               lastAnswerSubmitted: null,
               lastCorrectAnswer: null,
-              showStrategy: false,
+              showStrategy: state.learningMode === 'learn',
               isPaused: false,
             });
             return;
           }
+        }
+
+        // Advanced Fact-Level Adaptive Selection for Multiplication & Squares/Cubes
+        if (state.activeModule === 'multiplication' || state.activeModule === 'squares_cubes') {
+          let candidates = getCandidateFactKeysForTarget(
+            state.activeModule,
+            state.activeTable,
+            state.activeSquareTrack
+          );
+
+          // If in review mode, add overdue facts across the system
+          if (state.learningMode === 'review') {
+            const now = Date.now();
+            const dueKeys = Object.values(state.factMemoryMap)
+              .filter(
+                (f) =>
+                  f.factType === (state.activeModule === 'multiplication' ? 'multiplication' : 'square') ||
+                  f.factType === 'cube'
+              )
+              .filter((f) => now >= f.nextReviewTimestamp || f.forgettingRisk > 0.4)
+              .map((f) => f.factKey);
+            if (dueKeys.length > 0) {
+              candidates = Array.from(new Set([...dueKeys, ...candidates]));
+            }
+          }
+
+          // If in repair mode, prioritize weak / error facts
+          if (state.learningMode === 'repair') {
+            const repairKeys = Object.values(state.factMemoryMap)
+              .filter((f) => f.consecutiveErrors > 0 || f.masteryState === 'weak')
+              .map((f) => f.factKey);
+            if (repairKeys.length > 0) {
+              candidates = Array.from(new Set([...repairKeys, ...candidates]));
+            }
+          }
+
+          const selection = selectNextFact(
+            candidates,
+            state.factMemoryMap,
+            state.recentAskedKeys,
+            state.learnerProfile.fatigueState,
+            state.delayedReviewQueue,
+            state.sessionAnswered
+          );
+
+          // If consumed from delayedReviewQueue, remove it
+          const updatedDelayedQueue = state.delayedReviewQueue.filter(
+            (item) => item.factKey !== selection.factKey
+          );
+
+          const q = generateQuestionFromFact(selection.factKey);
+          if (state.learningMode === 'speed') {
+            q.targetTimeSeconds = Math.max(1.0, Math.round(q.targetTimeSeconds * 0.75 * 10) / 10);
+          }
+
+          set({
+            currentQuestion: q,
+            inputBuffer: '',
+            questionStartTime: Date.now(),
+            isEvaluating: false,
+            lastResult: null,
+            lastAnswerSubmitted: null,
+            lastCorrectAnswer: null,
+            showStrategy: state.learningMode === 'learn',
+            isPaused: false,
+            delayedReviewQueue: updatedDelayedQueue,
+            recentAskedKeys: [...state.recentAskedKeys.slice(-12), selection.factKey],
+          });
+          return;
         }
 
         const modeToUse = forceMode || state.sessionConfig.mode;
@@ -399,7 +513,7 @@ export const useQuizStore = create<QuizState>()(
           lastResult: null,
           lastAnswerSubmitted: null,
           lastCorrectAnswer: null,
-          showStrategy: false,
+          showStrategy: state.learningMode === 'learn',
           isPaused: false,
         });
       },
@@ -440,7 +554,49 @@ export const useQuizStore = create<QuizState>()(
         const state = get();
         if (state.isEvaluating || !state.currentQuestion || state.isPaused) return;
 
-        soundEngine.playError();
+        soundEngine.playClick();
+        const now = Date.now();
+        const latencyMs = Math.max(120, now - state.questionStartTime);
+        let updatedFactMemoryMap = state.factMemoryMap;
+        let delayedReviewQueue = [...state.delayedReviewQueue];
+
+        // Resolve fact key if question belongs to a tracked fact
+        let factKey = state.currentQuestion.factKey;
+        if (!factKey && state.currentQuestion.subTrack) {
+          if (
+            state.currentQuestion.subTrack.startsWith('mul:') ||
+            state.currentQuestion.subTrack.startsWith('square:') ||
+            state.currentQuestion.subTrack.startsWith('cube:')
+          ) {
+            factKey = state.currentQuestion.subTrack;
+          }
+        }
+
+        if (factKey) {
+          const currentFact = state.factMemoryMap[factKey] || createInitialFactMemoryState(factKey as FactKey);
+          const updatedFact = updateFactMemoryStateWithAttempt(currentFact, {
+            timestamp: now,
+            userAnswer: -1,
+            correctAnswer: state.currentQuestion.correctAnswer,
+            isCorrect: false,
+            latencyMs,
+            usedHint: false,
+            wasShownStrategy: true,
+            isSkipped: true,
+          });
+
+          updatedFactMemoryMap = {
+            ...state.factMemoryMap,
+            [factKey]: updatedFact,
+          };
+
+          // Re-queue delayed review 4 questions later
+          delayedReviewQueue = [
+            ...delayedReviewQueue.filter((item) => item.factKey !== factKey),
+            { factKey: factKey as FactKey, dueAtCount: state.sessionAnswered + 4 },
+          ];
+        }
+
         set({
           isEvaluating: true,
           lastResult: 'skipped',
@@ -448,6 +604,8 @@ export const useQuizStore = create<QuizState>()(
           lastCorrectAnswer: state.currentQuestion.correctAnswer,
           showStrategy: true,
           streak: 0,
+          factMemoryMap: updatedFactMemoryMap,
+          delayedReviewQueue,
         });
       },
 
@@ -547,6 +705,55 @@ export const useQuizStore = create<QuizState>()(
             state.overallStats.totalTimeSpentSeconds + Math.round(responseTimeMs / 1000),
         };
 
+        // Fact-Level Memory Model Update
+        let factKey: FactKey | null = null;
+        if (state.currentQuestion.factKey) {
+          factKey = state.currentQuestion.factKey as FactKey;
+        } else if (state.activeModule === 'multiplication') {
+          factKey = `mul:${state.currentQuestion.operandA}:${state.currentQuestion.operandB}`;
+        } else if (state.activeModule === 'squares_cubes') {
+          factKey = state.currentQuestion.operator === '^3'
+            ? `cube:${state.currentQuestion.operandA}`
+            : `square:${state.currentQuestion.operandA}`;
+        }
+
+        let updatedFactMap = state.factMemoryMap;
+        let activeRepairCard: RepairCard | null = state.activeRepairCard;
+        let updatedDelayedQueue = state.delayedReviewQueue;
+
+        if (factKey) {
+          const existingFact = state.factMemoryMap[factKey] || createInitialFactMemoryState(factKey);
+          const errorType = !isCorrect
+            ? detectErrorPattern(factKey, userAnswer, state.currentQuestion.correctAnswer, responseTimeMs)
+            : undefined;
+
+          const factAttempt: FactAttempt = {
+            timestamp: Date.now(),
+            userAnswer,
+            correctAnswer: state.currentQuestion.correctAnswer,
+            isCorrect,
+            latencyMs: responseTimeMs,
+            usedHint: state.showStrategy,
+            wasShownStrategy: state.showStrategy || state.learningMode === 'learn',
+            errorType,
+          };
+
+          const updatedFact = updateFactMemoryStateWithAttempt(existingFact, factAttempt);
+          updatedFactMap = {
+            ...state.factMemoryMap,
+            [factKey]: updatedFact,
+          };
+
+          if (!isCorrect) {
+            const card = generateRepairCard(factKey, userAnswer, responseTimeMs);
+            activeRepairCard = card;
+            updatedDelayedQueue = [
+              ...state.delayedReviewQueue.filter((q) => q.factKey !== factKey),
+              { factKey, dueAtCount: state.sessionAnswered + 4 },
+            ];
+          }
+        }
+
         // Update Learner Model & Skill Estimate
         const activeDim = resolveActiveDimension(
           state.activeModule,
@@ -562,6 +769,9 @@ export const useQuizStore = create<QuizState>()(
           responseTimeMs,
           targetSeconds * 1000
         );
+
+        // Synchronize derived granular facts with high-level profile
+        const derivedSkills = deriveAggregateSkillsFromFacts(updatedFactMap);
 
         // Check for cognitive fatigue
         const consecutiveErrors = isCorrect ? 0 : state.learnerProfile.fatigueState.consecutiveErrors + 1;
@@ -602,6 +812,14 @@ export const useQuizStore = create<QuizState>()(
           }
         }
 
+        // Batch AI coach background evaluation (every 10 answers)
+        const nextBatchCount = state.batchAnswerCount + 1;
+        if (nextBatchCount >= 10 && state.aiCoachingEnabled && !state.isLoadingAiCoach) {
+          setTimeout(() => {
+            get().requestAICoachFeedback();
+          }, 100);
+        }
+
         set({
           isEvaluating: true,
           lastResult: isCorrect ? 'correct' : 'incorrect',
@@ -612,17 +830,22 @@ export const useQuizStore = create<QuizState>()(
           sessionResponseTimes: nextTimes,
           streak: newStreak,
           bestStreak: newBestStreak,
-          showStrategy: !isCorrect,
+          showStrategy: !isCorrect || state.learningMode === 'learn',
           progressMap: {
             ...state.progressMap,
             [progressKey]: updatedItem,
           },
+          factMemoryMap: updatedFactMap,
+          activeRepairCard,
+          delayedReviewQueue: updatedDelayedQueue,
+          batchAnswerCount: nextBatchCount >= 10 ? 0 : nextBatchCount,
           overallStats: newOverall,
           learnerProfile: {
             ...state.learnerProfile,
             updatedAt: Date.now(),
             skills: {
               ...state.learnerProfile.skills,
+              ...derivedSkills,
               [activeDim]: updatedSkill,
             },
             fatigueState: fatigue,
@@ -649,11 +872,11 @@ export const useQuizStore = create<QuizState>()(
           return;
         }
 
-        // If correct, advance automatically
+        // If correct, advance automatically (in learn mode give slight pause to review)
         if (isCorrect) {
           setTimeout(() => {
             get().loadNextQuestion();
-          }, 350);
+          }, state.learningMode === 'learn' ? 600 : 350);
         }
       },
 
@@ -669,6 +892,47 @@ export const useQuizStore = create<QuizState>()(
 
       toggleReducedMotion: () => {
         set((s) => ({ reducedMotion: !s.reducedMotion }));
+      },
+
+      setLearningMode: (mode: LearningMode) => {
+        set({ learningMode: mode });
+        get().loadNextQuestion();
+      },
+
+      dismissRepairCard: () => {
+        set({ activeRepairCard: null });
+      },
+
+      practiceFact: (factKey: FactKey, mode: LearningMode = 'learn') => {
+        const parsed = parseFactKey(factKey);
+        if (parsed.type === 'multiplication') {
+          set({
+            activeModule: 'multiplication',
+            activeTable: parsed.operandA,
+            learningMode: mode,
+            viewMode: 'practice',
+            activeRepairCard: null,
+          });
+        } else if (parsed.type === 'square' || parsed.type === 'cube') {
+          set({
+            activeModule: 'squares_cubes',
+            learningMode: mode,
+            viewMode: 'practice',
+            activeRepairCard: null,
+          });
+        }
+        const q = generateQuestionFromFact(factKey);
+        set({
+          currentQuestion: q,
+          inputBuffer: '',
+          questionStartTime: Date.now(),
+          isEvaluating: false,
+          lastResult: null,
+          lastAnswerSubmitted: null,
+          lastCorrectAnswer: null,
+          showStrategy: mode === 'learn',
+          isPaused: false,
+        });
       },
 
       toggleTimerVisibility: () => {
@@ -723,6 +987,12 @@ export const useQuizStore = create<QuizState>()(
       resetProgress: () => {
         set({
           progressMap: {},
+          factMemoryMap: {},
+          learningMode: 'recall',
+          activeRepairCard: null,
+          delayedReviewQueue: [],
+          recentAskedKeys: [],
+          batchAnswerCount: 0,
           overallStats: initialOverallStats,
           anzanStats: initialAnzanStats,
           streak: 0,
@@ -744,20 +1014,21 @@ export const useQuizStore = create<QuizState>()(
         set({
           activeAssessment: session,
           assessmentInputBuffer: '',
+          assessmentQuestionStartTime: Date.now(),
           viewMode: 'assessment',
         });
       },
 
       appendAssessmentDigit: (digit: string) => {
         const { assessmentInputBuffer, activeAssessment } = get();
-        if (!activeAssessment || activeAssessment.status !== 'in_progress') return;
+        if (!activeAssessment || activeAssessment.status !== 'in_progress' || activeAssessment.isPaused) return;
         if (assessmentInputBuffer.replace('-', '').length >= 8) return;
         set({ assessmentInputBuffer: assessmentInputBuffer + digit });
       },
 
       toggleAssessmentNegative: () => {
         const { assessmentInputBuffer, activeAssessment } = get();
-        if (!activeAssessment || activeAssessment.status !== 'in_progress') return;
+        if (!activeAssessment || activeAssessment.status !== 'in_progress' || activeAssessment.isPaused) return;
         if (assessmentInputBuffer.startsWith('-')) {
           set({ assessmentInputBuffer: assessmentInputBuffer.substring(1) });
         } else {
@@ -767,7 +1038,7 @@ export const useQuizStore = create<QuizState>()(
 
       backspaceAssessment: () => {
         const { assessmentInputBuffer, activeAssessment } = get();
-        if (!activeAssessment || activeAssessment.status !== 'in_progress') return;
+        if (!activeAssessment || activeAssessment.status !== 'in_progress' || activeAssessment.isPaused) return;
         set({ assessmentInputBuffer: assessmentInputBuffer.slice(0, -1) });
       },
 
@@ -776,8 +1047,8 @@ export const useQuizStore = create<QuizState>()(
       },
 
       submitAssessmentAnswer: () => {
-        const { activeAssessment, assessmentInputBuffer, learnerProfile } = get();
-        if (!activeAssessment || activeAssessment.status !== 'in_progress') return;
+        const { activeAssessment, assessmentInputBuffer, assessmentQuestionStartTime, learnerProfile, factMemoryMap } = get();
+        if (!activeAssessment || activeAssessment.status !== 'in_progress' || activeAssessment.isPaused) return;
 
         const trimmed = assessmentInputBuffer.trim();
         if (!trimmed || trimmed === '-') return;
@@ -785,7 +1056,8 @@ export const useQuizStore = create<QuizState>()(
         const val = parseInt(trimmed, 10);
         if (isNaN(val)) return;
 
-        const latencyMs = Math.max(200, Date.now() - activeAssessment.startedAt);
+        const now = Date.now();
+        const latencyMs = Math.max(200, now - (assessmentQuestionStartTime || now));
         const result = recordAssessmentAnswer(activeAssessment, val, latencyMs, learnerProfile);
 
         if (result.isCorrect) {
@@ -794,10 +1066,20 @@ export const useQuizStore = create<QuizState>()(
           soundEngine.playError();
         }
 
+        let mergedFactMemory = { ...factMemoryMap };
+        if (result.initialFactMemoryMap) {
+          mergedFactMemory = {
+            ...mergedFactMemory,
+            ...result.initialFactMemoryMap,
+          };
+        }
+
         set({
           activeAssessment: result.updatedSession,
           learnerProfile: result.updatedProfile,
           assessmentInputBuffer: '',
+          assessmentQuestionStartTime: Date.now(),
+          factMemoryMap: mergedFactMemory,
         });
 
         // Automatically generate daily plan once assessment completes
@@ -806,8 +1088,36 @@ export const useQuizStore = create<QuizState>()(
         }
       },
 
+      skipAssessmentQuestion: () => {
+        const { activeAssessment, learnerProfile, factMemoryMap } = get();
+        if (!activeAssessment || activeAssessment.status !== 'in_progress' || activeAssessment.isPaused) return;
+
+        soundEngine.playClick();
+        const result = recordAssessmentSkip(activeAssessment, learnerProfile);
+
+        let mergedFactMemory = { ...factMemoryMap };
+        if (result.initialFactMemoryMap) {
+          mergedFactMemory = {
+            ...mergedFactMemory,
+            ...result.initialFactMemoryMap,
+          };
+        }
+
+        set({
+          activeAssessment: result.updatedSession,
+          learnerProfile: result.updatedProfile,
+          assessmentInputBuffer: '',
+          assessmentQuestionStartTime: Date.now(),
+          factMemoryMap: mergedFactMemory,
+        });
+
+        if (result.isCompleted) {
+          get().generateDailyPlan();
+        }
+      },
+
       skipAssessment: () => {
-        const { activeAssessment, learnerProfile } = get();
+        const { activeAssessment } = get();
         if (!activeAssessment) return;
 
         const updatedSession: AssessmentSession = {
@@ -825,11 +1135,32 @@ export const useQuizStore = create<QuizState>()(
       },
 
       pauseAssessment: () => {
-        // Pauses assessment modal timer
+        const { activeAssessment } = get();
+        if (!activeAssessment || activeAssessment.status !== 'in_progress' || activeAssessment.isPaused) return;
+        set({
+          activeAssessment: {
+            ...activeAssessment,
+            isPaused: true,
+            pausedAt: Date.now(),
+          },
+        });
       },
 
       resumeAssessment: () => {
-        // Resumes assessment modal timer
+        const { activeAssessment, assessmentQuestionStartTime } = get();
+        if (!activeAssessment || !activeAssessment.isPaused) return;
+        const now = Date.now();
+        const pausedMs = activeAssessment.pausedAt ? now - activeAssessment.pausedAt : 0;
+        set({
+          activeAssessment: {
+            ...activeAssessment,
+            isPaused: false,
+            pausedAt: undefined,
+            totalPausedTimeMs: (activeAssessment.totalPausedTimeMs || 0) + pausedMs,
+          },
+          // Shift question start time forward by paused duration to keep latency accurate
+          assessmentQuestionStartTime: assessmentQuestionStartTime + pausedMs,
+        });
       },
 
       // -------------------------------------------------------------
@@ -974,16 +1305,33 @@ export const useQuizStore = create<QuizState>()(
       },
     }),
     {
-      name: 'mentalis_storage_v3',
-      version: 3,
-      storage: createJSONStorage(() =>
-        typeof window !== 'undefined' ? window.localStorage : ({} as Storage)
-      ),
+      name: 'mentalis_storage_v5',
+      version: 5,
+      storage: createJSONStorage(() => {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          return window.localStorage;
+        }
+        const memMap: Record<string, string> = {};
+        return {
+          getItem: (key: string) => memMap[key] || null,
+          setItem: (key: string, value: string) => {
+            memMap[key] = value;
+          },
+          removeItem: (key: string) => {
+            delete memMap[key];
+          },
+          clear: () => {
+            for (const k of Object.keys(memMap)) delete memMap[k];
+          },
+          key: (index: number) => Object.keys(memMap)[index] || null,
+          length: Object.keys(memMap).length,
+        } as Storage;
+      }),
       migrate: (persistedState: unknown, version: number) => {
         const old = (persistedState || {}) as Partial<QuizState>;
         const defaultProfile = createDefaultLearnerProfile();
 
-        // Migrate existing progress into learnerProfile if upgrading from v1/v2
+        // Migrate existing progress into learnerProfile if upgrading from earlier versions
         if (old.progressMap) {
           for (const [key, item] of Object.entries(old.progressMap)) {
             if (item.totalAttempts > 0) {
@@ -1021,9 +1369,28 @@ export const useQuizStore = create<QuizState>()(
           }
         }
 
+        // Migrate fact memory states with skip tracking and direct memory categorization
+        const migratedFactMemory: Record<string, FactMemoryState> = {};
+        if (old.factMemoryMap) {
+          for (const [key, fact] of Object.entries(old.factMemoryMap)) {
+            migratedFactMemory[key] = {
+              ...fact,
+              skipCount: fact.skipCount || 0,
+              lastSkipped: fact.lastSkipped || null,
+              isDirectMemory: fact.isDirectMemory ?? (fact.factType === 'multiplication' ? fact.operandA <= 12 && (fact.operandB || 1) <= 12 : true),
+            };
+          }
+        }
+
         return {
           ...old,
           progressMap: old.progressMap || {},
+          factMemoryMap: migratedFactMemory,
+          learningMode: old.learningMode || 'recall',
+          activeRepairCard: null,
+          delayedReviewQueue: [],
+          recentAskedKeys: [],
+          batchAnswerCount: 0,
           overallStats: {
             ...initialOverallStats,
             ...(old.overallStats || {}),
@@ -1044,6 +1411,7 @@ export const useQuizStore = create<QuizState>()(
           learnerProfile: old.learnerProfile || defaultProfile,
           activeAssessment: null,
           assessmentInputBuffer: '',
+          assessmentQuestionStartTime: 0,
           activeTrainingPlan: null,
           activeTrainingBlockIndex: 0,
           isPlanActive: false,
@@ -1054,6 +1422,8 @@ export const useQuizStore = create<QuizState>()(
       },
       partialize: (state) => ({
         progressMap: state.progressMap,
+        factMemoryMap: state.factMemoryMap,
+        learningMode: state.learningMode,
         overallStats: state.overallStats,
         anzanStats: state.anzanStats,
         soundEnabled: state.soundEnabled,

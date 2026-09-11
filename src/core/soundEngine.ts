@@ -147,6 +147,13 @@ class SoundEngine {
     osc.start(now);
     osc.stop(now + 0.035);
   }
+
+  /**
+   * Subtle neutral tap/click for UI actions and non-punitive skips
+   */
+  public playClick() {
+    this.playTick();
+  }
 }
 
 export const soundEngine = new SoundEngine();

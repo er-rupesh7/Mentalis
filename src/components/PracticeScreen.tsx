@@ -24,9 +24,13 @@ import {
   TrendingUp,
   Award,
   BookOpen,
+  Target,
+  AlertTriangle,
+  Brain,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ADD_SUB_LEVELS } from '../core/calcEngine';
+import { LearningMode } from '../core/types';
 
 interface PracticeScreenProps {
   onOpenTutorial?: () => void;
@@ -55,6 +59,11 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     sessionAnswered,
     sessionCorrect,
     sessionSummary,
+    learningMode,
+    activeRepairCard,
+    setLearningMode,
+    dismissRepairCard,
+    practiceFact,
     appendDigit,
     toggleNegative,
     backspace,
@@ -116,19 +125,30 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         }
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        if (showStrategy) {
+        if (activeRepairCard) {
+          dismissRepairCard();
+        } else if (showStrategy) {
           toggleStrategy(false);
         } else {
           clearBuffer();
         }
       } else if (e.key === ' ' || e.key === 'ArrowRight') {
-        if (isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped')) {
+        if (activeRepairCard) {
+          e.preventDefault();
+          dismissRepairCard();
+          loadNextQuestion();
+        } else if (isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped')) {
           e.preventDefault();
           loadNextQuestion();
         }
-      } else if (e.key.toLowerCase() === 'h' || e.key.toLowerCase() === 's') {
+      } else if (e.key.toLowerCase() === 'h') {
         e.preventDefault();
         toggleStrategy();
+      } else if (e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        if (!isEvaluating) {
+          skipQuestion();
+        }
       } else if (e.key.toLowerCase() === 'p') {
         e.preventDefault();
         if (isPaused) resumeSession();
@@ -147,8 +167,11 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
       loadNextQuestion,
       clearBuffer,
       toggleStrategy,
+      skipQuestion,
       resumeSession,
       pauseSession,
+      activeRepairCard,
+      dismissRepairCard,
     ]
   );
 
@@ -262,6 +285,46 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
       </div>
 
+      {/* 5 Focused Learning Modes Bar */}
+      <div className="w-full max-w-2xl mx-auto px-4 py-2 flex items-center justify-between gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/60 bg-slate-950/60">
+        <div className="flex items-center gap-1.5">
+          {(
+            [
+              { id: 'learn', label: 'Learn', icon: BookOpen, desc: 'Strategy Breakdown + Guided Practice' },
+              { id: 'recall', label: 'Recall', icon: Target, desc: 'Pure Retrieval Practice' },
+              { id: 'speed', label: 'Speed', icon: Zap, desc: 'Speed Fluency (<2s Goal)' },
+              { id: 'repair', label: 'Repair', icon: RotateCcw, desc: 'Target Confusions & Slips' },
+              { id: 'review', label: 'Review', icon: Clock, desc: 'Spaced Retrieval Due Facts' },
+            ] as const
+          ).map((m) => {
+            const Icon = m.icon;
+            const isActive = learningMode === m.id;
+            return (
+              <button
+                key={m.id}
+                onClick={() => setLearningMode(m.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                  isActive
+                    ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
+                    : 'bg-slate-900/90 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
+                }`}
+                title={m.desc}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{m.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {learningMode === 'speed' && (
+          <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-amber-400 font-bold shrink-0 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
+            <Zap className="w-3 h-3" />
+            <span>Target: &lt;{currentQuestion.targetTimeSeconds}s</span>
+          </div>
+        )}
+      </div>
+
       {/* Main Zen Drill Area */}
       <div className="flex-1 flex flex-col justify-center items-center px-4 py-4 max-w-md mx-auto w-full relative">
         {/* Pause Overlay */}
@@ -300,6 +363,97 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Remediation Repair Card Overlay */}
+        <AnimatePresence>
+          {activeRepairCard && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: -8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -8 }}
+              className="w-full mb-4 p-4 rounded-2xl bg-amber-950/50 border border-amber-500/40 shadow-xl backdrop-blur-md space-y-3"
+            >
+              <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300">
+                    <AlertTriangle className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-amber-200 uppercase tracking-wider font-mono">
+                      Remediation Repair: {activeRepairCard.prompt}
+                    </h4>
+                    <p className="text-[11px] text-amber-300/90 font-medium">
+                      {activeRepairCard.patternExplanation}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={dismissRepairCard}
+                  className="text-xs px-2.5 py-1 rounded-lg bg-amber-900/60 hover:bg-amber-800/80 text-amber-200 border border-amber-700/50 font-semibold"
+                >
+                  Dismiss
+                </button>
+              </div>
+
+              {/* Anchor & Contrast Fact Anchors */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+                {/* Anchor Fact */}
+                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-1">
+                  <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                    Anchor Fact
+                  </div>
+                  <div className="text-sm font-bold text-white">
+                    {activeRepairCard.anchorFact.prompt} = {activeRepairCard.anchorFact.correctAnswer}
+                  </div>
+                  <p className="text-[11px] text-slate-400 font-sans leading-tight">
+                    {activeRepairCard.anchorFact.relationship}
+                  </p>
+                </div>
+
+                {/* Contrast Fact */}
+                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-sky-500/30 space-y-1">
+                  <div className="text-[10px] text-sky-400 font-bold uppercase tracking-wider">
+                    Contrast Fact
+                  </div>
+                  <div className="text-sm font-bold text-white">
+                    {activeRepairCard.contrastFact.prompt} = {activeRepairCard.contrastFact.correctAnswer}
+                  </div>
+                  <p className="text-[11px] text-slate-400 font-sans leading-tight">
+                    {activeRepairCard.contrastFact.preventConfusionTip}
+                  </p>
+                </div>
+              </div>
+
+              {/* Footer row */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] text-amber-300/70 italic">
+                  Scheduled for delayed re-test in 4 items
+                </span>
+                <button
+                  onClick={() => {
+                    dismissRepairCard();
+                    loadNextQuestion();
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-amber-500/30"
+                >
+                  <span>Continue Drill (↵)</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Guided Learn Mode Preview Banner */}
+        {learningMode === 'learn' && !activeRepairCard && (
+          <div className="w-full mb-3 p-3 rounded-2xl bg-violet-950/40 border border-violet-500/30 text-xs text-violet-200 flex items-start gap-2.5">
+            <BookOpen className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold text-violet-300">Guided Learn Mode: </span>
+              <span>Study the strategy below and type the answer once you feel the accumulator pattern.</span>
+            </div>
+          </div>
+        )}
 
         {/* Arithmetic Card */}
         <motion.div
@@ -353,9 +507,24 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
             </AnimatePresence>
           </div>
 
-          {/* Correct / Incorrect Clear Comparison Pill */}
+          {/* Correct / Incorrect / Skipped Clear Comparison Pill */}
           <AnimatePresence>
-            {(lastResult === 'incorrect' || lastResult === 'skipped') && (
+            {lastResult === 'skipped' && (
+              <motion.div
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                className="mb-3 px-4 py-2 rounded-xl bg-sky-950/70 border border-sky-600/70 text-xs font-mono flex items-center gap-2 shadow-inner"
+              >
+                <BookOpen className="w-4 h-4 text-sky-400 shrink-0" />
+                <span className="text-slate-200">
+                  <span className="text-sky-300 font-bold">Marking this for learning.</span> Correct:{' '}
+                  <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
+                </span>
+              </motion.div>
+            )}
+
+            {lastResult === 'incorrect' && (
               <motion.div
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -364,8 +533,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               >
                 <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
                 <span className="text-slate-300">
-                  {lastResult === 'skipped' ? 'Skipped.' : `You entered: ${lastAnswerSubmitted}.`}{' '}
-                  Correct:{' '}
+                  You entered: {lastAnswerSubmitted}. Correct:{' '}
                   <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
                 </span>
               </motion.div>
@@ -488,9 +656,11 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
           <button
             onClick={skipQuestion}
             disabled={isEvaluating}
-            className="hover:text-slate-200 disabled:opacity-40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-colors disabled:opacity-40 font-medium"
+            title="Skip if you don't know this fact (Shortcut: S)"
           >
-            Skip Question
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span>Skip / I don’t know (S)</span>
           </button>
 
           {onOpenTutorial && (

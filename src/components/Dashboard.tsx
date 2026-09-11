@@ -27,6 +27,7 @@ import { calculateCPM, calculateUserRank, getBadges } from '../core/mastery';
 import { getRecommendedNextDrill, analyzeProgress } from '../core/adaptive';
 import { AICoachCard } from './AICoachCard';
 import { AICoachDrawer } from './AICoachDrawer';
+import { MyLearningPlan } from './MyLearningPlan';
 
 interface DashboardProps {
   onOpenTutorial: () => void;
@@ -184,33 +185,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
       </div>
 
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 space-y-8">
-        {/* Onboarding Diagnostic Assessment Callout (if not yet taken) */}
-        {!learnerProfile.baselineReport && (
-          <div className="p-5 rounded-3xl bg-gradient-to-r from-indigo-950/60 via-slate-900 to-violet-950/60 border border-indigo-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-indigo-500/30">
-                  Initial Calibration
-                </span>
-              </div>
-              <h3 className="text-base font-bold text-white">
-                Take the 10-Minute Cognitive Assessment
-              </h3>
-              <p className="text-xs text-slate-300 max-w-xl">
-                Benchmark your mental calculation ability across 16 curriculum dimensions to unlock personalized daily training plans and AI Coach guidance.
-              </p>
-            </div>
-            <button
-              onClick={startAssessment}
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition-all flex items-center justify-center gap-2 shrink-0"
-            >
-              <Brain className="w-4 h-4" />
-              <span>Start Assessment</span>
-            </button>
-          </div>
-        )}
+        {/* Prominent My Learning Plan Section */}
+        <MyLearningPlan />
 
-        {/* AI Personalized Daily Plan Card */}
+        {/* AI Pedagogical Coach Card */}
         <AICoachCard onOpenCoachDrawer={() => setIsCoachDrawerOpen(true)} />
 
         {/* Today's Recommendation & Resume Card */}

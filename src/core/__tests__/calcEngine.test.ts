@@ -112,11 +112,11 @@ describe('calcEngine: Curriculum & Arithmetic Verification', () => {
       }
     });
 
-    it('clamps random multiplier to 2-12', () => {
+    it('clamps random multiplier to 1-20', () => {
       for (let i = 0; i < 50; i++) {
         const q = generateMultiplicationQuestion();
-        expect(q.operandB).toBeGreaterThanOrEqual(2);
-        expect(q.operandB).toBeLessThanOrEqual(12);
+        expect(q.operandB).toBeGreaterThanOrEqual(1);
+        expect(q.operandB).toBeLessThanOrEqual(20);
         expect(q.correctAnswer).toBe(q.operandA * q.operandB);
       }
     });

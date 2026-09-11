@@ -79,6 +79,9 @@ export interface AssessmentResponse {
   isCorrect: boolean;
   latencyMs: number;
   rapidGuess: boolean;
+  isSkipped?: boolean;
+  factKey?: string;
+  errorPattern?: string;
 }
 
 export interface BaselineStrengthOrGap {
@@ -92,10 +95,16 @@ export interface BaselineReport {
   assessedAt: number;
   overallTheta: number;
   overallTier: string;
+  archetype?: string;
   strengths: BaselineStrengthOrGap[];
   priorityGaps: BaselineStrengthOrGap[];
+  fastButCarelessFacts?: string[];
+  accurateButSlowFacts?: string[];
+  skippedFacts?: string[];
+  factsNeedingStrategy?: string[];
   recommendedDailyPaceMinutes: number;
   firstWeekRoadmap: string[];
+  summaryMessage?: string;
 }
 
 export interface AssessmentSession {
@@ -108,6 +117,10 @@ export interface AssessmentSession {
   questions: Question[];
   responses: AssessmentResponse[];
   earlyStopped: boolean;
+  isPaused?: boolean;
+  pausedAt?: number;
+  totalPausedTimeMs?: number;
+  targetDurationMinutes?: number;
 }
 
 export type TrainingBlockType =
@@ -144,6 +157,21 @@ export interface TrainingPlan {
 
 export interface CoachingInsight {
   summary: string;
+  learner_summary?: string;
+  priority_fact_families?: string[];
+  recommended_learning_mode?: string;
+  recommended_strategies?: {
+    strategy_id: string;
+    applies_to: string[];
+    reason: string;
+  }[];
+  next_queue_policy?: {
+    focus_ratio: number;
+    review_ratio: number;
+    interleave_ratio: number;
+    difficulty_adjustment: 'step_down' | 'hold' | 'step_up';
+  };
+  coach_message?: string;
   encouragement: string;
   observedStrengths: string[];
   priorityGaps: string[];

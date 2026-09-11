@@ -30,7 +30,10 @@ export interface Question {
   targetTimeSeconds: number;
   difficultyRating: number; // 1 - 10
   subTrack?: string;
+  factKey?: string;
 }
+
+export type LearningMode = 'learn' | 'recall' | 'speed' | 'repair' | 'review';
 
 export interface LevelDefinition {
   id: string;
@@ -153,5 +156,5 @@ export interface Badge {
 
 export type TableChartTab = 'mul' | 'squares' | 'cubes' | 'sqrt' | 'cbrt';
 
-export type ViewMode = 'dashboard' | 'practice' | 'anzan' | 'heatmap' | 'table_chart' | 'assessment' | 'profile';
+export type ViewMode = 'dashboard' | 'practice' | 'anzan' | 'heatmap' | 'table_chart' | 'assessment' | 'profile' | 'memory_map';
 

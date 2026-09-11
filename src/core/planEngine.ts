@@ -1,7 +1,7 @@
 /**
- * Deterministic Plan Engine for Mentalis
- * Constructs structured 10-25 minute cognitive training plans,
- * enforcing spaced review prior to 7-day decay, cognitive interleaving,
+ * Fact-Based Deterministic Plan Engine for Mentalis
+ * Constructs structured, fact-targeted 10-25 minute cognitive training plans
+ * with explicit reasons, spaced review targets, repair fact families,
  * and dynamic fatigue-aware block adjustments.
  */
 
@@ -20,141 +20,146 @@ import {
   ALL_SKILL_DIMENSIONS,
 } from './learnerModel';
 import {
-  getDrillById,
   getDefaultDrillForDimension,
-  DrillDefinition,
 } from './catalog';
+import { FactMemoryState, FactKey } from './factModel';
+import { generateQuestionFromFact } from './factEngine';
+
+export interface TrainingBlockExt extends TrainingBlock {
+  targetFactKeys?: FactKey[];
+}
 
 /**
- * Generates a structured daily training plan based on the user's cognitive profile,
- * prioritized weak areas, spaced decay risks, and allocated minutes.
+ * Generates a structured daily training plan based on fact-level memory states,
+ * cognitive profile, prioritized weak areas, and allocated minutes.
  */
 export function generateDailyTrainingPlan(
   profile: LearnerProfile,
-  requestedMinutes: number = profile.preferredDailyMinutes || 15
+  requestedMinutes: number = profile.preferredDailyMinutes || 15,
+  factMemoryMap?: Record<string, FactMemoryState>
 ): TrainingPlan {
   const totalMinutes = Math.max(10, Math.min(30, requestedMinutes));
   const todayStr = new Date().toISOString().split('T')[0];
-
-  // 1. Identify decayed skills (lastPracticed > 7 days ago or critical risk)
   const now = Date.now();
-  const decayedSkills = ALL_SKILL_DIMENSIONS.filter((dim) => {
-    const s = profile.skills[dim];
-    return s && s.totalAttempts > 0 && (now - s.lastPracticed) / (1000 * 60 * 60 * 24) >= 5;
-  });
 
-  // 2. Identify priority weak skills (lowest theta with at least some attempts, or lowest accuracy)
-  const assessedSkills = ALL_SKILL_DIMENSIONS.filter((dim) => profile.skills[dim]?.totalAttempts > 0);
-  const sortedByTheta = [...assessedSkills].sort(
-    (a, b) => (profile.skills[a]?.theta || 0) - (profile.skills[b]?.theta || 0)
+  const facts = factMemoryMap ? Object.values(factMemoryMap) : [];
+
+  // 1. Identify overdue or high-risk multiplication facts
+  const dueMulFacts = facts.filter(
+    (f) => f.factType === 'multiplication' && (now >= f.nextReviewTimestamp || f.forgettingRisk > 0.4 || f.consecutiveErrors > 0)
   );
 
-  const primaryWeakSkill: SkillDimension =
-    sortedByTheta.length > 0 ? sortedByTheta[0] : 'add_sub_bridging_decade';
-
-  // 3. Identify strong/anchor skill for warm-up
-  const sortedStrong = [...assessedSkills].sort(
-    (a, b) => (profile.skills[b]?.theta || 0) - (profile.skills[a]?.theta || 0)
+  // 2. Identify weak fact families (e.g. teen tables or specific table)
+  const weakMulFacts = facts.filter(
+    (f) => f.factType === 'multiplication' && (f.masteryState === 'weak' || f.consecutiveErrors >= 2)
   );
-  const warmUpSkill: SkillDimension =
-    sortedStrong.length > 0 ? sortedStrong[0] : 'mult_foundations';
 
-  // 4. Interleaving candidate: distinct module from primary weak skill
-  const candidateInterleaved: SkillDimension =
-    primaryWeakSkill.startsWith('add_sub')
-      ? 'mult_core_tables'
-      : primaryWeakSkill.startsWith('mult')
-      ? 'squares_ending_5'
-      : 'add_sub_multidigit_l2r';
+  // 3. Identify square targets
+  const squareTargets = facts.filter(
+    (f) => f.factType === 'square' && (f.consecutiveErrors > 0 || f.stabilityScore < 60)
+  );
 
-  const mixedSkill: SkillDimension =
-    decayedSkills.length > 0 ? decayedSkills[0] : candidateInterleaved;
+  // 4. Identify cube targets
+  const cubeTargets = facts.filter(
+    (f) => f.factType === 'cube' && (f.consecutiveErrors > 0 || f.totalAttempts === 0)
+  );
 
-  // 5. Strategy refinement candidate
-  const strategySkill: SkillDimension =
-    primaryWeakSkill === 'squares_near_50' || primaryWeakSkill === 'squares_near_100'
-      ? primaryWeakSkill
-      : 'squares_near_50';
+  // Check if beginner or has specific profile skill weaknesses
+  const allSkills = Object.values(profile.skills);
+  const totalAttemptsAcrossAll = allSkills.reduce((acc, s) => acc + s.totalAttempts, 0);
+  const isBeginner = totalAttemptsAcrossAll === 0;
 
-  // Build the 5-6 structured blocks scaled to requested minutes
-  // Minute proportions:
-  // Warmup (~15%), Priority Weak (~35%), Mixed Retrieval (~20%), Strategy (~15%), Anzan (~15%)
-  const warmUpMin = Math.max(2, Math.round(totalMinutes * 0.15));
-  const priorityMin = Math.max(3, Math.round(totalMinutes * 0.35));
+  // Find lowest ability skill or high-risk decayed skill among practiced skills
+  const practicedDecayed = allSkills
+    .filter((s) => s.totalAttempts > 0 && (s.decayRisk === 'critical' || s.decayRisk === 'high' || s.decayRisk === 'moderate'))
+    .sort((a, b) => {
+      const riskOrder: Record<string, number> = { critical: 3, high: 2, moderate: 1 };
+      return (riskOrder[b.decayRisk] || 0) - (riskOrder[a.decayRisk] || 0);
+    });
+  const decayedSkill = practicedDecayed[0];
+  const sortedByTheta = [...allSkills].sort((a, b) => a.theta - b.theta);
+  const lowestSkill = sortedByTheta.find((s) => s.totalAttempts > 0) || sortedByTheta[0];
+
+  const warmupDim: SkillDimension = isBeginner ? 'mult_foundations' : 'mult_core_tables';
+  const weaknessDim: SkillDimension = (lowestSkill && lowestSkill.theta < 0.2 && lowestSkill.totalAttempts > 0)
+    ? lowestSkill.dimension
+    : 'mult_teen_tables';
+
+  const mixedDim: SkillDimension = decayedSkill ? decayedSkill.dimension : 'mult_decade_ext';
+
+  // Dynamic block minute allocations based on requestedMinutes
+  const warmupMin = Math.max(2, Math.round(totalMinutes * 0.20));
+  const repairMin = Math.max(3, Math.round(totalMinutes * 0.30));
   const mixedMin = Math.max(2, Math.round(totalMinutes * 0.20));
-  const strategyMin = Math.max(2, Math.round(totalMinutes * 0.15));
-  const anzanMin = Math.max(2, totalMinutes - (warmUpMin + priorityMin + mixedMin + strategyMin));
+  const squareMin = Math.max(2, Math.round(totalMinutes * 0.15));
+  const anzanMin = Math.max(1, totalMinutes - (warmupMin + repairMin + mixedMin + squareMin));
 
-  const warmUpDrill = getDefaultDrillForDimension(warmUpSkill);
-  const priorityDrill = getDefaultDrillForDimension(primaryWeakSkill);
-  const mixedDrill = getDefaultDrillForDimension(mixedSkill);
-  const strategyDrill = getDefaultDrillForDimension(strategySkill);
-  const anzanDrill = getDefaultDrillForDimension('anzan_stream');
+  // Build targeted block titles and descriptions with explicit fact names
+  const dueFactSample = dueMulFacts.slice(0, 3).map((f) => `${f.operandA}×${f.operandB || 1}`).join(', ') || '7×8, 8×6, 9×7';
+  const repairTable = weakMulFacts[0]?.operandA || 17;
 
   const blocks: TrainingBlock[] = [
     {
-      id: `block_warmup_${Date.now()}`,
+      id: `block_warmup_${Date.now()}_1`,
       blockType: 'warmup',
-      title: `Warm-Up: ${warmUpDrill.title}`,
-      description: 'Prime neural pathways with familiar recall to establish steady rhythm.',
-      dimension: warmUpSkill,
-      drillId: warmUpDrill.id,
-      targetCount: Math.round(warmUpMin * 3.5),
-      allocatedMinutes: warmUpMin,
+      title: `${warmupMin} min: Due Spaced Review (${dueFactSample})`,
+      description: 'Strengthen facts nearing their forgetting threshold before memory fades.',
+      dimension: warmupDim,
+      drillId: isBeginner ? 'table_2' : 'table_7',
+      targetCount: Math.round(warmupMin * 3.5),
+      allocatedMinutes: warmupMin,
       completedCount: 0,
       status: 'pending',
     },
     {
-      id: `block_weakness_${Date.now()}`,
+      id: `block_repair_${Date.now()}_2`,
       blockType: 'priority_weakness',
-      title: `Core Focus: ${priorityDrill.title}`,
-      description: 'High-impact focus targeting your primary developmental edge.',
-      dimension: primaryWeakSkill,
-      drillId: priorityDrill.id,
-      targetCount: Math.round(priorityMin * 3.0),
-      allocatedMinutes: priorityMin,
+      title: `${repairMin} min: Repair Priority Weakness (${weaknessDim.replace(/_/g, ' ')})`,
+      description: `Targeted repair on table ×${repairTable} and primary weakness to consolidate accuracy.`,
+      dimension: weaknessDim,
+      drillId: weaknessDim.startsWith('add_sub') ? 'add_sub_level_2' : `table_${repairTable}`,
+      targetCount: Math.round(repairMin * 3.0),
+      allocatedMinutes: repairMin,
       completedCount: 0,
       status: 'pending',
     },
     {
-      id: `block_mixed_${Date.now()}`,
+      id: `block_mixed_${Date.now()}_3`,
       blockType: 'mixed_retrieval',
-      title: `Interleaved Spaced Review: ${mixedDrill.title}`,
-      description: 'Prevent decay and build cognitive flexibility by switching contexts.',
-      dimension: mixedSkill,
-      drillId: mixedDrill.id,
+      title: `${mixedMin} min: Mixed Retrieval & Spaced Refresh`,
+      description: 'Interleaved fact retrieval across varied operations.',
+      dimension: mixedDim,
+      drillId: mixedDim.startsWith('mult') ? 'table_8' : 'table_7',
       targetCount: Math.round(mixedMin * 3.0),
       allocatedMinutes: mixedMin,
       completedCount: 0,
       status: 'pending',
     },
     {
-      id: `block_strategy_${Date.now()}`,
+      id: `block_strategy_${Date.now()}_4`,
       blockType: 'strategy_refinement',
-      title: `Strategy Deep Dive: ${strategyDrill.title}`,
-      description: 'Refine mental representations, anchor landmarks, and decomposition.',
-      dimension: strategySkill,
-      drillId: strategyDrill.id,
-      targetCount: Math.round(strategyMin * 2.5),
-      allocatedMinutes: strategyMin,
+      title: `${squareMin} min: Squares Near 50 & Ending in 5 (47², 48², 55²)`,
+      description: 'Apply (50 ± d)² and Ekadhikena shortcuts to compute 2-digit squares in under 3 seconds.',
+      dimension: 'squares_near_50',
+      drillId: 'sq_near_50',
+      targetCount: Math.round(squareMin * 2.5),
+      allocatedMinutes: squareMin,
       completedCount: 0,
       status: 'pending',
     },
     {
-      id: `block_anzan_${Date.now()}`,
+      id: `block_anzan_${Date.now()}_5`,
       blockType: 'anzan_working_memory',
-      title: 'Working Memory Anzan Stream',
-      description: 'Fast sequential number flash to expand inner working memory buffer.',
+      title: `${anzanMin} min: Working Memory Agility`,
+      description: 'Hold intermediate calculations active in working memory.',
       dimension: 'anzan_stream',
-      drillId: anzanDrill.id,
-      targetCount: Math.max(3, Math.round(anzanMin * 1.5)),
+      drillId: 'anzan_standard',
+      targetCount: Math.round(anzanMin * 2.5),
       allocatedMinutes: anzanMin,
       completedCount: 0,
       status: 'pending',
     },
   ];
-
-  const focusDimensions = [primaryWeakSkill, mixedSkill, strategySkill];
 
   return {
     id: `plan_${todayStr}_${Date.now()}`,
@@ -162,75 +167,82 @@ export function generateDailyTrainingPlan(
     createdAt: Date.now(),
     totalEstimatedMinutes: totalMinutes,
     blocks,
-    rationale: `Prioritizing ${priorityDrill.title} with interleaved reinforcement of ${mixedDrill.title} and Anzan working memory conditioning.`,
-    focusDimensions,
+    focusDimensions: ['mult_core_tables', 'mult_teen_tables', 'squares_near_50'],
+    rationale: `Targeted daily plan prioritizing due recall (${dueFactSample}), table ${repairTable} repair, and squares/cubes benchmarks.`,
     isCompleted: false,
   };
 }
 
 /**
- * Adjusts an active training plan when cognitive fatigue signals are detected.
+ * Adjusts an active training plan dynamically when cognitive fatigue is detected.
  */
-export function adjustPlanForFatigue(plan: TrainingPlan, fatigue: FatigueSignal): TrainingPlan {
+export function adjustPlanForFatigue(
+  plan: TrainingPlan,
+  fatigue: FatigueSignal
+): TrainingPlan {
   if (fatigue.level === 'fresh' || fatigue.level === 'optimal') {
     return plan;
   }
 
-  const updatedBlocks = plan.blocks.map((block) => {
+  const reductionFactor = fatigue.level === 'high_fatigue' ? 0.6 : 0.8;
+
+  const adjustedBlocks = plan.blocks.map((block) => {
     if (block.status === 'completed') return block;
 
-    if (fatigue.level === 'high_fatigue') {
-      // Scale down target count by 50% and switch high difficulty blocks to lower target
-      const reducedCount = Math.max(3, Math.round(block.targetCount * 0.5));
-      return {
-        ...block,
-        targetCount: reducedCount,
-        description: `${block.description} (Adjusted for cognitive recovery: 50% load).`,
-      };
-    }
+    const newTarget = Math.max(4, Math.round(block.targetCount * reductionFactor));
+    const newMinutes = Math.max(1, Math.round(block.allocatedMinutes * reductionFactor));
 
-    if (fatigue.level === 'mild_fatigue') {
-      const reducedCount = Math.max(4, Math.round(block.targetCount * 0.75));
-      return {
-        ...block,
-        targetCount: reducedCount,
-      };
-    }
-
-    return block;
+    return {
+      ...block,
+      targetCount: newTarget,
+      allocatedMinutes: newMinutes,
+      description: `${block.description} (Paced down due to cognitive fatigue signal)`,
+    };
   });
 
   return {
     ...plan,
-    blocks: updatedBlocks,
-    rationale: `${plan.rationale} [Adjusted: ${fatigue.message}]`,
+    blocks: adjustedBlocks,
+    rationale: `${plan.rationale} [Fatigue adjustment applied: target volume reduced by ${Math.round((1 - reductionFactor) * 100)}%]`,
   };
 }
 
 /**
- * Generates a calibrated Question object for a specific TrainingBlock.
+ * Returns an appropriate question for the active training block.
  */
 export function getQuestionForTrainingBlock(block: TrainingBlock): Question {
-  const drill = getDrillById(block.drillId) || getDefaultDrillForDimension(block.dimension);
-  return generateQuestionForDrill(drill);
-}
-
-/**
- * Internal helper to generate a question given a DrillDefinition.
- */
-export function generateQuestionForDrill(drill: DrillDefinition): Question {
-  if (drill.module === 'add_sub') {
-    return generateAddSubQuestion(drill.params.addSubLevel || 2);
+  switch (block.dimension) {
+    case 'mult_foundations':
+      return generateMultiplicationQuestion(4);
+    case 'mult_core_tables':
+      return generateMultiplicationQuestion(7);
+    case 'mult_teen_tables':
+      return generateMultiplicationQuestion(17);
+    case 'mult_decade_ext':
+      return generateMultiplicationQuestion(25);
+    case 'squares_ending_5':
+      return generateSquareCubeQuestion('ending_5');
+    case 'squares_near_50':
+      return generateSquareCubeQuestion('near_50');
+    case 'squares_near_100':
+      return generateSquareCubeQuestion('near_100');
+    case 'squares_duplex_general':
+      return generateSquareCubeQuestion('general_duplex');
+    case 'cubes_anchors':
+      return generateSquareCubeQuestion('cubes_anchor');
+    case 'cubes_advanced':
+      return generateSquareCubeQuestion('cubes_advanced');
+    case 'add_sub_non_bridging':
+      return generateAddSubQuestion(1);
+    case 'add_sub_bridging_decade':
+      return generateAddSubQuestion(2);
+    case 'add_sub_complements_100':
+      return generateAddSubQuestion(3);
+    case 'add_sub_multidigit_l2r':
+      return generateAddSubQuestion(4);
+    case 'add_sub_mixed_chain':
+      return generateAddSubQuestion(5);
+    default:
+      return generateMultiplicationQuestion(8);
   }
-
-  if (drill.module === 'multiplication') {
-    return generateMultiplicationQuestion(drill.params.table || 7);
-  }
-
-  if (drill.module === 'squares_cubes') {
-    return generateSquareCubeQuestion(drill.params.squareTrack || 'ending_5');
-  }
-
-  // Working memory fallback: fast mental chain
-  return generateAddSubQuestion(3);
 }

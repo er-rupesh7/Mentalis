@@ -18,9 +18,16 @@ import {
   Layers,
   BookOpen,
   ArrowUpDown,
+  Eye,
+  EyeOff,
+  Target,
+  RotateCcw,
+  Brain,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
+import { FactKey, formatFactKey } from '../core/factModel';
+import { getBestStrategyForFact } from '../core/strategyCatalog';
 import {
   getMultiplicationTable,
   getSquaresTable,
@@ -42,6 +49,8 @@ export const TableChart: React.FC = () => {
     setActiveTable,
     setActiveSquareTrack,
     startSession,
+    factMemoryMap,
+    practiceFact,
   } = useQuizStore();
 
   // Local state for tabs & filters
@@ -50,6 +59,11 @@ export const TableChart: React.FC = () => {
   const [mulViewMode, setMulViewMode] = useState<'single' | 'grid'>('single');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  // Active Learning & Self-Test States
+  const [hideAnswers, setHideAnswers] = useState<boolean>(false);
+  const [revealedIds, setRevealedIds] = useState<Record<string, boolean>>({});
+  const [showTableStrategy, setShowTableStrategy] = useState<boolean>(false);
 
   // Range filters for other tables
   const [generalRange, setGeneralRange] = useState<'all' | '1-25' | '26-50' | '51-75' | '76-100'>('all');
@@ -301,13 +315,29 @@ export const TableChart: React.FC = () => {
                 </div>
 
                 {/* View Mode & Actions */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setHideAnswers(!hideAnswers);
+                      setRevealedIds({});
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                      hideAnswers
+                        ? 'bg-violet-950/60 text-violet-300 border-violet-500/50 shadow-sm'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                    }`}
+                    title="Hide answers for active recall practice"
+                  >
+                    {hideAnswers ? <EyeOff className="w-3.5 h-3.5 text-violet-400" /> : <Eye className="w-3.5 h-3.5" />}
+                    <span>{hideAnswers ? 'Answers Hidden' : 'Self-Test Mode'}</span>
+                  </button>
+
                   <button
                     onClick={() => setMulViewMode(mulViewMode === 'single' ? 'grid' : 'single')}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
                   >
                     <Grid className="w-3.5 h-3.5 text-violet-400" />
-                    <span>{mulViewMode === 'single' ? 'View All 20 Grid' : 'Focused Card View'}</span>
+                    <span>{mulViewMode === 'single' ? 'All 20 Grid' : 'Card View'}</span>
                   </button>
 
                   <button
@@ -315,7 +345,7 @@ export const TableChart: React.FC = () => {
                     className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-600/20 transition-all"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Practice Table {selectedMulTable}</span>
+                    <span>Drill Table {selectedMulTable}</span>
                   </button>
                 </div>
               </div>
@@ -386,6 +416,18 @@ export const TableChart: React.FC = () => {
 
                   <div className="flex items-center gap-2">
                     <button
+                      onClick={() => setShowTableStrategy(!showTableStrategy)}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                        showTableStrategy
+                          ? 'bg-violet-600 text-white border-violet-500'
+                          : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>Strategy</span>
+                    </button>
+
+                    <button
                       onClick={() => {
                         const text = mulTableMultiples
                           .map((m) => `${selectedMulTable} × ${m.multiplier} = ${m.result}`)
@@ -417,6 +459,34 @@ export const TableChart: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Collapsible Strategy Guide for Current Table */}
+                <AnimatePresence>
+                  {showTableStrategy && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="p-4 rounded-2xl bg-violet-950/40 border border-violet-500/30 space-y-2 overflow-hidden text-xs"
+                    >
+                      {(() => {
+                        const sampleKey = formatFactKey('multiplication', selectedMulTable, 6);
+                        const strat = getBestStrategyForFact(sampleKey);
+                        const ex = strat.generateWorkedExample(selectedMulTable, 6);
+                        return (
+                          <div>
+                            <div className="flex items-center justify-between font-bold text-violet-200">
+                              <span className="text-sm">Strategy: {strat.name}</span>
+                              <span className="font-mono text-emerald-400">e.g. {selectedMulTable} × 6 = {selectedMulTable * 6}</span>
+                            </div>
+                            <p className="text-slate-300 mt-1">{strat.mentalScript}</p>
+                            <p className="text-amber-300/90 font-mono mt-1">💡 {ex.mentalTip}</p>
+                          </div>
+                        );
+                      })()}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 {/* Multiples Grid: 2 Columns (1-10 on Left, 11-20 on Right) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Column 1: 1 to 10 */}
@@ -428,6 +498,10 @@ export const TableChart: React.FC = () => {
                     <div className="space-y-1.5">
                       {mulTableMultiples.slice(0, 10).map((item) => {
                         const isDecade = item.multiplier === 10;
+                        const factKey = formatFactKey('multiplication', selectedMulTable, item.multiplier);
+                        const isRevealed = !hideAnswers || revealedIds[factKey];
+                        const factState = factMemoryMap[factKey];
+
                         return (
                           <div
                             key={item.multiplier}
@@ -448,14 +522,41 @@ export const TableChart: React.FC = () => {
                               <span className="text-slate-500">=</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-base font-extrabold tracking-tight text-white">
-                                {item.result.toLocaleString()}
-                              </span>
-                              {isDecade && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 uppercase">
-                                  ×10 Milestone
+                              {hideAnswers && !isRevealed ? (
+                                <button
+                                  onClick={() =>
+                                    setRevealedIds((prev) => ({ ...prev, [factKey]: true }))
+                                  }
+                                  className="font-mono text-xs font-bold px-3 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-violet-300 border border-slate-700"
+                                >
+                                  ?
+                                </button>
+                              ) : (
+                                <span className="font-mono text-base font-extrabold tracking-tight text-white">
+                                  {item.result.toLocaleString()}
                                 </span>
                               )}
+
+                              {isDecade && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 uppercase">
+                                  ×10
+                                </span>
+                              )}
+
+                              {factState && factState.masteryState === 'mastered' && (
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" title="Mastered Fact" />
+                              )}
+                              {factState && factState.consecutiveErrors > 0 && (
+                                <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" title="Needs Repair" />
+                              )}
+
+                              <button
+                                onClick={() => practiceFact(factKey, 'recall')}
+                                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-violet-300 transition-colors"
+                                title="Drill this fact"
+                              >
+                                <Play className="w-3 h-3 fill-current" />
+                              </button>
                             </div>
                           </div>
                         );
@@ -472,6 +573,10 @@ export const TableChart: React.FC = () => {
                     <div className="space-y-1.5">
                       {mulTableMultiples.slice(10, 20).map((item) => {
                         const isTwenty = item.multiplier === 20;
+                        const factKey = formatFactKey('multiplication', selectedMulTable, item.multiplier);
+                        const isRevealed = !hideAnswers || revealedIds[factKey];
+                        const factState = factMemoryMap[factKey];
+
                         return (
                           <div
                             key={item.multiplier}
@@ -492,14 +597,41 @@ export const TableChart: React.FC = () => {
                               <span className="text-slate-500">=</span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <span className="font-mono text-base font-extrabold tracking-tight text-white">
-                                {item.result.toLocaleString()}
-                              </span>
-                              {isTwenty && (
-                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 uppercase">
-                                  ×20 Cap
+                              {hideAnswers && !isRevealed ? (
+                                <button
+                                  onClick={() =>
+                                    setRevealedIds((prev) => ({ ...prev, [factKey]: true }))
+                                  }
+                                  className="font-mono text-xs font-bold px-3 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-violet-300 border border-slate-700"
+                                >
+                                  ?
+                                </button>
+                              ) : (
+                                <span className="font-mono text-base font-extrabold tracking-tight text-white">
+                                  {item.result.toLocaleString()}
                                 </span>
                               )}
+
+                              {isTwenty && (
+                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-400/20 text-emerald-300 uppercase">
+                                  ×20
+                                </span>
+                              )}
+
+                              {factState && factState.masteryState === 'mastered' && (
+                                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" title="Mastered Fact" />
+                              )}
+                              {factState && factState.consecutiveErrors > 0 && (
+                                <span className="w-2 h-2 rounded-full bg-rose-400 shrink-0" title="Needs Repair" />
+                              )}
+
+                              <button
+                                onClick={() => practiceFact(factKey, 'recall')}
+                                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-violet-300 transition-colors"
+                                title="Drill this fact"
+                              >
+                                <Play className="w-3 h-3 fill-current" />
+                              </button>
                             </div>
                           </div>
                         );
@@ -601,6 +733,22 @@ export const TableChart: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setHideAnswers(!hideAnswers);
+                    setRevealedIds({});
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                    hideAnswers
+                      ? 'bg-violet-950/60 text-violet-300 border-violet-500/50'
+                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border-slate-800'
+                  }`}
+                  title="Hide squares for self-test active recall"
+                >
+                  {hideAnswers ? <EyeOff className="w-3.5 h-3.5 text-violet-400" /> : <Eye className="w-3.5 h-3.5" />}
+                  <span>{hideAnswers ? 'Hidden' : 'Self-Test'}</span>
+                </button>
+
                 <span className="text-xs text-slate-400 font-mono">
                   Showing {filteredSquares.length} of 100
                 </span>
@@ -616,61 +764,91 @@ export const TableChart: React.FC = () => {
 
             {/* Squares Grid List */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {filteredSquares.map((item) => (
-                <div
-                  key={item.n}
-                  className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
-                    item.isEndingIn5
-                      ? 'bg-amber-500/5 border-amber-500/30'
-                      : item.isDecade
-                      ? 'bg-indigo-500/5 border-indigo-500/30'
-                      : 'bg-slate-900 border-slate-800/80 hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 font-mono">
-                      <span className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center font-bold text-xs text-slate-300 border border-slate-800">
-                        {item.n}
-                      </span>
-                      <span className="text-slate-500 font-sans text-xs">² =</span>
+              {filteredSquares.map((item) => {
+                const factKey = formatFactKey('square', item.n);
+                const isRevealed = !hideAnswers || revealedIds[factKey];
+                const factState = factMemoryMap[factKey];
+
+                return (
+                  <div
+                    key={item.n}
+                    className={`p-3.5 rounded-2xl border transition-all flex flex-col justify-between ${
+                      item.isEndingIn5
+                        ? 'bg-amber-500/5 border-amber-500/30'
+                        : item.isDecade
+                        ? 'bg-indigo-500/5 border-indigo-500/30'
+                        : 'bg-slate-900 border-slate-800/80 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 font-mono">
+                        <span className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center font-bold text-xs text-slate-300 border border-slate-800">
+                          {item.n}
+                        </span>
+                        <span className="text-slate-500 font-sans text-xs">² =</span>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        {factState && factState.masteryState === 'mastered' && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" title="Mastered Fact" />
+                        )}
+                        <button
+                          onClick={() => practiceFact(factKey, 'recall')}
+                          className="p-1 rounded-md bg-slate-800 hover:bg-violet-600 text-slate-400 hover:text-white transition-colors"
+                          title="Drill this square"
+                        >
+                          <Play className="w-3 h-3 fill-current" />
+                        </button>
+                        <button
+                          onClick={() => handleCopy(`${item.n}² = ${item.square}`, `sq_${item.n}`)}
+                          className="text-slate-500 hover:text-slate-300 p-1"
+                          title="Copy"
+                        >
+                          {copiedId === `sq_${item.n}` ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => handleCopy(`${item.n}² = ${item.square}`, `sq_${item.n}`)}
-                      className="text-slate-500 hover:text-slate-300 p-1"
-                      title="Copy"
-                    >
-                      {copiedId === `sq_${item.n}` ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <div className="flex items-baseline justify-between mt-1">
+                      {hideAnswers && !isRevealed ? (
+                        <button
+                          onClick={() =>
+                            setRevealedIds((prev) => ({ ...prev, [factKey]: true }))
+                          }
+                          className="font-mono text-sm font-bold px-3 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-violet-300 border border-slate-700"
+                        >
+                          Reveal ?
+                        </button>
                       ) : (
-                        <Copy className="w-3.5 h-3.5" />
+                        <span className="text-xl font-black font-mono tracking-tight text-white">
+                          {item.square.toLocaleString()}
+                        </span>
                       )}
-                    </button>
-                  </div>
 
-                  <div className="flex items-baseline justify-between mt-1">
-                    <span className="text-xl font-black font-mono tracking-tight text-white">
-                      {item.square.toLocaleString()}
-                    </span>
-                    {item.isEndingIn5 && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300">
-                        Ends in 25
-                      </span>
-                    )}
-                    {item.isDecade && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-400/10 text-indigo-300">
-                        Decade
-                      </span>
-                    )}
-                  </div>
-
-                  {item.mentalTip && (
-                    <div className="mt-2 pt-2 border-t border-slate-800/60 text-[10px] text-slate-400 font-mono">
-                      💡 {item.mentalTip}
+                      {item.isEndingIn5 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-400/10 text-amber-300">
+                          Ends in 25
+                        </span>
+                      )}
+                      {item.isDecade && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-400/10 text-indigo-300">
+                          Decade
+                        </span>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {item.mentalTip && (
+                      <div className="mt-2 pt-2 border-t border-slate-800/60 text-[10px] text-slate-400 font-mono">
+                        💡 {item.mentalTip}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -698,6 +876,22 @@ export const TableChart: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setHideAnswers(!hideAnswers);
+                    setRevealedIds({});
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                    hideAnswers
+                      ? 'bg-violet-950/60 text-violet-300 border-violet-500/50'
+                      : 'bg-slate-950 text-slate-400 hover:text-slate-200 border-slate-800'
+                  }`}
+                  title="Hide cubes for self-test active recall"
+                >
+                  {hideAnswers ? <EyeOff className="w-3.5 h-3.5 text-violet-400" /> : <Eye className="w-3.5 h-3.5" />}
+                  <span>{hideAnswers ? 'Hidden' : 'Self-Test'}</span>
+                </button>
+
                 <span className="text-xs text-slate-400 font-mono">
                   Showing {filteredCubes.length} of 100
                 </span>
@@ -713,48 +907,77 @@ export const TableChart: React.FC = () => {
 
             {/* Cubes Grid List */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {filteredCubes.map((item) => (
-                <div
-                  key={item.n}
-                  className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-slate-700 transition-all flex flex-col justify-between"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 font-mono">
-                      <span className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center font-bold text-xs text-slate-300 border border-slate-800">
-                        {item.n}
-                      </span>
-                      <span className="text-slate-500 font-sans text-xs">³ =</span>
+              {filteredCubes.map((item) => {
+                const factKey = formatFactKey('cube', item.n);
+                const isRevealed = !hideAnswers || revealedIds[factKey];
+                const factState = factMemoryMap[factKey];
+
+                return (
+                  <div
+                    key={item.n}
+                    className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800/80 hover:border-slate-700 transition-all flex flex-col justify-between"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 font-mono">
+                        <span className="w-7 h-7 rounded-lg bg-slate-950 flex items-center justify-center font-bold text-xs text-slate-300 border border-slate-800">
+                          {item.n}
+                        </span>
+                        <span className="text-slate-500 font-sans text-xs">³ =</span>
+                      </div>
+
+                      <div className="flex items-center gap-1">
+                        {factState && factState.masteryState === 'mastered' && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" title="Mastered Fact" />
+                        )}
+                        <button
+                          onClick={() => practiceFact(factKey, 'recall')}
+                          className="p-1 rounded-md bg-slate-800 hover:bg-violet-600 text-slate-400 hover:text-white transition-colors"
+                          title="Drill this cube"
+                        >
+                          <Play className="w-3 h-3 fill-current" />
+                        </button>
+                        <button
+                          onClick={() => handleCopy(`${item.n}³ = ${item.cube}`, `cb_${item.n}`)}
+                          className="text-slate-500 hover:text-slate-300 p-1"
+                          title="Copy"
+                        >
+                          {copiedId === `cb_${item.n}` ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
                     </div>
 
-                    <button
-                      onClick={() => handleCopy(`${item.n}³ = ${item.cube}`, `cb_${item.n}`)}
-                      className="text-slate-500 hover:text-slate-300 p-1"
-                      title="Copy"
-                    >
-                      {copiedId === `cb_${item.n}` ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <div className="flex items-baseline justify-between mt-1">
+                      {hideAnswers && !isRevealed ? (
+                        <button
+                          onClick={() =>
+                            setRevealedIds((prev) => ({ ...prev, [factKey]: true }))
+                          }
+                          className="font-mono text-sm font-bold px-3 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-violet-300 border border-slate-700"
+                        >
+                          Reveal ?
+                        </button>
                       ) : (
-                        <Copy className="w-3.5 h-3.5" />
+                        <span className="text-lg sm:text-xl font-black font-mono tracking-tight text-white">
+                          {item.formattedCube}
+                        </span>
                       )}
-                    </button>
-                  </div>
-
-                  <div className="flex items-baseline justify-between mt-1">
-                    <span className="text-lg sm:text-xl font-black font-mono tracking-tight text-white">
-                      {item.formattedCube}
-                    </span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
-                      End: {item.unitDigit}
-                    </span>
-                  </div>
-
-                  {item.lastDigitPatternTip && (
-                    <div className="mt-2 pt-2 border-t border-slate-800/60 text-[10px] text-slate-400 font-mono">
-                      💡 {item.lastDigitPatternTip}
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                        End: {item.unitDigit}
+                      </span>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {item.lastDigitPatternTip && (
+                      <div className="mt-2 pt-2 border-t border-slate-800/60 text-[10px] text-slate-400 font-mono">
+                        💡 {item.lastDigitPatternTip}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

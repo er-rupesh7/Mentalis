@@ -11,6 +11,7 @@ import { TableChart } from '../components/TableChart';
 import { TutorialModal } from '../components/TutorialModal';
 import { SkillAssessmentModal } from '../components/SkillAssessmentModal';
 import { SkillProfileView } from '../components/SkillProfileView';
+import { MemoryMap } from '../components/MemoryMap';
 
 export default function MentalisApp() {
   const { viewMode } = useQuizStore();
@@ -48,6 +49,7 @@ export default function MentalisApp() {
         {viewMode === 'anzan' && <AnzanFlashScreen />}
         {viewMode === 'heatmap' && <TableHeatmap />}
         {viewMode === 'table_chart' && <TableChart />}
+        {viewMode === 'memory_map' && <MemoryMap />}
         {viewMode === 'assessment' && <SkillAssessmentModal />}
         {viewMode === 'profile' && <SkillProfileView />}
       </div>
