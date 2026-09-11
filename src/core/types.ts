@@ -151,4 +151,7 @@ export interface Badge {
   unlockedAt?: number;
 }
 
-export type ViewMode = 'dashboard' | 'practice' | 'anzan' | 'heatmap';
+export type TableChartTab = 'mul' | 'squares' | 'cubes' | 'sqrt' | 'cbrt';
+
+export type ViewMode = 'dashboard' | 'practice' | 'anzan' | 'heatmap' | 'table_chart' | 'assessment' | 'profile';
+

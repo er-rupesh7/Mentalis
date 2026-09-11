@@ -7,7 +7,10 @@ import { Dashboard } from '../components/Dashboard';
 import { PracticeScreen } from '../components/PracticeScreen';
 import { AnzanFlashScreen } from '../components/AnzanFlashScreen';
 import { TableHeatmap } from '../components/TableHeatmap';
+import { TableChart } from '../components/TableChart';
 import { TutorialModal } from '../components/TutorialModal';
+import { SkillAssessmentModal } from '../components/SkillAssessmentModal';
+import { SkillProfileView } from '../components/SkillProfileView';
 
 export default function MentalisApp() {
   const { viewMode } = useQuizStore();
@@ -44,6 +47,9 @@ export default function MentalisApp() {
         )}
         {viewMode === 'anzan' && <AnzanFlashScreen />}
         {viewMode === 'heatmap' && <TableHeatmap />}
+        {viewMode === 'table_chart' && <TableChart />}
+        {viewMode === 'assessment' && <SkillAssessmentModal />}
+        {viewMode === 'profile' && <SkillProfileView />}
       </div>
 
       {/* Interactive Theory & Tutorial Modal */}
