@@ -21,6 +21,9 @@ import {
   SessionDrillConfig,
   SessionSummary,
   LearningMode,
+  TableTrainingMode,
+  ExamSubSkill,
+  ExamTransferScores,
 } from '../types';
 import { SquareCubeSubTrack } from '../calcEngine';
 import { evaluateMasteryStatus, updateDailyStreak, calculateMedian, calculateCPM } from '../mastery';
@@ -32,13 +35,17 @@ import {
   AssessmentSession,
   TrainingPlan,
   CoachingInsight,
+  AICoachState,
+  AIProviderStatus,
   createDefaultLearnerProfile,
+  createDefaultSkillEstimate,
   updateSkillEstimate,
   detectFatigue,
   ALL_SKILL_DIMENSIONS,
 } from '../learnerModel';
 import {
   FactKey,
+  FactMemory,
   FactMemoryState,
   FactAttempt,
   createInitialFactMemoryState,
@@ -51,10 +58,14 @@ import {
   detectErrorPattern,
   generateRepairCard,
   selectNextFact,
+  selectAdaptiveBandTable,
+  scheduleWeakFactReview,
+  detectFrustration,
 } from '../memoryScheduler';
 import {
   generateQuestionFromFact,
   getCandidateFactKeysForTarget,
+  generateTableModeQuestion,
 } from '../factEngine';
 import {
   createAssessmentSession,
@@ -67,13 +78,25 @@ import {
   getQuestionForTrainingBlock,
 } from '../planEngine';
 import { getDrillById } from '../catalog';
+import { consultLocalAdaptiveCoach } from '../localCoachEngine';
+import { MICRO_SESSION_PRESETS } from '../curriculumEngine';
 
 export function resolveActiveDimension(
   module: ModuleId,
   addSubLevel: number,
   table: number,
-  squareTrack: SquareCubeSubTrack
+  squareTrack: SquareCubeSubTrack,
+  examSubSkill?: ExamSubSkill
 ): SkillDimension {
+  if (module === 'tables_bootcamp') {
+    return `table_${table}` as SkillDimension;
+  }
+  if (module === 'exam_quant') {
+    return (examSubSkill || 'quant_simplification') as SkillDimension;
+  }
+  if (module === 'fractions_percentages') {
+    return 'fraction_percentage_equiv';
+  }
   if (module === 'add_sub') {
     if (addSubLevel === 1) return 'add_sub_non_bridging';
     if (addSubLevel === 2) return 'add_sub_bridging_decade';
@@ -96,6 +119,99 @@ export function resolveActiveDimension(
     return 'cubes_advanced';
   }
   return 'anzan_stream';
+}
+
+export function computeExamTransferScores(
+  profile: LearnerProfile,
+  facts: Record<string, FactMemoryState | FactMemory>
+): ExamTransferScores {
+  const foundationDims: SkillDimension[] = [
+    'table_11', 'table_12', 'table_13', 'table_14', 'table_15',
+    'complements_10', 'complements_100', 'doubles_halves',
+    'add_sub_bridging_decade', 'mult_foundations', 'mult_core_tables',
+  ];
+  let foundationSum = 0;
+  let foundationCount = 0;
+  for (const d of foundationDims) {
+    const s = profile.skills[d];
+    if (s && s.totalAttempts > 0) {
+      foundationSum += Math.min(100, s.accuracy * 0.6 + (s.medianLatencyMs > 0 && s.medianLatencyMs <= 2500 ? 40 : 20));
+      foundationCount++;
+    }
+  }
+  const foundationScore = foundationCount > 0 ? Math.round(foundationSum / foundationCount) : 40;
+
+  const allFacts = Object.values(facts);
+  let automaticFacts = 0;
+  let totalTrackedFacts = 0;
+  for (const f of allFacts) {
+    if ((f as any).totalAttempts >= 3 || (f as any).attempts >= 3) {
+      totalTrackedFacts++;
+      if (((f as any).speedLadderLevel && (f as any).speedLadderLevel >= 4) || ((f as any).automaticityScore && (f as any).automaticityScore >= 75)) {
+        automaticFacts++;
+      }
+    }
+  }
+  const calculationAutomaticity = totalTrackedFacts > 0
+    ? Math.round((automaticFacts / totalTrackedFacts) * 100)
+    : 35;
+
+  const examDims: SkillDimension[] = [
+    'table_16', 'table_17', 'table_18', 'table_19', 'table_20',
+    'fraction_percentage_equiv', 'quant_simplification', 'quant_approximation',
+    'quant_percentage', 'quant_ratio', 'quant_average',
+  ];
+  let examAccSum = 0;
+  let examAccCount = 0;
+  for (const d of examDims) {
+    const s = profile.skills[d];
+    if (s && s.totalAttempts > 0) {
+      examAccSum += s.accuracy;
+      examAccCount++;
+    }
+  }
+  const examAccuracy = examAccCount > 0 ? Math.round(examAccSum / examAccCount) : 50;
+
+  let speedSum = 0;
+  let speedCount = 0;
+  for (const d of examDims) {
+    const s = profile.skills[d];
+    if (s && s.totalAttempts > 0 && s.medianLatencyMs > 0) {
+      const speedPts = Math.max(10, Math.min(100, Math.round((3500 / s.medianLatencyMs) * 70)));
+      speedSum += speedPts;
+      speedCount++;
+    }
+  }
+  const examSpeed = speedCount > 0 ? Math.round(speedSum / speedCount) : 45;
+
+  let retainedCount = 0;
+  let totalMastered = 0;
+  for (const d of Object.values(profile.skills)) {
+    if (d.totalAttempts >= 5 && d.accuracy >= 80) {
+      totalMastered++;
+      if (d.decayRisk === 'low' || d.decayRisk === 'moderate') {
+        retainedCount++;
+      }
+    }
+  }
+  const retentionScore = totalMastered > 0 ? Math.round((retainedCount / totalMastered) * 100) : 60;
+
+  const rrbReadiness = Math.round(
+    foundationScore * 0.30 +
+    calculationAutomaticity * 0.25 +
+    examAccuracy * 0.20 +
+    examSpeed * 0.15 +
+    retentionScore * 0.10
+  );
+
+  return {
+    calculationAutomaticity,
+    examSpeed,
+    examAccuracy,
+    foundationScore,
+    retentionScore,
+    rrbReadiness,
+  };
 }
 
 interface QuizState {
@@ -143,6 +259,14 @@ interface QuizState {
   recentAskedKeys: FactKey[];
   batchAnswerCount: number;
 
+  // Tables 11-20 Bootcamp & Exam Quant
+  activeBootcampTable: number;
+  isAdaptiveBootcampActive: boolean;
+  currentTableMode: TableTrainingMode;
+  activeExamSkill: ExamSubSkill;
+  activeMicroSession: string | null;
+  examTransferScores: ExamTransferScores | null;
+
   // Settings & Accessibility
   soundEnabled: boolean;
   reducedMotion: boolean;
@@ -160,6 +284,7 @@ interface QuizState {
   aiCoachingEnabled: boolean;
   aiCoachInsight: CoachingInsight | null;
   isLoadingAiCoach: boolean;
+  aiCoachState: AICoachState;
 
   // Actions - Navigation & Module Selection
   setViewMode: (mode: ViewMode) => void;
@@ -168,6 +293,14 @@ interface QuizState {
   setActiveTable: (table: number) => void;
   setActiveSquareTrack: (track: SquareCubeSubTrack) => void;
   setActiveTableChartTab: (tab: TableChartTab) => void;
+  setBootcampTable: (table: number) => void;
+  setTableMode: (mode: TableTrainingMode) => void;
+  setExamSkill: (skill: ExamSubSkill) => void;
+  startTablesBootcamp: (table?: number, mode?: TableTrainingMode, isAdaptive?: boolean) => void;
+  startExamQuantDrill: (subSkill?: ExamSubSkill) => void;
+  startMicroSession: (presetId: string) => void;
+  selectMultipleChoiceOption: (option: number | string) => void;
+  calculateExamTransferScores: () => ExamTransferScores;
 
   // Actions - Drill Practice
   startSession: (config?: Partial<SessionDrillConfig>) => void;
@@ -182,7 +315,7 @@ interface QuizState {
   toggleNegative: () => void;
   backspace: () => void;
   clearBuffer: () => void;
-  submitAnswer: () => void;
+  submitAnswer: (overrideAnswer?: number) => void;
   skipQuestion: () => void;
 
   toggleStrategy: (force?: boolean) => void;
@@ -215,7 +348,9 @@ interface QuizState {
   startTrainingBlock: (blockIndex: number) => void;
   advanceTrainingBlock: () => void;
   cancelActivePlan: () => void;
-  requestAICoachFeedback: () => Promise<void>;
+  requestAICoachFeedback: (force?: boolean) => Promise<void>;
+  setAICooldownMinutes: (minutes: number) => void;
+  markPendingAISync: () => void;
   toggleAICoaching: () => void;
   dismissAICoachInsight: () => void;
 }
@@ -286,6 +421,14 @@ export const useQuizStore = create<QuizState>()(
       recentAskedKeys: [],
       batchAnswerCount: 0,
 
+      // Tables 11-20 Bootcamp & Exam Quant
+      activeBootcampTable: 13,
+      isAdaptiveBootcampActive: true,
+      currentTableMode: 'recall',
+      activeExamSkill: 'quant_simplification',
+      activeMicroSession: null,
+      examTransferScores: null,
+
       soundEnabled: true,
       reducedMotion: false,
       timerVisible: true,
@@ -308,8 +451,28 @@ export const useQuizStore = create<QuizState>()(
       aiCoachingEnabled: true,
       aiCoachInsight: null,
       isLoadingAiCoach: false,
+      aiCoachState: {
+        learnerId: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'learner_' + Math.random().toString(36).substring(2, 11),
+        cooldownMinutes: 30,
+        lastSuccessfulRequestAt: null,
+        nextEligibleRequestAt: 0,
+        providerStatus: 'ready',
+        lastErrorType: null,
+        retryAfterSeconds: null,
+        pendingSync: false,
+        lastAiLesson: null,
+        planSource: 'offline',
+      },
 
-      setViewMode: (mode: ViewMode) => set({ viewMode: mode }),
+      setViewMode: (mode: ViewMode) => {
+        if (mode === 'bootcamp_11_20') {
+          set({ viewMode: mode, activeModule: 'tables_bootcamp' });
+        } else if (mode === 'exam_quant') {
+          set({ viewMode: mode, activeModule: 'exam_quant' });
+        } else {
+          set({ viewMode: mode });
+        }
+      },
 
       setActiveModule: (module: ModuleId) => {
         set({ activeModule: module });
@@ -324,6 +487,66 @@ export const useQuizStore = create<QuizState>()(
       setActiveTable: (table: number) => {
         set({ activeTable: table, activeModule: 'multiplication', viewMode: 'practice' });
         get().loadNextQuestion();
+      },
+
+      setBootcampTable: (table: number) => {
+        set({ activeBootcampTable: table, activeModule: 'tables_bootcamp' });
+      },
+
+      setTableMode: (mode: TableTrainingMode) => {
+        set({ currentTableMode: mode });
+      },
+
+      setExamSkill: (skill: ExamSubSkill) => {
+        set({ activeExamSkill: skill, activeModule: 'exam_quant' });
+      },
+
+      startTablesBootcamp: (table = 13, mode = 'recall', isAdaptive = true) => {
+        set({
+          activeModule: 'tables_bootcamp',
+          activeBootcampTable: table,
+          currentTableMode: mode,
+          isAdaptiveBootcampActive: isAdaptive,
+          viewMode: 'practice',
+        });
+        get().startSession({ goalCount: 20, isEndless: false, mode: 'standard' });
+      },
+
+      startExamQuantDrill: (subSkill = 'quant_simplification') => {
+        set({
+          activeModule: 'exam_quant',
+          activeExamSkill: subSkill,
+          viewMode: 'practice',
+        });
+        get().startSession({ goalCount: 15, isEndless: false, mode: 'standard' });
+      },
+
+      startMicroSession: (presetId: string) => {
+        const preset = MICRO_SESSION_PRESETS.find((p) => p.id === presetId) || MICRO_SESSION_PRESETS[0];
+        const goalCount =
+          preset.durationMinutes === 2 ? 15 : preset.durationMinutes === 5 ? 25 : preset.durationMinutes === 10 ? 40 : 60;
+        set({
+          activeModule: preset.targetModule,
+          activeMicroSession: preset.id,
+          currentTableMode: preset.targetTableMode || 'recall',
+          activeExamSkill: preset.examSubSkill || 'quant_simplification',
+          viewMode: 'practice',
+        });
+        get().startSession({ goalCount, isEndless: false, mode: 'standard' });
+      },
+
+      selectMultipleChoiceOption: (option: number | string) => {
+        const num = typeof option === 'number' ? option : parseFloat(option);
+        if (!isNaN(num)) {
+          get().submitAnswer(num);
+        }
+      },
+
+      calculateExamTransferScores: () => {
+        const state = get();
+        const scores = computeExamTransferScores(state.learnerProfile, state.factMemoryMap);
+        set({ examTransferScores: scores });
+        return scores;
       },
 
       setActiveSquareTrack: (track: SquareCubeSubTrack) => {
@@ -426,6 +649,50 @@ export const useQuizStore = create<QuizState>()(
           }
         }
 
+        // Tables 11-20 Bootcamp Adaptive Generation
+        if (state.activeModule === 'tables_bootcamp') {
+          const selectedTable = state.isAdaptiveBootcampActive
+            ? selectAdaptiveBandTable(state.activeBootcampTable)
+            : state.activeBootcampTable;
+          const mult = Math.floor(Math.random() * 12) + 1;
+          const q = generateTableModeQuestion(selectedTable, mult, state.currentTableMode);
+          q.selectionReason = state.isAdaptiveBootcampActive
+            ? `Adaptive Table ×${selectedTable} (${state.currentTableMode} mode)`
+            : `Table ×${selectedTable} Bootcamp (${state.currentTableMode} mode)`;
+
+          set({
+            currentQuestion: q,
+            inputBuffer: '',
+            questionStartTime: Date.now(),
+            isEvaluating: false,
+            lastResult: null,
+            lastAnswerSubmitted: null,
+            lastCorrectAnswer: null,
+            showStrategy: state.currentTableMode === 'decomposition' || state.currentTableMode === 'related_fact',
+            isPaused: false,
+          });
+          return;
+        }
+
+        // Exam Quant Calculation Drills
+        if (state.activeModule === 'exam_quant') {
+          const q = generateQuestionFromFact(`exam:${state.activeExamSkill}`);
+          q.selectionReason = `RRB Quant Drill: ${state.activeExamSkill.replace('quant_', '').replace(/_/g, ' ')}`;
+
+          set({
+            currentQuestion: q,
+            inputBuffer: '',
+            questionStartTime: Date.now(),
+            isEvaluating: false,
+            lastResult: null,
+            lastAnswerSubmitted: null,
+            lastCorrectAnswer: null,
+            showStrategy: false,
+            isPaused: false,
+          });
+          return;
+        }
+
         // Advanced Fact-Level Adaptive Selection for Multiplication & Squares/Cubes
         if (state.activeModule === 'multiplication' || state.activeModule === 'squares_cubes') {
           let candidates = getCandidateFactKeysForTarget(
@@ -475,6 +742,7 @@ export const useQuizStore = create<QuizState>()(
           );
 
           const q = generateQuestionFromFact(selection.factKey);
+          q.selectionReason = selection.selectionReason;
           if (state.learningMode === 'speed') {
             q.targetTimeSeconds = Math.max(1.0, Math.round(q.targetTimeSeconds * 0.75 * 10) / 10);
           }
@@ -496,14 +764,21 @@ export const useQuizStore = create<QuizState>()(
         }
 
         const modeToUse = forceMode || state.sessionConfig.mode;
+        const tableToUse = state.activeTable;
+
         const q = getAdaptiveQuestion({
           module: state.activeModule,
           activeAddSubLevel: state.activeAddSubLevel,
-          activeTable: state.activeTable,
+          activeTable: tableToUse,
           activeSquareTrack: state.activeSquareTrack,
           progressMap: state.progressMap,
           mode: modeToUse,
+          tableMode: state.currentTableMode,
+          examSubSkill: state.activeExamSkill,
         });
+        if (!q.selectionReason) {
+          q.selectionReason = 'Curriculum progression question';
+        }
 
         set({
           currentQuestion: q,
@@ -609,14 +884,15 @@ export const useQuizStore = create<QuizState>()(
         });
       },
 
-      submitAnswer: () => {
+      submitAnswer: (overrideAnswer?: number) => {
         const state = get();
         if (state.isEvaluating || !state.currentQuestion || state.isPaused) return;
 
+        const isNumOverride = typeof overrideAnswer === 'number' && !isNaN(overrideAnswer);
         const trimmed = state.inputBuffer.trim();
-        if (!trimmed || trimmed === '-') return;
+        if (!isNumOverride && (!trimmed || trimmed === '-')) return;
 
-        const userAnswer = parseInt(trimmed, 10);
+        const userAnswer = isNumOverride ? overrideAnswer : parseInt(trimmed, 10);
         if (isNaN(userAnswer)) return;
 
         const responseTimeMs = Math.max(120, Date.now() - state.questionStartTime);
@@ -625,7 +901,13 @@ export const useQuizStore = create<QuizState>()(
 
         // Progress Tracking Key
         let progressKey = '';
-        if (state.activeModule === 'multiplication') {
+        if (state.activeModule === 'tables_bootcamp') {
+          progressKey = `table_${state.activeBootcampTable}`;
+        } else if (state.activeModule === 'exam_quant') {
+          progressKey = state.activeExamSkill;
+        } else if (state.activeModule === 'fractions_percentages') {
+          progressKey = 'fraction_percentage_equiv';
+        } else if (state.activeModule === 'multiplication') {
           progressKey = `table_${state.activeTable}`;
         } else if (state.activeModule === 'add_sub') {
           progressKey = `add_sub_level_${state.activeAddSubLevel}`;
@@ -709,12 +991,16 @@ export const useQuizStore = create<QuizState>()(
         let factKey: FactKey | null = null;
         if (state.currentQuestion.factKey) {
           factKey = state.currentQuestion.factKey as FactKey;
-        } else if (state.activeModule === 'multiplication') {
+        } else if (state.activeModule === 'multiplication' || state.activeModule === 'tables_bootcamp') {
           factKey = `mul:${state.currentQuestion.operandA}:${state.currentQuestion.operandB}`;
         } else if (state.activeModule === 'squares_cubes') {
           factKey = state.currentQuestion.operator === '^3'
             ? `cube:${state.currentQuestion.operandA}`
             : `square:${state.currentQuestion.operandA}`;
+        } else if (state.activeModule === 'exam_quant') {
+          factKey = `exam:${state.activeExamSkill}`;
+        } else if (state.activeModule === 'fractions_percentages') {
+          factKey = 'frac_pct:table';
         }
 
         let updatedFactMap = state.factMemoryMap;
@@ -747,22 +1033,29 @@ export const useQuizStore = create<QuizState>()(
           if (!isCorrect) {
             const card = generateRepairCard(factKey, userAnswer, responseTimeMs);
             activeRepairCard = card;
+            const scheduled = scheduleWeakFactReview(factKey, state.sessionAnswered);
             updatedDelayedQueue = [
               ...state.delayedReviewQueue.filter((q) => q.factKey !== factKey),
-              { factKey, dueAtCount: state.sessionAnswered + 4 },
+              scheduled,
             ];
           }
         }
 
         // Update Learner Model & Skill Estimate
+        const activeTableNum =
+          state.activeModule === 'tables_bootcamp'
+            ? state.activeBootcampTable
+            : state.activeTable;
+
         const activeDim = resolveActiveDimension(
           state.activeModule,
           state.activeAddSubLevel,
-          state.activeTable,
-          state.activeSquareTrack
+          activeTableNum,
+          state.activeSquareTrack,
+          state.activeExamSkill
         );
 
-        const prevSkill = state.learnerProfile.skills[activeDim];
+        const prevSkill = state.learnerProfile.skills[activeDim] || createDefaultSkillEstimate(activeDim);
         const updatedSkill = updateSkillEstimate(
           prevSkill,
           isCorrect,
@@ -812,13 +1105,9 @@ export const useQuizStore = create<QuizState>()(
           }
         }
 
-        // Batch AI coach background evaluation (every 10 answers)
-        const nextBatchCount = state.batchAnswerCount + 1;
-        if (nextBatchCount >= 10 && state.aiCoachingEnabled && !state.isLoadingAiCoach) {
-          setTimeout(() => {
-            get().requestAICoachFeedback();
-          }, 100);
-        }
+        // Mark pending AI sync if practiced during cooldown or offline
+        get().markPendingAISync();
+        const nextBatchCount = (state.batchAnswerCount || 0) + 1;
 
         set({
           isEvaluating: true,
@@ -1177,11 +1466,6 @@ export const useQuizStore = create<QuizState>()(
           activeTrainingBlockIndex: 0,
           isPlanActive: false,
         });
-
-        // Optionally request AI Coach insight
-        if (get().aiCoachingEnabled) {
-          get().requestAICoachFeedback();
-        }
       },
 
       startTrainingBlock: (blockIndex: number) => {
@@ -1255,44 +1539,69 @@ export const useQuizStore = create<QuizState>()(
         set({ isPlanActive: false });
       },
 
-      requestAICoachFeedback: async () => {
+      requestAICoachFeedback: async (_force: boolean = false) => {
         const state = get();
+        if (state.isLoadingAiCoach) return;
+
         set({ isLoadingAiCoach: true });
 
         try {
-          const skillsPayload = ALL_SKILL_DIMENSIONS.map((dim) => {
-            const s = state.learnerProfile.skills[dim];
-            return {
-              dimension: dim,
-              theta: s.theta,
-              accuracy: s.accuracy,
-              attempts: s.totalAttempts,
-              medianLatencyMs: s.medianLatencyMs,
-              decayRisk: s.decayRisk,
-            };
+          const insight = consultLocalAdaptiveCoach(
+            state.learnerProfile,
+            state.factMemoryMap,
+            state.learnerProfile.preferredDailyMinutes
+          );
+
+          const now = Date.now();
+          set({
+            aiCoachInsight: insight,
+            aiCoachState: {
+              ...state.aiCoachState,
+              lastSuccessfulRequestAt: now,
+              nextEligibleRequestAt: now,
+              providerStatus: 'ready',
+              lastErrorType: null,
+              retryAfterSeconds: null,
+              pendingSync: false,
+              lastAiLesson: insight.groqResponse || null,
+              planSource: 'offline',
+            },
           });
-
-          const res = await fetch('/api/ai-coach', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              skills: skillsPayload,
-              fatigue: state.learnerProfile.fatigueState,
-              currentStreak: state.overallStats.dailyActiveStreak,
-              requestedMinutes: state.learnerProfile.preferredDailyMinutes,
-            }),
-          });
-
-          if (!res.ok) throw new Error(`HTTP error ${res.status}`);
-          const data = await res.json();
-
-          if (data.success && data.insight) {
-            set({ aiCoachInsight: data.insight });
-          }
         } catch (err) {
-          console.error('Failed to retrieve AI coach feedback:', err);
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          set({
+            aiCoachState: {
+              ...state.aiCoachState,
+              providerStatus: 'ready',
+              lastErrorType: errorMsg,
+              planSource: 'offline',
+            },
+          });
         } finally {
           set({ isLoadingAiCoach: false });
+        }
+      },
+
+      setAICooldownMinutes: (minutes: number) => {
+        const clamped = Math.max(15, Math.min(30, minutes));
+        set((s) => ({
+          aiCoachState: {
+            ...s.aiCoachState,
+            cooldownMinutes: clamped,
+          },
+        }));
+      },
+
+      markPendingAISync: () => {
+        const state = get();
+        const now = Date.now();
+        if (now < state.aiCoachState.nextEligibleRequestAt || state.aiCoachState.providerStatus !== 'ready') {
+          set((s) => ({
+            aiCoachState: {
+              ...s.aiCoachState,
+              pendingSync: true,
+            },
+          }));
         }
       },
 
@@ -1305,10 +1614,14 @@ export const useQuizStore = create<QuizState>()(
       },
     }),
     {
-      name: 'mentalis_storage_v5',
-      version: 5,
+      name: 'mentalis_storage_v8',
+      version: 8,
       storage: createJSONStorage(() => {
         if (typeof window !== 'undefined' && window.localStorage) {
+          if (!window.localStorage.getItem('mentalis_storage_v8') && window.localStorage.getItem('mentalis_storage_v7')) {
+            const v7 = window.localStorage.getItem('mentalis_storage_v7');
+            if (v7) window.localStorage.setItem('mentalis_storage_v8', v7);
+          }
           return window.localStorage;
         }
         const memMap: Record<string, string> = {};
@@ -1369,15 +1682,57 @@ export const useQuizStore = create<QuizState>()(
           }
         }
 
-        // Migrate fact memory states with skip tracking and direct memory categorization
-        const migratedFactMemory: Record<string, FactMemoryState> = {};
+        // Migrate fact memory states to complete FactMemory model
+        const migratedFactMemory: Record<string, FactMemory> = {};
         if (old.factMemoryMap) {
-          for (const [key, fact] of Object.entries(old.factMemoryMap)) {
+          for (const [key, fact] of Object.entries(old.factMemoryMap as Record<string, any>)) {
+            const parsed = parseFactKey(fact.factKey || fact.key || key);
             migratedFactMemory[key] = {
               ...fact,
-              skipCount: fact.skipCount || 0,
+              key: fact.key || fact.factKey || key,
+              category: fact.category || fact.factType || parsed.type || 'multiplication',
+              attempts: fact.attempts ?? fact.totalAttempts ?? 0,
+              correctAttempts: fact.correctAttempts ?? 0,
+              skippedAttempts: fact.skippedAttempts ?? fact.skipCount ?? 0,
+              consecutiveCorrect: fact.consecutiveCorrect ?? 0,
+              consecutiveIncorrect: fact.consecutiveIncorrect ?? fact.consecutiveErrors ?? 0,
+              averageLatencyMs: fact.averageLatencyMs ?? fact.recentLatencyMs ?? 0,
+              medianLatencyMs: fact.medianLatencyMs ?? 0,
+              recentLatenciesMs: fact.recentLatenciesMs || (fact.recentLatencyMs ? [fact.recentLatencyMs] : []),
+              firstSeenAt: fact.firstSeenAt || fact.firstSeen || Date.now(),
+              lastSeenAt: fact.lastSeenAt || fact.lastSeen || Date.now(),
+              lastCorrectAt: fact.lastCorrectAt || fact.lastCorrect || undefined,
+              lastIncorrectAt: fact.lastIncorrectAt || fact.lastIncorrect || undefined,
+              lastSkippedAt: fact.lastSkippedAt || fact.lastSkipped || undefined,
+              nextReviewAt: fact.nextReviewAt || fact.nextReviewTimestamp || Date.now(),
+              stabilityDays: fact.stabilityDays || fact.intervalDays || 0,
+              difficultyScore: fact.difficultyScore || 3,
+              masteryScore: fact.masteryScore || fact.stabilityScore || 0,
+              masteryState: fact.masteryState || 'unseen',
+              learningPhase: fact.learningPhase || 'teach',
+              errorPatterns: fact.errorPatterns || [],
+              shownStrategies: fact.shownStrategies || [],
+              strategyConfidence: fact.strategyConfidence || 0,
+              factKey: fact.factKey || (fact.key as any) || key,
+              factType: fact.factType || fact.category || parsed.type || 'multiplication',
+              totalAttempts: fact.attempts ?? fact.totalAttempts ?? 0,
+              skipCount: fact.skippedAttempts ?? fact.skipCount ?? 0,
+              recentAccuracy: fact.recentAccuracy || 0,
+              recentLatencyMs: fact.recentLatencyMs || 0,
+              firstSeen: fact.firstSeen || fact.firstSeenAt || Date.now(),
+              lastSeen: fact.lastSeen || fact.lastSeenAt || Date.now(),
+              lastCorrect: fact.lastCorrect || null,
+              lastIncorrect: fact.lastIncorrect || null,
               lastSkipped: fact.lastSkipped || null,
-              isDirectMemory: fact.isDirectMemory ?? (fact.factType === 'multiplication' ? fact.operandA <= 12 && (fact.operandB || 1) <= 12 : true),
+              consecutiveErrors: fact.consecutiveIncorrect ?? fact.consecutiveErrors ?? 0,
+              stabilityScore: fact.stabilityScore || 0,
+              forgettingRisk: fact.forgettingRisk || 0,
+              nextReviewTimestamp: fact.nextReviewTimestamp || fact.nextReviewAt || Date.now(),
+              intervalDays: fact.intervalDays || fact.stabilityDays || 0,
+              easeFactor: fact.easeFactor || 2.5,
+              usedHintOrStrategyCount: fact.usedHintOrStrategyCount || 0,
+              isDirectMemory: fact.isDirectMemory ?? true,
+              errorHistory: fact.errorHistory || [],
             };
           }
         }
@@ -1418,6 +1773,18 @@ export const useQuizStore = create<QuizState>()(
           aiCoachingEnabled: old.aiCoachingEnabled ?? true,
           aiCoachInsight: null,
           isLoadingAiCoach: false,
+          aiCoachState: {
+            learnerId: (old as any).aiCoachState?.learnerId || 'offline_learner',
+            cooldownMinutes: 15,
+            lastSuccessfulRequestAt: null,
+            nextEligibleRequestAt: 0,
+            providerStatus: 'ready',
+            lastErrorType: null,
+            retryAfterSeconds: null,
+            pendingSync: false,
+            lastAiLesson: null,
+            planSource: 'offline',
+          },
         };
       },
       partialize: (state) => ({
@@ -1435,6 +1802,7 @@ export const useQuizStore = create<QuizState>()(
         activeSquareTrack: state.activeSquareTrack,
         learnerProfile: state.learnerProfile,
         aiCoachingEnabled: state.aiCoachingEnabled,
+        aiCoachState: state.aiCoachState,
       }),
     }
   )

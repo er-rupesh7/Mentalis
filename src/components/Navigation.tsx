@@ -16,6 +16,7 @@ import {
   Table,
   Menu,
   X,
+  Target,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
@@ -95,6 +96,30 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
             Dashboard
+          </button>
+
+          <button
+            onClick={() => setViewMode('bootcamp_11_20')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              viewMode === 'bootcamp_11_20'
+                ? 'bg-amber-600 text-white shadow-sm font-semibold'
+                : 'text-amber-400 hover:text-amber-200 hover:bg-slate-800'
+            }`}
+          >
+            <Flame className="w-3.5 h-3.5" />
+            Bootcamp 11–20
+          </button>
+
+          <button
+            onClick={() => setViewMode('exam_quant')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+              viewMode === 'exam_quant'
+                ? 'bg-emerald-600 text-white shadow-sm font-semibold'
+                : 'text-emerald-400 hover:text-emerald-200 hover:bg-slate-800'
+            }`}
+          >
+            <Target className="w-3.5 h-3.5" />
+            Exam Quant
           </button>
 
           <button
@@ -290,6 +315,36 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             >
               <LayoutDashboard className="w-4 h-4" />
               <span>Dashboard</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setViewMode('bootcamp_11_20');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+                viewMode === 'bootcamp_11_20'
+                  ? 'bg-amber-600 text-white border-amber-500'
+                  : 'bg-slate-900 text-amber-400 border-slate-800'
+              }`}
+            >
+              <Flame className="w-4 h-4" />
+              <span>Bootcamp 11–20</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setViewMode('exam_quant');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+                viewMode === 'exam_quant'
+                  ? 'bg-emerald-600 text-white border-emerald-500'
+                  : 'bg-slate-900 text-emerald-400 border-slate-800'
+              }`}
+            >
+              <Target className="w-4 h-4" />
+              <span>RRB Exam Quant</span>
             </button>
 
             <button

@@ -12,6 +12,8 @@ import { TutorialModal } from '../components/TutorialModal';
 import { SkillAssessmentModal } from '../components/SkillAssessmentModal';
 import { SkillProfileView } from '../components/SkillProfileView';
 import { MemoryMap } from '../components/MemoryMap';
+import { TablesBootcampView } from '../components/TablesBootcampView';
+import { ExamQuantView } from '../components/ExamQuantView';
 
 export default function MentalisApp() {
   const { viewMode } = useQuizStore();
@@ -43,6 +45,8 @@ export default function MentalisApp() {
         {viewMode === 'dashboard' && (
           <Dashboard onOpenTutorial={() => setIsTutorialOpen(true)} />
         )}
+        {viewMode === 'bootcamp_11_20' && <TablesBootcampView />}
+        {viewMode === 'exam_quant' && <ExamQuantView />}
         {viewMode === 'practice' && (
           <PracticeScreen onOpenTutorial={() => setIsTutorialOpen(true)} />
         )}

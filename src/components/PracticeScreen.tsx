@@ -54,6 +54,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     activeModule,
     activeAddSubLevel,
     activeTable,
+    activeBootcampTable,
+    activeExamSkill,
     activeSquareTrack,
     sessionConfig,
     sessionAnswered,
@@ -69,6 +71,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     backspace,
     clearBuffer,
     submitAnswer,
+    selectMultipleChoiceOption,
     skipQuestion,
     loadNextQuestion,
     retrySimilarQuestion,
@@ -105,6 +108,19 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
           resumeSession();
         }
         return;
+      }
+
+      // Check if question has multiple-choice options (1-4 selection)
+      const hasOptions = !!(currentQuestion?.options && currentQuestion.options.length > 0);
+      if (hasOptions && !isEvaluating) {
+        if (e.key >= '1' && e.key <= '4') {
+          const optIdx = parseInt(e.key, 10) - 1;
+          if (optIdx < currentQuestion.options!.length) {
+            e.preventDefault();
+            selectMultipleChoiceOption(currentQuestion.options![optIdx]);
+            return;
+          }
+        }
       }
 
       if (e.key >= '0' && e.key <= '9') {
@@ -160,6 +176,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
       isEvaluating,
       lastResult,
       showStrategy,
+      currentQuestion,
+      selectMultipleChoiceOption,
       appendDigit,
       toggleNegative,
       backspace,
@@ -198,6 +216,12 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     trackTitle = lvl ? lvl.title : `Level ${activeAddSubLevel}`;
   } else if (activeModule === 'multiplication') {
     trackTitle = `Table ${activeTable} Drill`;
+  } else if (activeModule === 'tables_bootcamp') {
+    trackTitle = `Bootcamp Table ${activeBootcampTable ?? 11}`;
+  } else if (activeModule === 'exam_quant') {
+    trackTitle = activeExamSkill ? activeExamSkill.replace(/_/g, ' ').toUpperCase() : 'RRB PO QUANT';
+  } else if (activeModule === 'fractions_percentages') {
+    trackTitle = 'Fraction ↔ Percentage';
   } else {
     trackTitle = activeSquareTrack.replace(/_/g, ' ').toUpperCase();
   }
@@ -444,6 +468,21 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
           )}
         </AnimatePresence>
 
+        {/* Anchor Fact Landmark & Mental Shortcut Banner */}
+        {currentQuestion.anchorFactPrompt && !activeRepairCard && (
+          <div className="w-full mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/60 to-orange-950/40 border border-amber-500/40 text-amber-200 text-xs shadow-lg backdrop-blur-md flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <div className="font-bold text-amber-300 uppercase tracking-wider text-[10px] font-mono">
+                Anchor Fact Landmark & Mental Shortcut
+              </div>
+              <div className="text-amber-100 font-medium font-mono text-sm">
+                {currentQuestion.anchorFactPrompt}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Guided Learn Mode Preview Banner */}
         {learningMode === 'learn' && !activeRepairCard && (
           <div className="w-full mb-3 p-3 rounded-2xl bg-violet-950/40 border border-violet-500/30 text-xs text-violet-200 flex items-start gap-2.5">
@@ -462,7 +501,9 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               ? {}
               : lastResult === 'correct'
               ? { scale: [1, 1.03, 1], borderColor: '#10b981' }
-              : lastResult === 'incorrect' || lastResult === 'skipped'
+              : lastResult === 'skipped'
+              ? { scale: [1, 1.01, 1], borderColor: '#38bdf8' }
+              : lastResult === 'incorrect'
               ? { x: [-6, 6, -4, 4, -2, 2, 0], borderColor: '#ef4444' }
               : {}
           }
@@ -470,17 +511,26 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
           className={`relative w-full p-6 sm:p-8 rounded-3xl bg-slate-900/90 border-2 transition-colors flex flex-col items-center justify-center shadow-2xl backdrop-blur-xl ${
             lastResult === 'correct'
               ? 'border-emerald-500/80 bg-emerald-950/20 shadow-emerald-500/20'
-              : lastResult === 'incorrect' || lastResult === 'skipped'
+              : lastResult === 'skipped'
+              ? 'border-sky-500/80 bg-sky-950/20 shadow-sky-500/20'
+              : lastResult === 'incorrect'
               ? 'border-rose-500/80 bg-rose-950/20 shadow-rose-500/20'
               : 'border-slate-800 shadow-slate-950/60'
           }`}
         >
           {/* Strategy / Tip Helper Bar */}
           <div className="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-3">
-            <span className="flex items-center gap-1 text-violet-400 font-medium truncate max-w-[200px]">
-              <Zap className="w-3.5 h-3.5 shrink-0" />
-              {currentQuestion.strategyTitle}
-            </span>
+            <div className="flex items-center gap-1.5 max-w-[240px] truncate">
+              <span className="flex items-center gap-1 text-violet-400 font-medium truncate">
+                <Zap className="w-3.5 h-3.5 shrink-0" />
+                {currentQuestion.strategyTitle}
+              </span>
+              {currentQuestion.tableMode && (
+                <span className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[10px] font-mono font-bold uppercase shrink-0 border border-violet-500/30">
+                  {currentQuestion.tableMode.replace(/_/g, ' ')}
+                </span>
+              )}
+            </div>
             <button
               onClick={() => toggleStrategy()}
               className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 transition-colors shrink-0"
@@ -506,6 +556,16 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {/* Why this question explanation badge */}
+          {currentQuestion.selectionReason && (
+            <div className="mb-4 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-300 flex items-center gap-2 max-w-sm text-center shadow-sm">
+              <Brain className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+              <span className="truncate" title={currentQuestion.selectionReason}>
+                <strong className="text-violet-300 font-semibold">Adaptive reason:</strong> {currentQuestion.selectionReason}
+              </span>
+            </div>
+          )}
 
           {/* Correct / Incorrect / Skipped Clear Comparison Pill */}
           <AnimatePresence>
@@ -540,36 +600,61 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
             )}
           </AnimatePresence>
 
-          {/* Input Buffer Display */}
-          <div className="w-full max-w-xs h-16 rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
-            <span
-              className={`text-3xl sm:text-4xl font-mono font-bold tracking-widest ${
-                lastResult === 'correct'
-                  ? 'text-emerald-400'
-                  : lastResult === 'incorrect'
-                  ? 'text-rose-400'
-                  : 'text-white'
-              }`}
-            >
-              {inputBuffer || (
-                <span className="text-slate-600 text-xl font-normal tracking-normal font-sans">
-                  Type answer...
-                </span>
-              )}
-            </span>
-            <span className="w-0.5 h-7 bg-violet-400 ml-1 animate-pulse" />
-
-            {/* Micro feedback icon */}
-            {lastResult === 'correct' && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                className="absolute right-4 text-emerald-400"
+          {/* Input Buffer / Multiple Choice Prompt Display */}
+          {currentQuestion.options && currentQuestion.options.length > 0 ? (
+            <div className="w-full max-w-xs h-16 rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
+              <span
+                className={`text-2xl sm:text-3xl font-mono font-bold tracking-wider ${
+                  lastResult === 'correct'
+                    ? 'text-emerald-400'
+                    : lastResult === 'incorrect'
+                    ? 'text-rose-400'
+                    : 'text-slate-400'
+                }`}
               >
-                <CheckCircle2 className="w-6 h-6" />
-              </motion.div>
-            )}
-          </div>
+                {isEvaluating ? (lastAnswerSubmitted ?? '...') : 'Select Option (1-4)'}
+              </span>
+              {lastResult === 'correct' && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute right-4 text-emerald-400"
+                >
+                  <CheckCircle2 className="w-6 h-6" />
+                </motion.div>
+              )}
+            </div>
+          ) : (
+            <div className="w-full max-w-xs h-16 rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
+              <span
+                className={`text-3xl sm:text-4xl font-mono font-bold tracking-widest ${
+                  lastResult === 'correct'
+                    ? 'text-emerald-400'
+                    : lastResult === 'incorrect'
+                    ? 'text-rose-400'
+                    : 'text-white'
+                }`}
+              >
+                {inputBuffer || (
+                  <span className="text-slate-600 text-xl font-normal tracking-normal font-sans">
+                    Type answer...
+                  </span>
+                )}
+              </span>
+              <span className="w-0.5 h-7 bg-violet-400 ml-1 animate-pulse" />
+
+              {/* Micro feedback icon */}
+              {lastResult === 'correct' && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute right-4 text-emerald-400"
+                >
+                  <CheckCircle2 className="w-6 h-6" />
+                </motion.div>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* Post-Error Action Row */}
@@ -592,64 +677,99 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
           </div>
         )}
 
-        {/* Custom Ergonomic Numeric Keypad (48px+ targets for thumb use) */}
-        <div className="w-full mt-4 grid grid-cols-3 gap-2">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        {/* Custom Ergonomic Input Area: Options vs Keypad */}
+        {currentQuestion.options && currentQuestion.options.length > 0 ? (
+          <div className="w-full mt-4 space-y-2.5">
+            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 px-1">
+              <span className="uppercase tracking-wider">Multiple Choice</span>
+              <span className="text-violet-400">Keys [1] [2] [3] [4] or tap</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              {currentQuestion.options.map((opt, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => selectMultipleChoiceOption(opt)}
+                  disabled={isEvaluating}
+                  className="h-16 sm:h-20 p-4 rounded-2xl bg-slate-900/90 hover:bg-violet-900/30 hover:border-violet-500/80 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-md flex items-center justify-between group disabled:opacity-50"
+                >
+                  <span className="w-8 h-8 rounded-xl bg-slate-800 group-hover:bg-violet-600 text-slate-300 group-hover:text-white flex items-center justify-center text-xs font-bold border border-slate-700 transition-colors">
+                    {idx + 1}
+                  </span>
+                  <span className="text-right font-black tracking-wide text-white group-hover:text-violet-200">
+                    {opt}
+                  </span>
+                </button>
+              ))}
+            </div>
+            {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
+              <button
+                onClick={() => loadNextQuestion()}
+                className="w-full h-13 mt-3 rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2"
+              >
+                <span>Next Question (↵ or Space)</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="w-full mt-4 grid grid-cols-3 gap-2">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+              <button
+                key={num}
+                onClick={() => appendDigit(num.toString())}
+                disabled={isEvaluating}
+                className="h-13 sm:h-15 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-2xl font-bold font-mono text-slate-100 transition-all shadow-md active:shadow-none flex items-center justify-center disabled:opacity-50"
+              >
+                {num}
+              </button>
+            ))}
+
+            {/* Bottom row: Negative toggle / Backspace, 0, Submit / Next */}
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                onClick={toggleNegative}
+                disabled={isEvaluating}
+                className="h-13 sm:h-15 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 font-mono font-bold text-lg transition-all flex items-center justify-center disabled:opacity-50"
+                title="Toggle negative number (-)"
+              >
+                ±
+              </button>
+              <button
+                onClick={backspace}
+                disabled={isEvaluating}
+                className="h-13 sm:h-15 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center disabled:opacity-50"
+                title="Backspace"
+              >
+                <Delete className="w-5 h-5" />
+              </button>
+            </div>
+
             <button
-              key={num}
-              onClick={() => appendDigit(num.toString())}
+              onClick={() => appendDigit('0')}
               disabled={isEvaluating}
               className="h-13 sm:h-15 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-2xl font-bold font-mono text-slate-100 transition-all shadow-md active:shadow-none flex items-center justify-center disabled:opacity-50"
             >
-              {num}
+              0
             </button>
-          ))}
 
-          {/* Bottom row: Negative toggle / Backspace, 0, Submit / Next */}
-          <div className="grid grid-cols-2 gap-1.5">
-            <button
-              onClick={toggleNegative}
-              disabled={isEvaluating}
-              className="h-13 sm:h-15 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 font-mono font-bold text-lg transition-all flex items-center justify-center disabled:opacity-50"
-              title="Toggle negative number (-)"
-            >
-              ±
-            </button>
-            <button
-              onClick={backspace}
-              disabled={isEvaluating}
-              className="h-13 sm:h-15 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center disabled:opacity-50"
-              title="Backspace"
-            >
-              <Delete className="w-5 h-5" />
-            </button>
+            {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') ? (
+              <button
+                onClick={() => loadNextQuestion()}
+                className="h-13 sm:h-15 rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center"
+              >
+                Next (↵)
+              </button>
+            ) : (
+              <button
+                onClick={() => submitAnswer()}
+                disabled={isEvaluating || !inputBuffer || inputBuffer === '-'}
+                className="h-13 sm:h-15 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:bg-slate-900 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold text-lg font-mono transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center"
+              >
+                Enter
+              </button>
+            )}
           </div>
-
-          <button
-            onClick={() => appendDigit('0')}
-            disabled={isEvaluating}
-            className="h-13 sm:h-15 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-2xl font-bold font-mono text-slate-100 transition-all shadow-md active:shadow-none flex items-center justify-center disabled:opacity-50"
-          >
-            0
-          </button>
-
-          {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') ? (
-            <button
-              onClick={() => loadNextQuestion()}
-              className="h-13 sm:h-15 rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center"
-            >
-              Next (↵)
-            </button>
-          ) : (
-            <button
-              onClick={submitAnswer}
-              disabled={isEvaluating || !inputBuffer || inputBuffer === '-'}
-              className="h-13 sm:h-15 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:bg-slate-900 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold text-lg font-mono transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center"
-            >
-              Enter
-            </button>
-          )}
-        </div>
+        )}
 
         {/* Auxiliary actions: Skip, Tutorial, Timer toggle */}
         <div className="mt-4 flex items-center justify-between w-full text-xs text-slate-400 px-1">

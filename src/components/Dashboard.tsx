@@ -20,11 +20,16 @@ import {
   AlertTriangle,
   Play,
   Table,
+  Target,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ADD_SUB_LEVELS } from '../core/calcEngine';
 import { calculateCPM, calculateUserRank, getBadges } from '../core/mastery';
 import { getRecommendedNextDrill, analyzeProgress } from '../core/adaptive';
+import {
+  MICRO_SESSION_PRESETS,
+  evaluateActiveCurriculumPhase,
+} from '../core/curriculumEngine';
 import { AICoachCard } from './AICoachCard';
 import { AICoachDrawer } from './AICoachDrawer';
 import { MyLearningPlan } from './MyLearningPlan';
@@ -50,9 +55,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
     learnerProfile,
     startAssessment,
     setActiveTableChartTab,
+    startExamQuantDrill,
+    startMicroSession,
+    startTablesBootcamp,
+    calculateExamTransferScores,
+    examTransferScores,
   } = useQuizStore();
 
   const [isCoachDrawerOpen, setIsCoachDrawerOpen] = useState(false);
+
+  const studyDay = Math.max(1, overallStats.dailyActiveStreak || 1);
+  const currentPhase = evaluateActiveCurriculumPhase(studyDay, learnerProfile);
+  const scores = examTransferScores || calculateExamTransferScores();
 
   const cpm = calculateCPM(
     overallStats.totalCorrect,
@@ -187,6 +201,147 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 space-y-8">
         {/* Prominent My Learning Plan Section */}
         <MyLearningPlan />
+
+        {/* RRB PO Prelims Speed Quant Readiness Card */}
+        <section className="p-6 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-indigo-950/40 border border-emerald-500/30 shadow-2xl space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  <Target className="w-5 h-5" />
+                </span>
+                <h2 className="text-lg font-bold text-white tracking-wide">
+                  RRB PO Prelims Speed Quant Engine
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold uppercase border border-emerald-500/30">
+                  Target: 35/35
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
+                Evaluates your real arithmetic automaticity against IBPS RRB Officer Scale-I benchmarks.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setViewMode('exam_quant')}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
+              >
+                11 Sub-Skills Hub
+              </button>
+              <button
+                onClick={() => startExamQuantDrill('quant_simplification')}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-1.5"
+              >
+                <Zap className="w-3.5 h-3.5 fill-white" />
+                <span>Quick 15-Q Mock</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 5 Transfer Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 font-mono text-center">
+            <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
+              <div className="text-[10px] text-slate-500 uppercase">Readiness</div>
+              <div className="text-xl font-bold text-emerald-400">{scores.rrbReadiness}%</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
+              <div className="text-[10px] text-slate-500 uppercase">Automaticity</div>
+              <div className="text-xl font-bold text-violet-400">{scores.calculationAutomaticity}%</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
+              <div className="text-[10px] text-slate-500 uppercase">Exam Speed</div>
+              <div className="text-xl font-bold text-amber-400">{scores.examSpeed}%</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
+              <div className="text-[10px] text-slate-500 uppercase">Accuracy</div>
+              <div className="text-xl font-bold text-sky-400">{scores.examAccuracy}%</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 col-span-2 sm:col-span-1">
+              <div className="text-[10px] text-slate-500 uppercase">Foundation</div>
+              <div className="text-xl font-bold text-white">{scores.foundationScore}%</div>
+            </div>
+          </div>
+        </section>
+
+        {/* 60-Day RRB PO Quant Roadmap & Micro-Sessions */}
+        <section className="space-y-4">
+          <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold uppercase border border-amber-500/30">
+                    Day {studyDay} of 60
+                  </span>
+                  <h3 className="text-base font-bold text-white">
+                    {currentPhase.title}
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400">
+                  {currentPhase.description}
+                </p>
+              </div>
+
+              <button
+                onClick={() => setViewMode('bootcamp_11_20')}
+                className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg shadow-amber-600/30 transition-all flex items-center gap-2 shrink-0"
+              >
+                <Flame className="w-4 h-4 fill-white" />
+                <span>Open Bootcamp 11–20</span>
+              </button>
+            </div>
+
+            {/* Phase Milestones Bar */}
+            <div className="p-3 rounded-2xl bg-slate-950/80 border border-slate-800/80 text-xs flex flex-wrap items-center gap-4 text-slate-300">
+              <span className="font-bold text-amber-400 font-mono text-[11px] uppercase">
+                Phase Benchmarks:
+              </span>
+              {currentPhase.benchmarkRequirements.map((m: string, idx: number) => (
+                <div key={idx} className="flex items-center gap-1.5 text-[11px]">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span>{m}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* 4 Micro-Session Speed Presets */}
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between text-[11px] font-mono text-slate-400">
+                <span className="uppercase tracking-wider">Speed Conditioning Micro-Sessions</span>
+                <span>Deterministic offline timers</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+                {MICRO_SESSION_PRESETS.map((preset) => (
+                  <button
+                    key={preset.id}
+                    onClick={() => startMicroSession(preset.id)}
+                    className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-amber-500/50 hover:bg-slate-800/60 transition-all text-left flex flex-col justify-between group"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                          {preset.name}
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                          {preset.durationMinutes}m
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 line-clamp-2">
+                        {preset.description}
+                      </p>
+                    </div>
+                    <div className="mt-3 pt-2 border-t border-slate-800/60 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                      <span>{preset.durationMinutes === 2 ? 15 : preset.durationMinutes === 5 ? 25 : preset.durationMinutes === 10 ? 40 : 60} items</span>
+                      <span className="text-amber-400 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                        Start <ChevronRight className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* AI Pedagogical Coach Card */}
         <AICoachCard onOpenCoachDrawer={() => setIsCoachDrawerOpen(true)} />

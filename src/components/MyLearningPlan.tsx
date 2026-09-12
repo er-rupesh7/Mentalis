@@ -17,6 +17,7 @@ import {
   HelpCircle,
   Award,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import {
@@ -234,6 +235,17 @@ export const MyLearningPlan: React.FC = () => {
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
               Adaptive Spaced Curriculum
             </span>
+            {plan?.isLevel0 ? (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                Level 0 Foundation Plan (Offline)
+              </span>
+            ) : (
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                Personalized Offline Plan
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-400">
             Precision fact memory, decay prevention, speed bottleneck repair, and targeted tricks
@@ -354,12 +366,25 @@ export const MyLearningPlan: React.FC = () => {
       {/* Today's Personalized Practice Blocks */}
       {plan && (
         <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-violet-400" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 font-mono">
                 Today’s 5-Block Routine ({plan.totalEstimatedMinutes} mins total)
               </h3>
+              {plan.isLevel0 ? (
+                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-500/30">
+                  Level 0 Offline
+                </span>
+              ) : plan.source === 'ai_enhanced' ? (
+                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-300 border border-indigo-500/30">
+                  Groq AI Enhanced
+                </span>
+              ) : (
+                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-cyan-950/40 text-cyan-300 border border-cyan-500/30">
+                  Local Plan
+                </span>
+              )}
             </div>
             <span className="text-xs font-mono text-slate-400">
               {completedBlocksCount}/{plan.blocks.length} Completed

@@ -4,29 +4,66 @@
  * confidence intervals, error patterns, fatigue signals, and training plans.
  */
 
-import { ModuleId, Question } from './types';
+import { ModuleId, Question, SpeedLadderLevel, CognitiveResponseState } from './types';
 
 export type SkillDimension =
-  // Addition & Subtraction
+  // Addition & Subtraction Foundations
   | 'add_sub_non_bridging'      // Level 1: single digit & non-crossing sums/diffs
   | 'add_sub_bridging_decade'   // Level 2: crossing decade boundary (8+7, 52-7)
   | 'add_sub_complements_100'   // Level 3: base-100 complements and decade jumps
   | 'add_sub_multidigit_l2r'    // Level 4: 2-digit & 3-digit left-to-right accumulator
   | 'add_sub_mixed_chain'       // Level 5 & 6: multi-term running mental sums
-  // Multiplication
+
+  // Granular Tables 2 through 20 (tracked independently)
+  | 'table_2'  | 'table_3'  | 'table_4'  | 'table_5'
+  | 'table_6'  | 'table_7'  | 'table_8'  | 'table_9'  | 'table_10'
+  | 'table_11' | 'table_12' | 'table_13' | 'table_14' | 'table_15'
+  | 'table_16' | 'table_17' | 'table_18' | 'table_19' | 'table_20'
+
+  // Backward-compatible table groupings
   | 'mult_foundations'          // Tables 2, 3, 4, 5, 10
   | 'mult_core_tables'          // Tables 6, 7, 8, 9, 11, 12
   | 'mult_teen_tables'          // Tables 13, 14, 15, 16, 17, 18, 19
   | 'mult_decade_ext'           // Tables 20, 25, 30, 40, 50, 60, 75
+
+  // Number Facts
+  | 'complements_10'            // Complements to 10
+  | 'complements_100'           // Complements to 100
+  | 'doubles_halves'            // Rapid doubling and halving
+  | 'near_doubles'              // Near doubles (e.g. 36 + 37)
+  | 'fraction_percentage_equiv' // 1/2 to 1/40 fraction-percentage pairs
+
+  // Arithmetic Operations
+  | 'add_1d_1d' | 'add_2d_1d' | 'add_2d_2d' | 'add_3d_2d'
+  | 'sub_1d_1d' | 'sub_2d_1d' | 'sub_2d_2d' | 'sub_3d_2d'
+  | 'mult_1d_1d' | 'mult_2d_1d' | 'mult_2d_2d'
+  | 'div_by_1d' | 'div_by_2d'
+  | 'mixed_operations'
+
   // Squares & Cubes
+  | 'squares_1_20'
   | 'squares_ending_5'          // 15², 25², 35² ... 95²
   | 'squares_near_50'           // (50 ± d)² = 25 ± d | d²
   | 'squares_near_100'          // (100 ± d)² = 100 ± 2d | d²
   | 'squares_duplex_general'    // General 2-digit duplex method
   | 'cubes_anchors'             // Anchor cubes 1³–12³, 20³–100³
   | 'cubes_advanced'            // Advanced 2-digit cubes 13³–99³
+
   // Working Memory
-  | 'anzan_stream';             // Sequential flashed working memory addition
+  | 'anzan_stream'              // Sequential flashed working memory addition
+
+  // Exam Calculation Skills (RRB PO / IBPS Quant)
+  | 'quant_simplification'      // BODMAS arithmetic expressions
+  | 'quant_approximation'       // Rounding and percent estimation
+  | 'quant_percentage'          // % calculations (18% of 250, etc.)
+  | 'quant_ratio'               // Ratio simplification & splitting
+  | 'quant_average'             // Mean calculation via deviation method
+  | 'quant_profit_loss'         // CP, SP, Profit %, markup/discount
+  | 'quant_si_ci'               // Simple & Compound Interest arithmetic
+  | 'quant_time_work'           // Unit work & efficiency arithmetic
+  | 'quant_speed_distance'      // Relative speed & conversion arithmetic
+  | 'quant_di_arithmetic'       // Rapid DI table sums, diffs, ratios
+  | 'quant_number_series';      // Missing term pattern arithmetic
 
 export type MasteryTier = 'novice' | 'developing' | 'proficient' | 'master' | 'grandmaster';
 export type DecayRisk = 'low' | 'moderate' | 'high' | 'critical';
@@ -42,6 +79,18 @@ export interface SkillEstimate {
   lastPracticed: number; // UNIX timestamp ms
   decayRisk: DecayRisk;
   masteryTier: MasteryTier;
+
+  // Extended metrics for RRB PO Quant & Automaticity
+  masteryScore?: number;        // 0 - 100
+  recentResponseTimeMs?: number;// Recent moving window latency
+  consistency?: number;         // 0 - 100 (stability of response time)
+  errorFrequency?: number;      // Recent error rate (0 - 1.0)
+  streak?: number;              // Current streak
+  bestStreak?: number;          // All-time best streak
+  currentDifficulty?: number;   // 1 - 10
+  numberExposures?: number;     // Independent exposures
+  speedLadderLevel?: SpeedLadderLevel; // 1 to 6
+  automaticityRate?: number;    // % of responses classified as 'recalled'
 }
 
 export type ErrorPatternType =
@@ -153,6 +202,54 @@ export interface TrainingPlan {
   rationale: string;
   focusDimensions: SkillDimension[];
   isCompleted: boolean;
+  source?: 'offline' | 'ai_enhanced';
+  isLevel0?: boolean;
+}
+
+export type AIProviderStatus =
+  | 'ready'
+  | 'cooldown'
+  | 'rate_limited'
+  | 'missing_key'
+  | 'network_error'
+  | 'pending_sync';
+
+export interface GroqPlanAdjustment {
+  target: string;
+  action: string;
+  strategy_id: string;
+  reason: string;
+}
+
+export interface GroqLessonCard {
+  title: string;
+  fact_or_family: string;
+  trick: string;
+  worked_example: string;
+  practice_prompt: string;
+}
+
+export interface GroqCoachResponse {
+  summary: string;
+  priority_facts: string[];
+  priority_skills: string[];
+  recommended_plan_adjustments: GroqPlanAdjustment[];
+  lesson_cards: GroqLessonCard[];
+  coach_message: string;
+  confidence: number;
+}
+
+export interface AICoachState {
+  learnerId: string;
+  cooldownMinutes: number; // 15 to 30, default 30
+  lastSuccessfulRequestAt: number | null;
+  nextEligibleRequestAt: number;
+  providerStatus: AIProviderStatus;
+  lastErrorType: string | null;
+  retryAfterSeconds: number | null;
+  pendingSync: boolean;
+  lastAiLesson: GroqCoachResponse | null;
+  planSource: 'offline' | 'ai_enhanced';
 }
 
 export interface CoachingInsight {
@@ -182,6 +279,8 @@ export interface CoachingInsight {
     suggestedDrillId?: string;
     reason: string;
   }[];
+  lessonCards?: GroqLessonCard[];
+  groqResponse?: GroqCoachResponse;
   confidence: number;
   generatedAt: number;
   source: 'ai' | 'deterministic';
@@ -217,7 +316,45 @@ export const ALL_SKILL_DIMENSIONS: SkillDimension[] = [
   'anzan_stream',
 ];
 
+export const EXTENDED_SKILL_DIMENSIONS: SkillDimension[] = [
+  'table_2',  'table_3',  'table_4',  'table_5',
+  'table_6',  'table_7',  'table_8',  'table_9',  'table_10',
+  'table_11', 'table_12', 'table_13', 'table_14', 'table_15',
+  'table_16', 'table_17', 'table_18', 'table_19', 'table_20',
+  'complements_10',
+  'complements_100',
+  'doubles_halves',
+  'near_doubles',
+  'fraction_percentage_equiv',
+  'add_1d_1d', 'add_2d_1d', 'add_2d_2d', 'add_3d_2d',
+  'sub_1d_1d', 'sub_2d_1d', 'sub_2d_2d', 'sub_3d_2d',
+  'mult_1d_1d', 'mult_2d_1d', 'mult_2d_2d',
+  'div_by_1d', 'div_by_2d',
+  'mixed_operations',
+  'squares_1_20',
+  'quant_simplification',
+  'quant_approximation',
+  'quant_percentage',
+  'quant_ratio',
+  'quant_average',
+  'quant_profit_loss',
+  'quant_si_ci',
+  'quant_time_work',
+  'quant_speed_distance',
+  'quant_di_arithmetic',
+  'quant_number_series',
+];
+
+export const TOTAL_SKILL_DIMENSIONS: SkillDimension[] = [
+  ...ALL_SKILL_DIMENSIONS,
+  ...EXTENDED_SKILL_DIMENSIONS,
+];
+
 export function getDimensionLabel(dim: SkillDimension): string {
+  if (dim.startsWith('table_')) {
+    const t = dim.replace('table_', '');
+    return `Table ×${t} Mastery`;
+  }
   switch (dim) {
     case 'add_sub_non_bridging': return 'Single-Digit & Non-Crossing (L1)';
     case 'add_sub_bridging_decade': return 'Decade Bridging (L2)';
@@ -228,6 +365,26 @@ export function getDimensionLabel(dim: SkillDimension): string {
     case 'mult_core_tables': return 'Core Times Tables (6-9, 11-12)';
     case 'mult_teen_tables': return 'Teen Tables (13-19)';
     case 'mult_decade_ext': return 'Decade Multiplication (20-75)';
+    case 'complements_10': return 'Base-10 Complements';
+    case 'complements_100': return 'Base-100 Complements';
+    case 'doubles_halves': return 'Doubles & Halves';
+    case 'near_doubles': return 'Near-Doubles Mental Step';
+    case 'fraction_percentage_equiv': return 'Fraction ↔ Percentage Conversions';
+    case 'add_1d_1d': return '1-Digit + 1-Digit';
+    case 'add_2d_1d': return '2-Digit + 1-Digit';
+    case 'add_2d_2d': return '2-Digit + 2-Digit';
+    case 'add_3d_2d': return '3-Digit + 2-Digit';
+    case 'sub_1d_1d': return '1-Digit - 1-Digit';
+    case 'sub_2d_1d': return '2-Digit - 1-Digit';
+    case 'sub_2d_2d': return '2-Digit - 2-Digit';
+    case 'sub_3d_2d': return '3-Digit - 2-Digit';
+    case 'mult_1d_1d': return 'Single-Digit Multiplication';
+    case 'mult_2d_1d': return '2-Digit × 1-Digit';
+    case 'mult_2d_2d': return '2-Digit × 2-Digit';
+    case 'div_by_1d': return 'Division by 1-Digit';
+    case 'div_by_2d': return 'Division by 2-Digit';
+    case 'mixed_operations': return 'Mixed Operations';
+    case 'squares_1_20': return 'Squares 1² to 20²';
     case 'squares_ending_5': return 'Squares Ending in 5';
     case 'squares_near_50': return 'Squares Base 50';
     case 'squares_near_100': return 'Squares Base 100';
@@ -235,14 +392,125 @@ export function getDimensionLabel(dim: SkillDimension): string {
     case 'cubes_anchors': return 'Anchor Cubes (1-12, Decades)';
     case 'cubes_advanced': return 'Advanced Cubes (13-100)';
     case 'anzan_stream': return 'Anzan Working Memory';
+    case 'quant_simplification': return 'Simplification & BODMAS';
+    case 'quant_approximation': return 'Approximation & Estimation';
+    case 'quant_percentage': return 'Percentage Calculations';
+    case 'quant_ratio': return 'Ratio Simplification & Splitting';
+    case 'quant_average': return 'Average (Deviation Method)';
+    case 'quant_profit_loss': return 'Profit & Loss Arithmetic';
+    case 'quant_si_ci': return 'Simple & Compound Interest';
+    case 'quant_time_work': return 'Time & Work Arithmetic';
+    case 'quant_speed_distance': return 'Speed, Time & Distance';
+    case 'quant_di_arithmetic': return 'Data Interpretation Arithmetic';
+    case 'quant_number_series': return 'Number Series Patterns';
+    default: return (dim as string).replace(/_/g, ' ');
   }
 }
 
 export function getDimensionModule(dim: SkillDimension): ModuleId {
-  if (dim.startsWith('add_sub')) return 'add_sub';
-  if (dim.startsWith('mult')) return 'multiplication';
+  if (dim.startsWith('table_')) return 'tables_bootcamp';
+  if (dim.startsWith('quant_')) return 'exam_quant';
+  if (dim === 'fraction_percentage_equiv') return 'fractions_percentages';
+  if (dim.startsWith('add_sub') || dim.startsWith('add_') || dim.startsWith('sub_') || dim.startsWith('comp')) return 'add_sub';
+  if (dim.startsWith('mult') || dim === 'doubles_halves' || dim === 'near_doubles' || dim.startsWith('div_')) return 'multiplication';
   if (dim.startsWith('squares') || dim.startsWith('cubes')) return 'squares_cubes';
   return 'working_memory';
+}
+
+/**
+ * Returns adaptive latency thresholds (ms) based on cognitive complexity.
+ */
+export function getAdaptiveLatencyThreshold(
+  dim: SkillDimension,
+  operandA?: number,
+  operandB?: number
+): number {
+  if (dim.startsWith('table_')) {
+    const tableNum = parseInt(dim.replace('table_', ''), 10) || 7;
+    const mult = operandB || 1;
+    if (tableNum <= 10 && mult <= 10) return 1500; // 1.5s for single digit
+    if (tableNum <= 12) return 2000;              // 2.0s for tables up to 12
+    return 2500;                                  // 2.5s for teen tables
+  }
+  if (dim === 'fraction_percentage_equiv') return 1800;
+  if (dim === 'complements_10') return 1200;
+  if (dim === 'complements_100') return 2000;
+  if (dim === 'doubles_halves') return 1500;
+  if (dim === 'add_1d_1d' || dim === 'sub_1d_1d') return 1200;
+  if (dim === 'add_2d_1d' || dim === 'sub_2d_1d') return 1800;
+  if (dim === 'add_2d_2d' || dim === 'sub_2d_2d') return 2800;
+  if (dim === 'add_3d_2d' || dim === 'sub_3d_2d') return 3500;
+  if (dim === 'mult_1d_1d') return 1500;
+  if (dim === 'mult_2d_1d') return 2800;
+  if (dim === 'mult_2d_2d') return 5500;
+  if (dim === 'div_by_1d') return 2000;
+  if (dim === 'div_by_2d') return 3800;
+  if (dim === 'squares_1_20') return 2000;
+  if (dim.startsWith('squares_')) return 3200;
+  if (dim.startsWith('cubes_')) return 3500;
+  if (dim === 'quant_simplification') return 6000;
+  if (dim === 'quant_approximation') return 5000;
+  if (dim === 'quant_percentage') return 4500;
+  if (dim === 'quant_ratio') return 4500;
+  if (dim === 'quant_average') return 5000;
+  if (dim === 'quant_profit_loss' || dim === 'quant_si_ci') return 6000;
+  if (dim === 'quant_di_arithmetic') return 6000;
+  if (dim === 'quant_number_series') return 6500;
+  return 3000;
+}
+
+/**
+ * Classifies learner response into one of 5 cognitive states.
+ */
+export function classifyCognitiveResponse(
+  isCorrect: boolean,
+  latencyMs: number,
+  targetLatencyMs: number,
+  usedHintOrStrategy: boolean = false
+): CognitiveResponseState {
+  if (!isCorrect) return 'wrong';
+  if (usedHintOrStrategy || latencyMs > 6500) return 'uncertain';
+  if (latencyMs <= targetLatencyMs * 0.9) return 'recalled';
+  if (latencyMs <= targetLatencyMs * 1.5) return 'calculated';
+  return 'slow';
+}
+
+/**
+ * Evaluates the earned speed ladder level (1 through 6) based on rigorous mastery criteria.
+ * Difficulty must NEVER increase simply because questions were completed.
+ */
+export function evaluateSpeedLadderLevel(
+  currentLevel: SpeedLadderLevel = 1,
+  totalAttempts: number,
+  accuracy: number,
+  consecutiveAutomatic: number,
+  recentLatencyMs: number,
+  targetLatencyMs: number
+): SpeedLadderLevel {
+  if (totalAttempts < 3) return 1; // Level 1: Learn
+  if (accuracy < 85) return 1;
+
+  // Level 2: Accurate (>= 90% accuracy, >= 4 attempts)
+  if (accuracy >= 90 && totalAttempts >= 4) {
+    // Level 3: Stable (>= 95% accuracy, >= 8 attempts)
+    if (accuracy >= 95 && totalAttempts >= 8) {
+      // Level 4: Fast (recentLatencyMs <= targetLatencyMs * 1.2)
+      if (recentLatencyMs > 0 && recentLatencyMs <= targetLatencyMs * 1.2) {
+        // Level 5: Automatic (consecutiveAutomatic >= 4 and latency <= target)
+        if (consecutiveAutomatic >= 4 && recentLatencyMs <= targetLatencyMs) {
+          // Level 6: Exam Transfer
+          if (currentLevel === 6 || totalAttempts >= 20) {
+            return 6;
+          }
+          return 5;
+        }
+        return 4;
+      }
+      return 3;
+    }
+    return 2;
+  }
+  return 1;
 }
 
 export function calculateDecayRisk(lastPracticedMs: number, nowMs: number = Date.now()): DecayRisk {
@@ -280,7 +548,7 @@ export function createDefaultSkillEstimate(dim: SkillDimension): SkillEstimate {
 
 export function createDefaultLearnerProfile(): LearnerProfile {
   const skills = {} as Record<SkillDimension, SkillEstimate>;
-  for (const dim of ALL_SKILL_DIMENSIONS) {
+  for (const dim of TOTAL_SKILL_DIMENSIONS) {
     skills[dim] = createDefaultSkillEstimate(dim);
   }
 
@@ -346,6 +614,31 @@ export function updateSkillEstimate(
       ? Math.round(existing.medianLatencyMs * 0.7 + latencyMs * 0.3)
       : latencyMs;
 
+  const updatedStreak = isCorrect ? (existing.streak || 0) + 1 : 0;
+  const bestStreak = Math.max(existing.bestStreak || 0, updatedStreak);
+
+  // Classify response automaticity
+  const responseState = classifyCognitiveResponse(isCorrect, latencyMs, targetLatencyMs);
+  const isAutomatic = responseState === 'recalled';
+  const consecutiveAutomatic = isAutomatic ? ((existing as any).consecutiveAutomatic || 0) + 1 : 0;
+
+  const speedLadderLevel = evaluateSpeedLadderLevel(
+    existing.speedLadderLevel || 1,
+    newAttempts,
+    newAccuracy,
+    consecutiveAutomatic,
+    updatedMedianLatency,
+    targetLatencyMs
+  );
+
+  const masteryScore = Math.min(
+    100,
+    Math.max(
+      0,
+      Math.round(newAccuracy * 0.5 + Math.min(50, (speedLadderLevel - 1) * 10 + (isCorrect ? 5 : 0)))
+    )
+  );
+
   const masteryTier = evaluateMasteryTier(updatedTheta, newAccuracy, newAttempts);
   const decayRisk = calculateDecayRisk(nowMs, nowMs);
 
@@ -357,9 +650,16 @@ export function updateSkillEstimate(
     correctCount: newCorrect,
     accuracy: newAccuracy,
     medianLatencyMs: updatedMedianLatency,
+    recentResponseTimeMs: latencyMs,
     lastPracticed: nowMs,
     decayRisk,
     masteryTier,
+    streak: updatedStreak,
+    bestStreak,
+    masteryScore,
+    errorFrequency: Number(((newAttempts - newCorrect) / newAttempts).toFixed(2)),
+    numberExposures: newAttempts,
+    speedLadderLevel,
   };
 }
 

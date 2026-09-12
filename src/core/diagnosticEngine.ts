@@ -13,6 +13,7 @@ import {
   LearnerProfile,
   SkillDimension,
   updateSkillEstimate,
+  getDimensionLabel,
 } from './learnerModel';
 import {
   FactKey,
@@ -672,23 +673,5 @@ export function generateBaselineReport(
 }
 
 function getFriendlyDimensionName(dimension: SkillDimension): string {
-  const map: Record<SkillDimension, string> = {
-    add_sub_non_bridging: 'Foundational Add/Sub',
-    add_sub_bridging_decade: 'Decade Crossing',
-    add_sub_complements_100: 'Base-100 Complements',
-    add_sub_multidigit_l2r: 'Left-to-Right Multi-Digit',
-    add_sub_mixed_chain: 'Running Mental Chains',
-    mult_foundations: 'Foundation Tables (2, 3, 4, 5, 10)',
-    mult_core_tables: 'Core Times Tables (6, 7, 8, 9, 11, 12)',
-    mult_teen_tables: 'Teen Multipliers (x13-x20)',
-    mult_decade_ext: 'Decade & Quarter Scaling',
-    squares_ending_5: 'Squares Ending in 5',
-    squares_near_50: 'Squares Near 50',
-    squares_near_100: 'Squares Near 100',
-    squares_duplex_general: 'General 2-Digit Duplex Squares',
-    cubes_anchors: 'Benchmark Anchor Cubes',
-    cubes_advanced: 'Advanced Cubes',
-    anzan_stream: 'Anzan Flash Working Memory',
-  };
-  return map[dimension] || dimension;
+  return getDimensionLabel(dimension);
 }

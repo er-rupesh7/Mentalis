@@ -35,7 +35,7 @@ describe('AI Safety, Privacy & Canonical Catalog Validation', () => {
     }
   });
 
-  it('verifies that client bundles never import or reference server OPENAI_API_KEY', () => {
+  it('verifies that client bundles never import or reference server GROQ_API_KEY or OPENAI_API_KEY', () => {
     const srcDir = path.resolve(__dirname, '../../');
     const clientFiles = [
       'core/types.ts',
@@ -48,13 +48,19 @@ describe('AI Safety, Privacy & Canonical Catalog Validation', () => {
       'core/diagnosticEngine.ts',
       'core/planEngine.ts',
       'core/store/useQuizStore.ts',
+      'components/AICoachCard.tsx',
+      'components/AICoachDrawer.tsx',
+      'components/MyLearningPlan.tsx',
     ];
 
     for (const relPath of clientFiles) {
       const fullPath = path.join(srcDir, relPath);
       if (fs.existsSync(fullPath)) {
         const content = fs.readFileSync(fullPath, 'utf8');
+        expect(content).not.toContain('process.env.GROQ_API_KEY');
         expect(content).not.toContain('process.env.OPENAI_API_KEY');
+        expect(content).not.toContain("from 'groq-sdk'");
+        expect(content).not.toContain("from 'openai'");
       }
     }
   });

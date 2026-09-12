@@ -22,11 +22,174 @@ import {
 import {
   getDefaultDrillForDimension,
 } from './catalog';
-import { FactMemoryState, FactKey } from './factModel';
+import { FactMemoryState, FactKey, parseFactKey } from './factModel';
 import { generateQuestionFromFact } from './factEngine';
 
 export interface TrainingBlockExt extends TrainingBlock {
   targetFactKeys?: FactKey[];
+}
+
+/**
+ * Robust, fully offline "Level 0 Foundation Plan".
+ * Activates when uncalibrated, offline, Groq rate-limited, missing API key,
+ * or when AI response validation fails.
+ *
+ * Grounded in cognitive arithmetic pedagogy:
+ * 1. Simple place-value addition & complements to 100
+ * 2. Multiplication anchors (×1, ×2, ×5, ×10) & shortcuts (×9, ×11, ×12, ×15, ×25, ×50)
+ * 3. Progressive tables (3, 4, 6, 7, 8, 9, 11, 12) targeting exact skips
+ * 4. Square anchors (1²–20²), ending in 5, near 50, near 100, and cube anchors (1³–20³)
+ * 5. Anzan working memory phonological loop expansion
+ */
+export function generateLevel0FoundationPlan(
+  profile: LearnerProfile,
+  requestedMinutes: number = profile.preferredDailyMinutes || 15,
+  factMemoryMap?: Record<string, FactMemoryState>
+): TrainingPlan {
+  const totalMinutes = Math.max(10, Math.min(30, requestedMinutes));
+  const todayStr = new Date().toISOString().split('T')[0];
+  const now = Date.now();
+
+  const facts = factMemoryMap ? Object.values(factMemoryMap) : [];
+
+  // Identify specific signals from real local data
+  const skippedFacts = facts.filter((f) => (f.skipCount || 0) > 0);
+  const slowFacts = facts.filter((f) => f.totalAttempts >= 2 && f.recentAccuracy >= 60 && f.medianLatencyMs > 3500);
+  const weakSquares = facts.filter((f) => f.factType === 'square' && (f.consecutiveErrors > 0 || f.stabilityScore < 60));
+  const weakCubes = facts.filter((f) => f.factType === 'cube' && (f.consecutiveErrors > 0 || f.medianLatencyMs > 3500));
+
+  // Determine accuracy trend
+  const practicedFacts = facts.filter((f) => f.totalAttempts > 0);
+  const avgAccuracy = practicedFacts.length > 0
+    ? practicedFacts.reduce((acc, f) => acc + f.recentAccuracy, 0) / practicedFacts.length
+    : 100;
+  const hasAccuracyDeclined = practicedFacts.length >= 5 && avgAccuracy < 70;
+
+  // Construct specific personal notes from current saved data
+  const personalNotes: string[] = [];
+
+  if (skippedFacts.length > 0) {
+    const skipList = skippedFacts.slice(0, 2).map((f) => {
+      if (f.factType === 'multiplication') return `${f.operandA}×${f.operandB || 1}`;
+      if (f.factType === 'square') return `${f.operandA}²`;
+      return `${f.operandA}³`;
+    }).join(' and ');
+    const maxSkips = Math.max(...skippedFacts.map((f) => f.skipCount || 1));
+    personalNotes.push(`Review ${skipList} because they were skipped ${maxSkips > 1 ? `${maxSkips} times` : 'recently'}.`);
+  }
+
+  const near50Square = weakSquares.find((f) => Math.abs(f.operandA - 50) <= 9);
+  if (near50Square) {
+    personalNotes.push(`Practice ${near50Square.operandA}² and 52² using the near-50 method.`);
+  } else if (weakSquares.length > 0) {
+    personalNotes.push(`Practice ${weakSquares[0].operandA}² using base anchors.`);
+  }
+
+  if (weakCubes.length > 0) {
+    personalNotes.push(`Revisit ${weakCubes[0].operandA}³ after slow recall.`);
+  } else if (slowFacts.length > 0) {
+    const slowItem = slowFacts[0];
+    const label = slowItem.factType === 'multiplication' ? `${slowItem.operandA}×${slowItem.operandB}` : `${slowItem.operandA}²`;
+    personalNotes.push(`Revisit ${label} after slow recall.`);
+  }
+
+  if (hasAccuracyDeclined) {
+    personalNotes.push('Use a shorter mixed session because recent accuracy has declined.');
+  }
+
+  if (personalNotes.length === 0) {
+    personalNotes.push('Master anchor tables (×1, ×2, ×5, ×10), place-value addition/subtraction, and base-50 squares.');
+  }
+
+  const rationale = `Level 0 Foundation Plan: ${personalNotes.join(' ')}`;
+
+  // Block time allocations
+  const block1Min = Math.max(2, Math.round(totalMinutes * 0.20));
+  const block2Min = Math.max(3, Math.round(totalMinutes * 0.25));
+  const block3Min = Math.max(3, Math.round(totalMinutes * 0.25));
+  const block4Min = Math.max(2, Math.round(totalMinutes * 0.15));
+  const block5Min = Math.max(1, totalMinutes - (block1Min + block2Min + block3Min + block4Min));
+
+  // Determine repair target table
+  const repairTable = skippedFacts.find((f) => f.factType === 'multiplication')?.operandA || 7;
+
+  const blocks: TrainingBlock[] = [
+    {
+      id: `block_l0_addsub_${now}_1`,
+      blockType: 'warmup',
+      title: `${block1Min} min: Addition & Subtraction Place-Value Foundations`,
+      description: 'Left-to-right accumulation and complements to 100 for rapid baseline calculation.',
+      dimension: 'mult_foundations',
+      drillId: 'add_sub_level_2',
+      targetCount: Math.round(block1Min * 3.5),
+      allocatedMinutes: block1Min,
+      completedCount: 0,
+      status: 'pending',
+    },
+    {
+      id: `block_l0_repair_${now}_2`,
+      blockType: 'priority_weakness',
+      title: `${block2Min} min: Progressive Tables & Skipped Repair (Table ×${repairTable})`,
+      description: skippedFacts.length > 0
+        ? `Targeted repair on skipped items (${skippedFacts.slice(0, 3).map((f) => `${f.operandA}×${f.operandB || 1}`).join(', ')}) to build direct memory.`
+        : `Progressive times table fluency for core tables 3, 4, 6, 7, 8, 9, 11, 12.`,
+      dimension: 'mult_core_tables',
+      drillId: `table_${repairTable}`,
+      targetCount: Math.round(block2Min * 3.0),
+      allocatedMinutes: block2Min,
+      completedCount: 0,
+      status: 'pending',
+    },
+    {
+      id: `block_l0_shortcuts_${now}_3`,
+      blockType: 'mixed_retrieval',
+      title: `${block3Min} min: Multiplication Anchors & Shortcuts (×2, ×5, ×9, ×11, ×12, ×15, ×25, ×50)`,
+      description: 'Internalize anchor relationships: ×9 = ×10−group, ×11 patterns, ×12 = ×10+×2, ×25 = ÷4×100.',
+      dimension: 'mult_decade_ext',
+      drillId: 'table_4',
+      targetCount: Math.round(block3Min * 3.0),
+      allocatedMinutes: block3Min,
+      completedCount: 0,
+      status: 'pending',
+    },
+    {
+      id: `block_l0_squares_${now}_4`,
+      blockType: 'strategy_refinement',
+      title: `${block4Min} min: Squares (1²–20², Ending in 5, Near 50) & Cube Anchors`,
+      description: 'Apply Ekadhikena for ending in 5 (N(N+1)|25) and near-50 base 25 shortcuts (48²=2304).',
+      dimension: 'squares_near_50',
+      drillId: 'sq_near_50',
+      targetCount: Math.round(block4Min * 2.5),
+      allocatedMinutes: block4Min,
+      completedCount: 0,
+      status: 'pending',
+    },
+    {
+      id: `block_l0_anzan_${now}_5`,
+      blockType: 'anzan_working_memory',
+      title: `${block5Min} min: Working Memory Agility (Anzan Flash)`,
+      description: 'Strengthen phonological loop capacity through rapid flash serial accumulation.',
+      dimension: 'anzan_stream',
+      drillId: 'anzan_standard',
+      targetCount: Math.round(block5Min * 2.5),
+      allocatedMinutes: block5Min,
+      completedCount: 0,
+      status: 'pending',
+    },
+  ];
+
+  return {
+    id: `plan_l0_${todayStr}_${now}`,
+    date: todayStr,
+    createdAt: now,
+    totalEstimatedMinutes: totalMinutes,
+    blocks,
+    focusDimensions: ['add_sub_bridging_decade', 'mult_foundations', 'mult_core_tables', 'squares_near_50'],
+    rationale,
+    isCompleted: false,
+    source: 'offline',
+    isLevel0: true,
+  };
 }
 
 /**
@@ -38,6 +201,14 @@ export function generateDailyTrainingPlan(
   requestedMinutes: number = profile.preferredDailyMinutes || 15,
   factMemoryMap?: Record<string, FactMemoryState>
 ): TrainingPlan {
+  // If user has not calibrated via baseline assessment or has 0 attempts across all skills,
+  // provide the Level 0 Foundation Plan immediately.
+  const allSkills = Object.values(profile.skills);
+  const totalAttemptsAcrossAll = allSkills.reduce((acc, s) => acc + s.totalAttempts, 0);
+  if (!profile.baselineReport && totalAttemptsAcrossAll === 0) {
+    return generateLevel0FoundationPlan(profile, requestedMinutes, factMemoryMap);
+  }
+
   const totalMinutes = Math.max(10, Math.min(30, requestedMinutes));
   const todayStr = new Date().toISOString().split('T')[0];
   const now = Date.now();
@@ -65,8 +236,6 @@ export function generateDailyTrainingPlan(
   );
 
   // Check if beginner or has specific profile skill weaknesses
-  const allSkills = Object.values(profile.skills);
-  const totalAttemptsAcrossAll = allSkills.reduce((acc, s) => acc + s.totalAttempts, 0);
   const isBeginner = totalAttemptsAcrossAll === 0;
 
   // Find lowest ability skill or high-risk decayed skill among practiced skills
@@ -170,6 +339,7 @@ export function generateDailyTrainingPlan(
     focusDimensions: ['mult_core_tables', 'mult_teen_tables', 'squares_near_50'],
     rationale: `Targeted daily plan prioritizing due recall (${dueFactSample}), table ${repairTable} repair, and squares/cubes benchmarks.`,
     isCompleted: false,
+    source: 'offline',
   };
 }
 
