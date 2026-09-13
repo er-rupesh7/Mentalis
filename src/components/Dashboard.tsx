@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslations } from 'next-intl';
 import {
   Brain,
   Flame,
@@ -45,6 +46,10 @@ interface DashboardProps {
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
+  const tDash = useTranslations('dashboard');
+  const tCommon = useTranslations('common');
+  const tNav = useTranslations('nav');
+
   const {
     overallStats,
     progressMap,
@@ -172,11 +177,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                   <Brain className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  Mentalis <span className="text-violet-400 font-serif italic text-xl">Cognitive Math</span>
+                  {tCommon('appName')} <span className="text-violet-400 font-serif italic text-xl">{tDash('title')}</span>
                 </h1>
               </div>
               <p className="text-xs sm:text-sm text-slate-400">
-                Left-to-Right Accumulator • 1–100 Table Matrix • Anzan Working Memory
+                {tDash('subtitle')}
               </p>
             </div>
 
@@ -186,21 +191,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white border border-violet-400/30 text-xs font-bold transition-all shadow-md shadow-violet-600/30 min-h-[44px]"
               >
                 <Sliders className="w-4 h-4" />
-                Custom Workout
+                {tDash('customDrill')}
               </button>
               <button
                 onClick={onOpenTutorial}
                 className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all shadow-sm min-h-[44px]"
               >
                 <BookOpen className="w-4 h-4" />
-                <span className="hidden sm:inline">Pedagogy</span> Lab
+                <span>{tDash('pedagogyLab')}</span>
               </button>
               <button
                 onClick={() => setViewMode('heatmap')}
                 className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all shadow-sm min-h-[44px]"
               >
                 <Grid className="w-4 h-4" />
-                100 Tables
+                <span>{tDash('tables100')}</span>
               </button>
             </div>
           </div>
@@ -213,9 +218,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 <Flame className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-[10px] font-mono uppercase text-slate-400">Daily Streak</div>
+                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('dailyStreak')}</div>
                 <div className="text-xl font-bold font-mono text-white flex items-baseline gap-1">
-                  {overallStats.dailyActiveStreak} <span className="text-xs font-normal text-amber-400">days</span>
+                  {overallStats.dailyActiveStreak} <span className="text-xs font-normal text-amber-400">{tDash('days')}</span>
                 </div>
               </div>
             </div>
@@ -226,7 +231,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-[10px] font-mono uppercase text-slate-400">Solved Offline</div>
+                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('solvedOffline')}</div>
                 <div className="text-xl font-bold font-mono text-white">
                   {overallStats.totalCalculations}
                 </div>
@@ -239,9 +244,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 <TrendingUp className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-[10px] font-mono uppercase text-slate-400">Throughput (CPM)</div>
+                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('throughputCpm')}</div>
                 <div className="text-xl font-bold font-mono text-emerald-400 flex items-baseline gap-1">
-                  {cpm} <span className="text-xs font-normal text-slate-500">calc/min</span>
+                  {cpm} <span className="text-xs font-normal text-slate-500">{tDash('calcMin')}</span>
                 </div>
               </div>
             </div>
@@ -252,12 +257,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 <Award className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[10px] font-mono uppercase text-slate-400">Current Rank</div>
+                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('currentRank')}</div>
                 <div className="text-xs font-bold text-white truncate" title={userRank.title}>
                   {userRank.title}
                 </div>
                 <div className="text-[10px] text-sky-400 font-mono">
-                  Tier {userRank.tierLevel + 1}/6
+                  {tDash('tier')} {userRank.tierLevel + 1}/6
                 </div>
               </div>
             </div>
@@ -279,14 +284,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-base sm:text-lg font-extrabold text-white">
-                    Techniques Curriculum Studio
+                    {tDash('techniquesStudio')}
                   </h3>
                   <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
-                    35 Shortcuts
+                    {tDash('shortcutsCount', { count: 35 })}
                   </span>
                 </div>
                 <p className="text-xs text-slate-300 mt-1 max-w-xl">
-                  L2R place-value addition, Vedic Nikhilam complements, Antyayor Dasakepi, Trachtenberg system, and universal Duplex squaring.
+                  {tDash('techniquesStudioDesc')}
                 </p>
               </div>
             </div>
@@ -295,31 +300,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               onClick={() => setViewMode('techniques')}
               className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex-shrink-0 active:scale-95"
             >
-              <span>Launch Studio</span>
+              <span>{tDash('launchStudio')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-800/80 text-[11px] font-medium text-slate-400">
             <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
-              <span>1. Fundamental Ops</span>
-              <span className="text-emerald-400 font-mono font-bold">6 Techs</span>
+              <span>{tDash('moduleFundamental')}</span>
+              <span className="text-emerald-400 font-mono font-bold">{tDash('techsCount', { count: 6 })}</span>
             </div>
             <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
-              <span>2. Multiplication</span>
-              <span className="text-indigo-400 font-mono font-bold">9 Techs</span>
+              <span>{tDash('moduleMultiplication')}</span>
+              <span className="text-indigo-400 font-mono font-bold">{tDash('techsCount', { count: 9 })}</span>
             </div>
             <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
-              <span>3. Squares & Cubes</span>
-              <span className="text-violet-400 font-mono font-bold">7 Techs</span>
+              <span>{tDash('moduleSquaresCubes')}</span>
+              <span className="text-violet-400 font-mono font-bold">{tDash('techsCount', { count: 7 })}</span>
             </div>
             <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
-              <span>4. Root Extraction</span>
-              <span className="text-amber-400 font-mono font-bold">3 Techs</span>
+              <span>{tDash('moduleRootExtraction')}</span>
+              <span className="text-amber-400 font-mono font-bold">{tDash('techsCount', { count: 3 })}</span>
             </div>
             <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
-              <span>5. Fast Division</span>
-              <span className="text-rose-400 font-mono font-bold">4 Techs</span>
+              <span>{tDash('moduleFastDivision')}</span>
+              <span className="text-rose-400 font-mono font-bold">{tDash('techsCount', { count: 4 })}</span>
             </div>
           </div>
         </section>
@@ -333,13 +338,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-base font-bold text-white">Custom Workout & Automaticity Hub</h3>
+                  <h3 className="text-base font-bold text-white">{tDash('customWorkoutHub')}</h3>
                   <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
-                    Offline First
+                    {tDash('offlineFirst')}
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Target Table 18 or 19 automaticity, multi-digit place-value addition/subtraction, or build your own workout.
+                  {tDash('customWorkoutDesc')}
                 </p>
               </div>
             </div>
@@ -349,7 +354,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-md shadow-violet-600/30 transition-all min-h-[44px]"
             >
               <Sliders className="w-4 h-4" />
-              <span>Open Workout Builder</span>
+              <span>{tDash('openWorkoutBuilder')}</span>
             </button>
           </div>
 
@@ -359,19 +364,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-white">Table ×18 Automaticity</span>
+                  <span className="text-xs font-bold text-white">{tDash('table18Title')}</span>
                 </div>
                 <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Drill Table 18 multiples randomly until 95% accuracy with previous table revision.
+                {tDash('table18Desc')}
               </p>
               <button
                 onClick={() => startSingleTableMastery(18)}
                 className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <Play className="w-3.5 h-3.5 fill-violet-300" />
-                <span>Master Table ×18</span>
+                <span>{tDash('masterTable18')}</span>
               </button>
             </div>
 
@@ -380,19 +385,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Flame className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-white">Table ×19 Automaticity</span>
+                  <span className="text-xs font-bold text-white">{tDash('table19Title')}</span>
                 </div>
                 <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Drill Table 19 multiples randomly until 95% accuracy with previous table revision.
+                {tDash('table19Desc')}
               </p>
               <button
                 onClick={() => startSingleTableMastery(19)}
                 className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <Play className="w-3.5 h-3.5 fill-violet-300" />
-                <span>Master Table ×19</span>
+                <span>{tDash('masterTable19')}</span>
               </button>
             </div>
 
@@ -401,12 +406,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-bold text-white">2d±2d & 3d±2d L2R</span>
+                  <span className="text-xs font-bold text-white">{tDash('multidigitTitle')}</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">Non-negative</span>
+                <span className="text-[10px] font-mono text-slate-400">{tDash('nonNegative')}</span>
               </div>
               <p className="text-[11px] text-slate-400">
-                Left-to-Right mental striding across multi-digit combinations.
+                {tDash('multidigitDesc')}
               </p>
               <button
                 onClick={() =>
@@ -427,7 +432,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 className="w-full py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/80 border border-emerald-700/40 text-emerald-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
               >
                 <Play className="w-3.5 h-3.5 fill-emerald-300" />
-                <span>Start Multi-Digit Drill</span>
+                <span>{tDash('startMultidigit')}</span>
               </button>
             </div>
           </div>
@@ -437,7 +442,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             <div className="flex items-center gap-2 text-slate-400">
               <Download className="w-4 h-4 text-cyan-400" />
               <span>
-                <strong>Brain Matrix:</strong> All progress, facts, and techniques are saved offline in localStorage.
+                {tDash('brainMatrixNote')}
               </span>
               {backupFeedback && (
                 <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold animate-pulse">
@@ -453,7 +458,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 title="Copy full JSON matrix to clipboard"
               >
                 <Copy className="w-3.5 h-3.5" />
-                <span>Copy JSON</span>
+                <span>{tDash('copyJson')}</span>
               </button>
               <button
                 onClick={handleExportDownload}
@@ -461,7 +466,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 title="Download JSON matrix file"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>Download</span>
+                <span>{tDash('download')}</span>
               </button>
               <button
                 onClick={() => setIsImportModalOpen(true)}
@@ -469,7 +474,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 title="Restore from JSON matrix"
               >
                 <Upload className="w-3.5 h-3.5" />
-                <span>Restore</span>
+                <span>{tDash('restore')}</span>
               </button>
             </div>
           </div>
@@ -625,7 +630,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="px-2.5 py-0.5 rounded-full bg-violet-600/30 text-violet-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-violet-500/40">
-                  Today’s Adaptive Recommendation
+                  {tDash('todayRecommendation')}
                 </span>
                 {analysis.decayedSkills.length > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono flex items-center gap-1 border border-amber-500/30">
@@ -646,7 +651,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 className="px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center gap-2"
               >
                 <Play className="w-3.5 h-3.5 fill-white" />
-                Launch Adaptive Session
+                {tDash('launchAdaptive')}
               </button>
             </div>
           </div>
@@ -655,7 +660,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
           <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col justify-between space-y-3">
             <div className="space-y-1">
               <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider block">
-                Last Active Drill
+                {tDash('lastActiveDrill')}
               </span>
               <h4 className="text-sm font-bold text-white">
                 {activeModule === 'multiplication'
@@ -665,7 +670,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                   : activeSquareTrack.replace(/_/g, ' ').toUpperCase()}
               </h4>
               <p className="text-xs text-slate-400">
-                Continue directly from where you last trained.
+                {tDash('continueWhereLeft')}
               </p>
             </div>
 
@@ -673,7 +678,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               onClick={handleResumeLastDrill}
               className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs border border-slate-700 transition-colors flex items-center justify-center gap-2"
             >
-              <span>Resume Drill</span>
+              <span>{tDash('resumeDrill')}</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -683,17 +688,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-white tracking-wide uppercase font-mono text-slate-400">
-              Curriculum Mastery Progress
+              {tDash('curriculumMastery')}
             </h2>
             <span className="text-xs font-mono text-violet-400">
-              {userRank.masteredTablesCount}/99 Tables Mastered
+              {userRank.masteredTablesCount}/99 {tDash('tablesMastered')}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
               <div className="flex items-center justify-between text-slate-400 font-mono">
-                <span>Add & Sub</span>
+                <span>{tDash('addSub')}</span>
                 <span className="text-white font-bold">{userRank.masteredAddSubCount}/6</span>
               </div>
               <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
@@ -706,7 +711,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
 
             <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
               <div className="flex items-center justify-between text-slate-400 font-mono">
-                <span>100 Tables</span>
+                <span>{tDash('tables100')}</span>
                 <span className="text-white font-bold">{userRank.masteredTablesCount}/99</span>
               </div>
               <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
@@ -719,7 +724,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
 
             <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
               <div className="flex items-center justify-between text-slate-400 font-mono">
-                <span>Squares & Cubes</span>
+                <span>{tDash('squaresCubes')}</span>
                 <span className="text-white font-bold">{userRank.masteredSquaresCount}/6</span>
               </div>
               <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
@@ -732,8 +737,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
 
             <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-2">
               <div className="flex items-center justify-between text-slate-400 font-mono">
-                <span>Anzan Best</span>
-                <span className="text-white font-bold">{anzanStats.bestStreak} streak</span>
+                <span>{tDash('anzanBest')}</span>
+                <span className="text-white font-bold">{anzanStats.bestStreak} {tDash('streak')}</span>
               </div>
               <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
                 <div
@@ -751,10 +756,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-violet-500 shadow-sm shadow-violet-500" />
               <h2 className="text-base font-bold text-white tracking-wide">
-                Module A: Progressive Left-to-Right Addition & Subtraction
+                {tDash('moduleA')}
               </h2>
             </div>
-            <span className="text-xs text-slate-400">Most Significant Digit First</span>
+            <span className="text-xs text-slate-400">{tDash('msdFirst')}</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -774,18 +779,18 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-mono font-bold text-violet-400">
-                        Level {lvl.levelNumber}
+                        {tCommon('level')} {lvl.levelNumber}
                       </span>
                       {isMastered && (
                         <span className="flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-800/60">
                           <CheckCircle2 className="w-3 h-3" />
-                          Mastered
+                          {tDash('mastered')}
                         </span>
                       )}
                       {isDecayed && (
                         <span className="flex items-center gap-1 text-[11px] font-mono text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-800/60">
                           <RefreshCw className="w-3 h-3" />
-                          Refresh
+                          {tDash('refresh')}
                         </span>
                       )}
                     </div>
@@ -797,9 +802,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                   </div>
 
                   <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                    <span className="font-mono text-[11px]">&lt;{lvl.targetTimeSeconds}s target</span>
+                    <span className="font-mono text-[11px]">{tDash('targetSeconds', { target: lvl.targetTimeSeconds })}</span>
                     <span className="text-violet-400 group-hover:translate-x-1 transition-transform flex items-center gap-0.5">
-                      Train <ChevronRight className="w-3 h-3" />
+                      {tDash('train')} <ChevronRight className="w-3 h-3" />
                     </span>
                   </div>
                 </motion.button>
@@ -817,10 +822,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                   <Table className="w-4 h-4 text-violet-400" />
                 </span>
                 <h2 className="text-base font-bold text-white tracking-wide">
-                  Table Chart Reference (1 to 100)
+                  {tDash('tableChartReference')}
                 </h2>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
-                  5 Essential Tables
+                  {tDash('essentialTables')}
                 </span>
               </div>
               <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
@@ -836,7 +841,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2 shrink-0"
             >
               <Table className="w-3.5 h-3.5" />
-              <span>Open Table Chart</span>
+              <span>{tDash('openTableChart')}</span>
             </button>
           </div>
 
@@ -875,7 +880,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500" />
               <h2 className="text-base font-bold text-white tracking-wide">
-                Module B: 1 to 100 Multiplication Matrix
+                {tDash('moduleB')}
               </h2>
             </div>
             <p className="text-xs text-slate-400 max-w-lg leading-relaxed">
@@ -888,7 +893,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 shrink-0"
           >
             <Grid className="w-4 h-4" />
-            Open 100 Heatmap Grid
+            {tDash('openHeatmap')}
           </button>
         </section>
 
@@ -898,10 +903,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-sm shadow-amber-500" />
               <h2 className="text-base font-bold text-white tracking-wide">
-                Module C: Squares & Cubes (1 to 100)
+                {tDash('moduleC')}
               </h2>
             </div>
-            <span className="text-xs text-slate-400">Vedic & Binomial Shortcuts</span>
+            <span className="text-xs text-slate-400">{tDash('vedicBinomialShortcuts')}</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -971,7 +976,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-violet-400" />
               <h2 className="text-base font-bold text-white tracking-wide">
-                Cognitive Working Memory Engine (Anzan Flash)
+                {tDash('anzanTeaser')}
               </h2>
             </div>
             <p className="text-xs text-slate-400 max-w-lg">
@@ -984,14 +989,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             className="px-5 py-3 rounded-2xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs transition-all shadow-lg shadow-violet-600/20 flex items-center justify-center gap-2 shrink-0"
           >
             <Play className="w-4 h-4 fill-white" />
-            Start Anzan Flash
+            {tDash('startAnzan')}
           </button>
         </section>
 
         {/* Unlocked Badges Showcase */}
         <section className="space-y-3">
           <h2 className="text-sm font-bold text-white tracking-wide uppercase font-mono text-slate-400">
-            Achievements & Badges
+            {tDash('achievementsBadges')}
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {badges.map((b) => (

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Brain,
   Flame,
@@ -18,15 +19,20 @@ import {
   X,
   Target,
   Sliders,
+  Settings,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
+import { LanguageSelector } from './LanguageSelector';
 
 interface NavigationProps {
   onOpenTutorial: () => void;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
+  const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
+
   const {
     viewMode,
     setViewMode,
@@ -36,6 +42,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
     activeTableChartTab,
     setActiveTableChartTab,
     setIsCustomDrillModalOpen,
+    setIsSettingsModalOpen,
   } = useQuizStore();
 
   const [isTableDropdownOpen, setIsTableDropdownOpen] = useState(false);
@@ -54,11 +61,11 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
   }, []);
 
   const tableSubOptions: { id: TableChartTab; label: string; sub: string }[] = [
-    { id: 'mul', label: '1. Mul Table', sub: '1 to 100 (× 20 multiples)' },
-    { id: 'squares', label: '2. Squares Table', sub: '1² to 100²' },
-    { id: 'cubes', label: '3. Cube Table', sub: '1³ to 100³' },
-    { id: 'sqrt', label: '4. Square Root Table', sub: '√1 to √100' },
-    { id: 'cbrt', label: '5. Cuberoot Table', sub: '∛1 to ∛100' },
+    { id: 'mul', label: tNav('mulTable'), sub: '1 to 100 (× 20 multiples)' },
+    { id: 'squares', label: tNav('squaresTable'), sub: '1² to 100²' },
+    { id: 'cubes', label: tNav('cubesTable'), sub: '1³ to 100³' },
+    { id: 'sqrt', label: tNav('sqrtTable'), sub: '√1 to √100' },
+    { id: 'cbrt', label: tNav('cbrtTable'), sub: '∛1 to ∛100' },
   ];
 
   const handleSelectTableTab = (tabId: TableChartTab) => {
@@ -82,11 +89,11 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             <Brain className="w-5 h-5" />
           </div>
           <span className="font-extrabold text-base tracking-tight text-white">
-            Mentalis
+            {tCommon('appName')}
           </span>
         </button>
 
-        {/* Desktop View Mode Nav Pills (Cleanly contained with horizontal scroll if screen is narrow) */}
+        {/* Desktop View Mode Nav Pills */}
         <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-medium overflow-x-auto scrollbar-none shrink min-w-0">
           <button
             onClick={() => setViewMode('dashboard')}
@@ -97,7 +104,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
-            Dashboard
+            {tNav('dashboard')}
           </button>
 
           <button
@@ -109,7 +116,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Flame className="w-3.5 h-3.5" />
-            Bootcamp 11–20
+            {tNav('bootcamp')}
           </button>
 
           <button
@@ -121,7 +128,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Target className="w-3.5 h-3.5" />
-            Exam Quant
+            {tNav('examQuant')}
           </button>
 
           <button
@@ -133,7 +140,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Techniques
+            {tNav('techniques')}
           </button>
 
           <button
@@ -141,7 +148,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-violet-300 hover:text-white hover:bg-slate-800 transition-all font-semibold shrink-0 whitespace-nowrap"
           >
             <Sliders className="w-3.5 h-3.5" />
-            Custom Drill
+            {tNav('customWorkout')}
           </button>
 
           <button
@@ -153,7 +160,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Calculator className="w-3.5 h-3.5" />
-            Zen Drill
+            {tNav('practice')}
           </button>
 
           <button
@@ -165,7 +172,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Zap className="w-3.5 h-3.5" />
-            Anzan Flash
+            {tNav('anzan')}
           </button>
 
           {/* Table Chart with Dropdown Menu */}
@@ -183,7 +190,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 }`}
               >
                 <Table className="w-3.5 h-3.5" />
-                <span>Table Chart</span>
+                <span>{tNav('tableChart')}</span>
               </button>
 
               <button
@@ -207,7 +214,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             {isTableDropdownOpen && (
               <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-slate-900 border border-slate-700/80 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-xl">
                 <div className="px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-800/80 mb-1">
-                  Table Chart Navigation
+                  {tNav('tableChart')}
                 </div>
                 <div className="space-y-0.5">
                   {tableSubOptions.map((opt) => {
@@ -248,7 +255,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Grid className="w-3.5 h-3.5" />
-            100 Tables
+            {tNav('tables')}
           </button>
 
           <button
@@ -260,7 +267,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Brain className="w-3.5 h-3.5" />
-            Memory Map
+            {tNav('memoryMap')}
           </button>
 
           <button
@@ -272,20 +279,25 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             }`}
           >
             <Sparkles className="w-3.5 h-3.5" />
-            Skill Profile
+            {tNav('skillProfile')}
           </button>
         </nav>
 
         {/* Right HUD Controls */}
-        <div className="flex items-center gap-2 shrink-0">
-          {/* Tutorial Pill */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Polished Language Selector (Desktop) */}
+          <div className="hidden sm:block">
+            <LanguageSelector variant="dropdown" />
+          </div>
+
+          {/* Theory / Tutorial Pill */}
           <button
             onClick={onOpenTutorial}
             className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors"
-            title="Open Tutorial"
+            title={tNav('theory')}
           >
             <BookOpen className="w-3.5 h-3.5 text-violet-400" />
-            <span className="hidden sm:inline">Theory</span>
+            <span className="hidden lg:inline">{tNav('theory')}</span>
           </button>
 
           {/* Active Streak */}
@@ -295,6 +307,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                 : 'bg-slate-900 text-slate-500 border border-slate-800'
             }`}
+            title={`${tCommon('streak')}: ${streak}`}
           >
             <Flame className={`w-3.5 h-3.5 ${streak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
             <span>{streak}</span>
@@ -307,6 +320,15 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             title={soundEnabled ? 'Mute' : 'Unmute'}
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
+          {/* Settings Modal Button */}
+          <button
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors hidden sm:flex items-center justify-center"
+            title={tCommon('settings')}
+          >
+            <Settings className="w-4 h-4" />
           </button>
 
           {/* Mobile Hamburger Menu Toggle */}
@@ -322,7 +344,31 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
       {/* Mobile Navigation Dropdown */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-4 py-3 space-y-2">
+        <div className="md:hidden border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-4 py-3 space-y-3">
+          {/* Mobile Language Section */}
+          <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                {tCommon('language')} / Language
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSettingsModalOpen(true);
+                  setIsMobileMenuOpen(false);
+                }}
+                className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 font-semibold"
+              >
+                <Settings className="w-3.5 h-3.5" />
+                <span>{tCommon('settings')}</span>
+              </button>
+            </div>
+            <LanguageSelector
+              variant="inline"
+              onLanguageSelected={() => setIsMobileMenuOpen(false)}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-2 text-xs font-medium">
             <button
               onClick={() => {
@@ -336,7 +382,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <LayoutDashboard className="w-4 h-4 shrink-0" />
-              <span>Dashboard</span>
+              <span>{tNav('dashboard')}</span>
             </button>
 
             <button
@@ -351,7 +397,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Flame className="w-4 h-4 shrink-0" />
-              <span>Bootcamp 11–20</span>
+              <span>{tNav('bootcamp')}</span>
             </button>
 
             <button
@@ -366,7 +412,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Target className="w-4 h-4 shrink-0" />
-              <span>RRB Exam Quant</span>
+              <span>{tNav('examQuant')}</span>
             </button>
 
             <button
@@ -381,7 +427,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Sparkles className="w-4 h-4 shrink-0" />
-              <span>Techniques Studio</span>
+              <span>{tNav('techniques')}</span>
             </button>
 
             <button
@@ -392,7 +438,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               className="flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] bg-violet-950/40 text-violet-300 border-violet-800/60 font-semibold"
             >
               <Sliders className="w-4 h-4 shrink-0" />
-              <span>Custom Drill</span>
+              <span>{tNav('customWorkout')}</span>
             </button>
 
             <button
@@ -407,7 +453,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Calculator className="w-4 h-4 shrink-0" />
-              <span>Zen Drill</span>
+              <span>{tNav('practice')}</span>
             </button>
 
             <button
@@ -422,7 +468,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Zap className="w-4 h-4 shrink-0" />
-              <span>Anzan Flash</span>
+              <span>{tNav('anzan')}</span>
             </button>
 
             <button
@@ -437,7 +483,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Grid className="w-4 h-4 shrink-0" />
-              <span>100 Tables</span>
+              <span>{tNav('tables')}</span>
             </button>
 
             <button
@@ -452,7 +498,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Brain className="w-4 h-4 shrink-0" />
-              <span>Memory Map</span>
+              <span>{tNav('memoryMap')}</span>
             </button>
 
             <button
@@ -467,7 +513,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
               }`}
             >
               <Sparkles className="w-4 h-4 shrink-0 text-violet-400" />
-              <span>Skill Profile</span>
+              <span>{tNav('skillProfile')}</span>
             </button>
           </div>
 
@@ -476,7 +522,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             <div className="flex items-center justify-between text-xs font-bold text-white px-1">
               <span className="flex items-center gap-1.5">
                 <Table className="w-4 h-4 text-violet-400" />
-                Table Chart
+                {tNav('tableChart')}
               </span>
               <span className="text-[10px] text-violet-400 uppercase font-mono">5 Tables</span>
             </div>
@@ -504,8 +550,6 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </div>
         </div>
       )}
-
     </header>
   );
 };
-

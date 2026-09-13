@@ -19,6 +19,7 @@ import {
   ChevronRight,
   ShieldCheck,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useQuizStore } from '../core/store/useQuizStore';
 import {
   FactKey,
@@ -28,8 +29,11 @@ import {
   getFactCorrectAnswer,
 } from '../core/factModel';
 import { getBestStrategyForFact, StrategyDefinition } from '../core/strategyCatalog';
+import { getLocalizedStrategy } from '../i18n/techniqueTranslations';
 
 export const MyLearningPlan: React.FC = () => {
+  const tPlan = useTranslations('learningPlan');
+  const tCommon = useTranslations('common');
   const {
     activeTrainingPlan,
     startTrainingBlock,
@@ -41,6 +45,7 @@ export const MyLearningPlan: React.FC = () => {
     setViewMode,
     factMemoryMap,
     practiceFact,
+    locale,
   } = useQuizStore();
 
   const plan = activeTrainingPlan;
@@ -230,25 +235,25 @@ export const MyLearningPlan: React.FC = () => {
               <Sparkles className="w-4 h-4" />
             </div>
             <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
-              My Learning Plan
+              {tPlan('title')}
             </h2>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
-              Adaptive Spaced Curriculum
+              {tPlan('adaptiveCurriculum')}
             </span>
             {plan?.isLevel0 ? (
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                Level 0 Foundation Plan (Offline)
+                {tPlan('level0Plan')}
               </span>
             ) : (
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                Personalized Offline Plan
+                {tPlan('offlinePlan')}
               </span>
             )}
           </div>
           <p className="text-xs text-slate-400">
-            Precision fact memory, decay prevention, speed bottleneck repair, and targeted tricks
+            {tPlan('subtitle')}
           </p>
         </div>
 
@@ -261,8 +266,8 @@ export const MyLearningPlan: React.FC = () => {
             <Play className="w-3.5 h-3.5 fill-white" />
             <span>
               {isPlanCompleted
-                ? 'Practice Again'
-                : `Start Personalized Practice ${plan ? `(Block ${targetIndex + 1})` : ''}`}
+                ? tPlan('practiceAgain')
+                : `${tPlan('startPractice')} ${plan ? `(${tPlan('block')} ${targetIndex + 1})` : ''}`}
             </span>
           </button>
         </div>
@@ -333,14 +338,14 @@ export const MyLearningPlan: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-white">
-                  Diagnostic Baseline Calibrated: {baseline.overallTier}
+                  {tPlan('diagnosticCalibrated')}: {baseline.overallTier}
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/50 px-2 py-0.5 rounded border border-emerald-800/60">
                   {baseline.archetype || 'Calibrated'}
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Target pace: {baseline.recommendedDailyPaceMinutes} min/day • {(baseline.priorityGaps.length + (baseline.skippedFacts?.length || 0))} priority targets flagged for review
+                {tPlan('targetPace', { pace: baseline.recommendedDailyPaceMinutes, targets: baseline.priorityGaps.length + (baseline.skippedFacts?.length || 0) })}
               </p>
             </div>
           </div>
@@ -350,14 +355,14 @@ export const MyLearningPlan: React.FC = () => {
               onClick={() => setViewMode('profile')}
               className="text-xs font-semibold text-violet-300 hover:text-violet-200 px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 transition-colors"
             >
-              View Skill Report
+              {tPlan('viewReport')}
             </button>
             <button
               onClick={startAssessment}
               className="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 transition-colors"
               title="Retake diagnostic to re-evaluate your calibration"
             >
-              Re-calibrate
+              {tPlan('recalibrate')}
             </button>
           </div>
         </div>
@@ -438,12 +443,12 @@ export const MyLearningPlan: React.FC = () => {
                 <AlertTriangle className="w-4 h-4" />
               </span>
               <div>
-                <h3 className="text-sm font-bold text-white">Most Important Weak Facts</h3>
-                <p className="text-[11px] text-slate-400">Skipped facts, recurring slips, and decay</p>
+                <h3 className="text-sm font-bold text-white">{tPlan('weakFacts')}</h3>
+                <p className="text-[11px] text-slate-400">{tPlan('weakFactsSubtitle')}</p>
               </div>
             </div>
             <span className="text-xs font-mono text-rose-400 font-semibold">
-              {weakFacts.length > 0 ? `${weakFacts.length} active` : 'Starter Targets'}
+              {weakFacts.length > 0 ? `${weakFacts.length} ${tPlan('active')}` : 'Starter Targets'}
             </span>
           </div>
 
@@ -470,7 +475,7 @@ export const MyLearningPlan: React.FC = () => {
                         : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                     }`}
                   >
-                    {isSkipped ? `Skipped ${fact.skipCount}x` : hasErrors ? `${fact.consecutiveErrors} slips` : 'High decay'}
+                    {isSkipped ? `Skipped ${fact.skipCount}x` : hasErrors ? `${fact.consecutiveErrors} ${tPlan('slips')}` : 'High decay'}
                   </span>
                   <ChevronRight className="w-3 h-3 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
                 </button>
@@ -487,12 +492,12 @@ export const MyLearningPlan: React.FC = () => {
                 <RefreshCw className="w-4 h-4" />
               </span>
               <div>
-                <h3 className="text-sm font-bold text-white">Facts Due for Review</h3>
-                <p className="text-[11px] text-slate-400">SM-2 spaced recall to prevent forgetting</p>
+                <h3 className="text-sm font-bold text-white">{tPlan('reviewFacts')}</h3>
+                <p className="text-[11px] text-slate-400">{tPlan('reviewFactsSubtitle')}</p>
               </div>
             </div>
             <span className="text-xs font-mono text-amber-400 font-semibold">
-              {dueFacts.length} due
+              {dueFacts.length} {tPlan('due')}
             </span>
           </div>
 
@@ -513,7 +518,7 @@ export const MyLearningPlan: React.FC = () => {
                     {formatFactLabel(fact.factKey, fact.correctAnswer)}
                   </span>
                   <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    {Math.round(fact.forgettingRisk * 100)}% risk
+                    {Math.round(fact.forgettingRisk * 100)}% {tPlan('risk')}
                   </span>
                   <ChevronRight className="w-3 h-3 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
                 </button>
@@ -620,9 +625,9 @@ export const MyLearningPlan: React.FC = () => {
               <BookOpen className="w-4 h-4" />
             </span>
             <div>
-              <h3 className="text-sm font-bold text-white">Suggested Mental Tricks for Your Weak Facts</h3>
+              <h3 className="text-sm font-bold text-white">{tPlan('targetedTricks')}</h3>
               <p className="text-[11px] text-slate-400">
-                Cognitive shortcuts engineered to eliminate hesitation and replace slow column math
+                {tPlan('targetedTricksSubtitle')}
               </p>
             </div>
           </div>
@@ -636,40 +641,43 @@ export const MyLearningPlan: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {suggestedTricks.map(({ strategy, applicableFacts, exampleFactKey }) => (
-            <div
-              key={strategy.id}
-              className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-violet-500/50 transition-all flex flex-col justify-between space-y-3 group"
-            >
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-violet-300 group-hover:text-white transition-colors">
-                    {strategy.name}
-                  </span>
-                  <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded capitalize">
-                    {strategy.category}
-                  </span>
-                </div>
-                <p className="text-xs font-mono text-emerald-400 bg-emerald-950/30 p-2 rounded-lg border border-emerald-900/30">
-                  {strategy.mentalScript}
-                </p>
-                <div className="text-[11px] text-slate-400 flex items-center gap-1">
-                  <span>Solves:</span>
-                  <span className="font-mono text-slate-300 truncate">
-                    {applicableFacts.map((k) => formatFactLabel(k).split(' = ')[0]).join(', ')}
-                  </span>
-                </div>
-              </div>
-
-              <button
-                onClick={() => practiceFact(exampleFactKey, 'learn')}
-                className="w-full py-2 rounded-lg bg-violet-600/20 hover:bg-violet-600 text-violet-300 hover:text-white border border-violet-500/30 hover:border-transparent text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+          {suggestedTricks.map(({ strategy, applicableFacts, exampleFactKey }) => {
+            const locStrat = getLocalizedStrategy(strategy.id, locale, strategy.name, strategy.mentalScript);
+            return (
+              <div
+                key={strategy.id}
+                className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-violet-500/50 transition-all flex flex-col justify-between space-y-3 group"
               >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Learn Trick & Drill</span>
-              </button>
-            </div>
-          ))}
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-violet-300 group-hover:text-white transition-colors">
+                      {locStrat.name}
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400 bg-slate-900 px-1.5 py-0.5 rounded capitalize">
+                      {strategy.category}
+                    </span>
+                  </div>
+                  <p className="text-xs font-mono text-emerald-400 bg-emerald-950/30 p-2 rounded-lg border border-emerald-900/30">
+                    {locStrat.mentalScript}
+                  </p>
+                  <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                    <span>Solves:</span>
+                    <span className="font-mono text-slate-300 truncate">
+                      {applicableFacts.map((k) => formatFactLabel(k).split(' = ')[0]).join(', ')}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => practiceFact(exampleFactKey, 'learn')}
+                  className="w-full py-2 rounded-lg bg-violet-600/20 hover:bg-violet-600 text-violet-300 hover:text-white border border-violet-500/30 hover:border-transparent text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>{tPlan('practiceShortcut')}</span>
+                </button>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -8,6 +8,7 @@
 
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { SupportedLocale, defaultLocale } from '../../i18n/config';
 import {
   ModuleId,
   Question,
@@ -352,6 +353,9 @@ interface QuizState {
   reducedMotion: boolean;
   timerVisible: boolean;
   anzanConfig: AnzanConfig;
+  locale: SupportedLocale;
+  hasCompletedLanguageOnboarding: boolean;
+  isSettingsModalOpen: boolean;
 
   // Learner Profile & AI Coaching
   learnerProfile: LearnerProfile;
@@ -402,6 +406,9 @@ interface QuizState {
   toggleSound: () => void;
   toggleReducedMotion: () => void;
   toggleTimerVisibility: () => void;
+  setLocale: (locale: SupportedLocale) => void;
+  setHasCompletedLanguageOnboarding: (val: boolean) => void;
+  setIsSettingsModalOpen: (open: boolean) => void;
   updateAnzanConfig: (config: Partial<AnzanConfig>) => void;
   recordAnzanRun: (runData: Omit<AnzanRecord, 'id' | 'timestamp'>) => void;
   resetProgress: () => void;
@@ -540,6 +547,9 @@ export const useQuizStore = create<QuizState>()(
         allowNegatives: false,
         presetName: 'Standard Flow',
       },
+      locale: defaultLocale,
+      hasCompletedLanguageOnboarding: false,
+      isSettingsModalOpen: false,
 
       // AI & Cognitive Profile State
       learnerProfile: createDefaultLearnerProfile(),
@@ -1443,6 +1453,18 @@ export const useQuizStore = create<QuizState>()(
         set((s) => ({ reducedMotion: !s.reducedMotion }));
       },
 
+      setLocale: (locale: SupportedLocale) => {
+        set({ locale });
+      },
+
+      setHasCompletedLanguageOnboarding: (hasCompletedLanguageOnboarding: boolean) => {
+        set({ hasCompletedLanguageOnboarding });
+      },
+
+      setIsSettingsModalOpen: (isSettingsModalOpen: boolean) => {
+        set({ isSettingsModalOpen });
+      },
+
       setLearningMode: (mode: LearningMode) => {
         set({ learningMode: mode });
         get().loadNextQuestion();
@@ -2024,6 +2046,9 @@ export const useQuizStore = create<QuizState>()(
           },
           sessionConfig: initialSessionConfig,
           learnerProfile: old.learnerProfile || defaultProfile,
+          locale: (old as any).locale || defaultLocale,
+          hasCompletedLanguageOnboarding: (old as any).hasCompletedLanguageOnboarding ?? false,
+          isSettingsModalOpen: false,
           activeAssessment: null,
           assessmentInputBuffer: '',
           assessmentQuestionStartTime: 0,
@@ -2061,6 +2086,8 @@ export const useQuizStore = create<QuizState>()(
         reducedMotion: state.reducedMotion,
         timerVisible: state.timerVisible,
         anzanConfig: state.anzanConfig,
+        locale: state.locale,
+        hasCompletedLanguageOnboarding: state.hasCompletedLanguageOnboarding,
         activeAddSubLevel: state.activeAddSubLevel,
         activeTable: state.activeTable,
         activeSquareTrack: state.activeSquareTrack,
