@@ -39,7 +39,6 @@ import {
 import { AICoachCard } from './AICoachCard';
 import { AICoachDrawer } from './AICoachDrawer';
 import { MyLearningPlan } from './MyLearningPlan';
-import { CustomDrillModal } from './CustomDrillModal';
 
 interface DashboardProps {
   onOpenTutorial: () => void;
@@ -71,10 +70,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
     startCustomDrill,
     exportBrainMatrixJSON,
     importBrainMatrixJSON,
+    techniqueMasteryMap,
+    setIsCustomDrillModalOpen,
   } = useQuizStore();
 
   const [isCoachDrawerOpen, setIsCoachDrawerOpen] = useState(false);
-  const [isCustomDrillModalOpen, setIsCustomDrillModalOpen] = useState(false);
   const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [importJsonText, setImportJsonText] = useState('');
@@ -180,24 +180,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               </p>
             </div>
 
-            <div className="flex items-center gap-2.5">
+            <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setIsCustomDrillModalOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white border border-violet-400/30 text-xs font-bold transition-all shadow-md shadow-violet-600/30"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white border border-violet-400/30 text-xs font-bold transition-all shadow-md shadow-violet-600/30 min-h-[44px]"
               >
                 <Sliders className="w-4 h-4" />
                 Custom Workout
               </button>
               <button
                 onClick={onOpenTutorial}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all shadow-sm"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all shadow-sm min-h-[44px]"
               >
                 <BookOpen className="w-4 h-4" />
                 <span className="hidden sm:inline">Pedagogy</span> Lab
               </button>
               <button
                 onClick={() => setViewMode('heatmap')}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all shadow-sm"
+                className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-xs font-semibold transition-all shadow-sm min-h-[44px]"
               >
                 <Grid className="w-4 h-4" />
                 100 Tables
@@ -269,6 +269,61 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
         {/* Prominent My Learning Plan Section */}
         <MyLearningPlan />
 
+        {/* Mental Math Techniques Curriculum Studio Hero */}
+        <section className="p-6 rounded-3xl bg-gradient-to-r from-violet-950/50 via-slate-900 to-indigo-950/40 border border-violet-800/40 shadow-xl space-y-4 relative overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 rounded-2xl bg-violet-600/20 text-violet-300 border border-violet-500/40 shadow-inner">
+                <Sparkles className="w-6 h-6 text-violet-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base sm:text-lg font-extrabold text-white">
+                    Techniques Curriculum Studio
+                  </h3>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                    35 Shortcuts
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                  L2R place-value addition, Vedic Nikhilam complements, Antyayor Dasakepi, Trachtenberg system, and universal Duplex squaring.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setViewMode('techniques')}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex-shrink-0 active:scale-95"
+            >
+              <span>Launch Studio</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-800/80 text-[11px] font-medium text-slate-400">
+            <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
+              <span>1. Fundamental Ops</span>
+              <span className="text-emerald-400 font-mono font-bold">6 Techs</span>
+            </div>
+            <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
+              <span>2. Multiplication</span>
+              <span className="text-indigo-400 font-mono font-bold">9 Techs</span>
+            </div>
+            <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
+              <span>3. Squares & Cubes</span>
+              <span className="text-violet-400 font-mono font-bold">7 Techs</span>
+            </div>
+            <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
+              <span>4. Root Extraction</span>
+              <span className="text-amber-400 font-mono font-bold">3 Techs</span>
+            </div>
+            <div className="p-2 rounded-xl bg-slate-950/50 border border-slate-800 flex items-center justify-between">
+              <span>5. Fast Division</span>
+              <span className="text-rose-400 font-mono font-bold">4 Techs</span>
+            </div>
+          </div>
+        </section>
+
         {/* Custom Workout & Automaticity Hub */}
         <section className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -291,7 +346,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
 
             <button
               onClick={() => setIsCustomDrillModalOpen(true)}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-md shadow-violet-600/30 transition-all"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-md shadow-violet-600/30 transition-all min-h-[44px]"
             >
               <Sliders className="w-4 h-4" />
               <span>Open Workout Builder</span>
@@ -313,7 +368,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               </p>
               <button
                 onClick={() => startSingleTableMastery(18)}
-                className="w-full py-2 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <Play className="w-3.5 h-3.5 fill-violet-300" />
                 <span>Master Table ×18</span>
@@ -334,7 +389,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               </p>
               <button
                 onClick={() => startSingleTableMastery(19)}
-                className="w-full py-2 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
               >
                 <Play className="w-3.5 h-3.5 fill-violet-300" />
                 <span>Master Table ×19</span>
@@ -973,11 +1028,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
         onClose={() => setIsCoachDrawerOpen(false)}
       />
 
-      {/* Custom Workout Modal */}
-      <CustomDrillModal
-        isOpen={isCustomDrillModalOpen}
-        onClose={() => setIsCustomDrillModalOpen(false)}
-      />
 
       {/* Brain Matrix JSON Import Modal */}
       <AnimatePresence>

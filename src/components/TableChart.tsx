@@ -247,7 +247,7 @@ export const TableChart: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 space-y-6">
         {/* Section Navigation Tabs (1. Mul Table, 2. Squares Table, etc.) */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800">
+        <div className="flex sm:grid sm:grid-cols-3 lg:grid-cols-5 gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 overflow-x-auto scrollbar-none pb-2">
           {tabs.map((tab) => {
             const isActive = activeTableChartTab === tab.id;
             return (
@@ -257,7 +257,7 @@ export const TableChart: React.FC = () => {
                   setActiveTableChartTab(tab.id);
                   setSearchQuery('');
                 }}
-                className={`flex flex-col text-left px-3.5 py-2.5 rounded-xl transition-all relative ${
+                className={`flex-shrink-0 w-44 sm:w-auto flex flex-col text-left px-3.5 py-2.5 rounded-xl transition-all relative min-h-[52px] ${
                   isActive
                     ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/30'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'

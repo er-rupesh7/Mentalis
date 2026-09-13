@@ -21,7 +21,6 @@ import {
 import { useQuizStore } from '../core/store/useQuizStore';
 import { SEVEN_DAYS_MS } from '../core/mastery';
 import { checkTableAutomaticity } from '../core/adaptive';
-import { CustomDrillModal } from './CustomDrillModal';
 
 type HeatmapMode = 'tables' | 'squares' | 'cubes';
 
@@ -34,12 +33,12 @@ export const TableHeatmap: React.FC = () => {
     startSingleTableMastery,
     startCustomDrill,
     setViewMode,
+    setIsCustomDrillModalOpen,
   } = useQuizStore();
 
   const [mode, setMode] = useState<HeatmapMode>('tables');
   const [selectedItem, setSelectedItem] = useState<number>(18);
   const [filterTier, setFilterTier] = useState<'all' | '1-12' | '13-20' | '21-50' | '51-100'>('all');
-  const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false);
 
   // Tables array 2 to 100
   const tables = Array.from({ length: 99 }, (_, i) => i + 2);
@@ -247,8 +246,8 @@ export const TableHeatmap: React.FC = () => {
         </div>
 
         <button
-          onClick={() => setIsCustomModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white shadow-sm shadow-violet-600/30 transition-all"
+          onClick={() => setIsCustomDrillModalOpen(true)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-600 hover:bg-violet-500 text-white shadow-sm shadow-violet-600/30 transition-all min-h-[36px]"
         >
           <Sliders className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Custom Drill</span>
@@ -258,13 +257,13 @@ export const TableHeatmap: React.FC = () => {
       <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-6 space-y-6">
         {/* Main Mode Tabs: Tables, Squares, Cubes */}
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900 border border-slate-800 overflow-x-auto scrollbar-none w-full sm:w-auto">
             <button
               onClick={() => {
                 setMode('tables');
                 setSelectedItem(18);
               }}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap ${
                 mode === 'tables'
                   ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
                   : 'text-slate-400 hover:text-slate-200'
@@ -279,7 +278,7 @@ export const TableHeatmap: React.FC = () => {
                 setMode('squares');
                 setSelectedItem(25);
               }}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap ${
                 mode === 'squares'
                   ? 'bg-amber-600 text-white shadow-md shadow-amber-600/30'
                   : 'text-slate-400 hover:text-slate-200'
@@ -294,7 +293,7 @@ export const TableHeatmap: React.FC = () => {
                 setMode('cubes');
                 setSelectedItem(12);
               }}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] whitespace-nowrap ${
                 mode === 'cubes'
                   ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
                   : 'text-slate-400 hover:text-slate-200'
@@ -389,7 +388,7 @@ export const TableHeatmap: React.FC = () => {
                 <button
                   key={n}
                   onClick={() => setSelectedItem(n)}
-                  className={`h-12 rounded-xl text-xs font-mono flex flex-col items-center justify-center transition-all border relative focus-visible:ring-2 focus-visible:ring-violet-400 ${colorClass} ${
+                  className={`h-12 sm:h-13 min-h-[48px] rounded-xl text-xs font-mono flex flex-col items-center justify-center transition-all border relative focus-visible:ring-2 focus-visible:ring-violet-400 ${colorClass} ${
                     isSelected ? 'ring-2 ring-violet-400 scale-105 z-10 shadow-lg' : ''
                   }`}
                 >
@@ -520,12 +519,6 @@ export const TableHeatmap: React.FC = () => {
           </div>
         </motion.div>
       </div>
-
-      {/* Custom Drill Modal */}
-      <CustomDrillModal
-        isOpen={isCustomModalOpen}
-        onClose={() => setIsCustomModalOpen(false)}
-      />
     </div>
   );
 };

@@ -14,9 +14,12 @@ import { SkillProfileView } from '../components/SkillProfileView';
 import { MemoryMap } from '../components/MemoryMap';
 import { TablesBootcampView } from '../components/TablesBootcampView';
 import { ExamQuantView } from '../components/ExamQuantView';
+import { TechniquesCurriculumView } from '../components/TechniquesCurriculumView';
+
+import { CustomDrillModal } from '../components/CustomDrillModal';
 
 export default function MentalisApp() {
-  const { viewMode } = useQuizStore();
+  const { viewMode, isCustomDrillModalOpen, setIsCustomDrillModalOpen } = useQuizStore();
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -36,8 +39,8 @@ export default function MentalisApp() {
   }
 
   return (
-    <main className="flex-1 flex flex-col min-h-screen bg-slate-950">
-      {/* Navigation Top Bar (shown unless in Zen mode if desired, or always for seamless switching) */}
+    <main className="flex-1 flex flex-col min-h-screen bg-slate-950 relative">
+      {/* Navigation Top Bar */}
       <Navigation onOpenTutorial={() => setIsTutorialOpen(true)} />
 
       {/* Dynamic View Router */}
@@ -47,6 +50,7 @@ export default function MentalisApp() {
         )}
         {viewMode === 'bootcamp_11_20' && <TablesBootcampView />}
         {viewMode === 'exam_quant' && <ExamQuantView />}
+        {viewMode === 'techniques' && <TechniquesCurriculumView />}
         {viewMode === 'practice' && (
           <PracticeScreen onOpenTutorial={() => setIsTutorialOpen(true)} />
         )}
@@ -62,6 +66,12 @@ export default function MentalisApp() {
       <TutorialModal
         isOpen={isTutorialOpen}
         onClose={() => setIsTutorialOpen(false)}
+      />
+
+      {/* Root-Level Centralized Custom Workout Builder Modal */}
+      <CustomDrillModal
+        isOpen={isCustomDrillModalOpen}
+        onClose={() => setIsCustomDrillModalOpen(false)}
       />
     </main>
   );

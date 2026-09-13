@@ -214,7 +214,8 @@ export type ViewMode =
   | 'profile'
   | 'memory_map'
   | 'bootcamp_11_20'
-  | 'exam_quant';
+  | 'exam_quant'
+  | 'techniques';
 
 export interface ExamTransferScores {
   calculationAutomaticity: number; // 0 - 100
@@ -251,7 +252,55 @@ export interface CustomDrillConfig {
   targetMasteryTable?: number;                          // if single-table mastery run
 }
 
+export type TechniqueModuleCategory =
+  | 'fundamental_operations'
+  | 'multiplication_engine'
+  | 'squares_cubes_powers'
+  | 'roots_approximations'
+  | 'fast_division_percentages';
+
 export type CalculationTechniqueId =
+  // Module 1: Fundamental Operations
+  | 'add_l2r_place_value'
+  | 'add_bridging_base10'
+  | 'add_compensation'
+  | 'sub_l2r_step'
+  | 'sub_shopkeeper_count_up'
+  | 'sub_nikhilam_all_from_9'
+  // Module 2: Multiplication Techniques
+  | 'mult_power10_5'
+  | 'mult_power10_25'
+  | 'mult_power10_125'
+  | 'mult_power10_625'
+  | 'mult_repunit_11'
+  | 'mult_repunit_teens_decade'
+  | 'mult_repunit_9s_ekanyunena'
+  | 'mult_pattern_consecutive_int'
+  | 'mult_pattern_consecutive_gap2'
+  | 'mult_pattern_antyayor_dasakepi'
+  | 'mult_pattern_reverse_antyayor'
+  | 'mult_pattern_half_double'
+  | 'mult_vedic_urdhva_tiryag'
+  | 'mult_trachtenberg_rules'
+  | 'mult_vedic_base_yavadunam'
+  // Module 3: Squares, Cubes & Powers
+  | 'sq_base_50'
+  | 'sq_base_100'
+  | 'sq_ending_5'
+  | 'sq_ending_25'
+  | 'sq_universal_duplex'
+  | 'cube_tables_1_25'
+  | 'cube_algebraic_binomial'
+  // Module 4: Root Extractions & Approximations
+  | 'root_sqrt_perfect_6d'
+  | 'root_sqrt_approx_differential'
+  | 'root_cbrt_perfect_6d'
+  // Module 5: Fast Division & Percentages
+  | 'div_vedic_flag_dhvajanka'
+  | 'div_vedic_osculators'
+  | 'pct_reversible_law'
+  | 'pct_fraction_pivots'
+  // Backward compatibility alias tags
   | 'decade_bridging'
   | 'l2r_decade_striding'
   | 'century_crossing'
@@ -278,6 +327,61 @@ export interface TechniqueMasteryState {
   masteredAt?: number;
 }
 
+export interface GuidedStep {
+  stepIndex: number;
+  prompt: string;
+  expectedValue: number | string;
+  subVocalization: string;
+  explanation: string;
+  formula?: string;
+  ghostHint?: string;
+}
+
+export interface GeneratedTechniqueProblem {
+  id: string;
+  techniqueId: CalculationTechniqueId;
+  difficultyLevel: 1 | 2 | 3 | 4 | 5;
+  operandA: number;
+  operandB?: number;
+  operator: Operator;
+  prompt: string;
+  correctAnswer: number | string;
+  ghostAccumulator: string;
+  mentalTip: string;
+  steps: GuidedStep[];
+}
+
+export interface TechniqueLesson {
+  id: CalculationTechniqueId;
+  module: TechniqueModuleCategory;
+  title: string;
+  subtitle: string;
+  difficultyTier: 1 | 2 | 3 | 4 | 5;
+  algebraicFormula: string;
+  mathSecret: {
+    title: string;
+    description: string;
+    algebraicProof: string;
+    conditions: string;
+  };
+  mindOdometer: {
+    trickTitle: string;
+    subvocalInstruction: string;
+    carryEliminationRule: string;
+    visualAccumulatorExample: string;
+  };
+  workedExample: {
+    problem: string;
+    steps: {
+      step: number;
+      action: string;
+      echo: string;
+      buffer: string | number;
+    }[];
+    finalResult: string | number;
+  };
+}
+
 export interface TableMasteryAlert {
   table: number;
   nextTable: number;
@@ -298,5 +402,6 @@ export interface BrainMatrix {
   customDrillPresets: CustomDrillConfig[];
   examTransferScores: ExamTransferScores | null;
 }
+
 
 

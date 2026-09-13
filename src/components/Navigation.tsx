@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
-import { CustomDrillModal } from './CustomDrillModal';
 
 interface NavigationProps {
   onOpenTutorial: () => void;
@@ -36,11 +35,11 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
     toggleSound,
     activeTableChartTab,
     setActiveTableChartTab,
+    setIsCustomDrillModalOpen,
   } = useQuizStore();
 
   const [isTableDropdownOpen, setIsTableDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -70,14 +69,14 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        {/* Brand Logo */}
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-4">
+        {/* Brand Logo - Never shrinks, always visible */}
         <button
           onClick={() => {
             setViewMode('dashboard');
             setIsMobileMenuOpen(false);
           }}
-          className="flex items-center gap-2.5 text-left group"
+          className="flex items-center gap-2.5 text-left group shrink-0"
         >
           <div className="p-1.5 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-md shadow-violet-600/30 group-hover:scale-105 transition-transform">
             <Brain className="w-5 h-5" />
@@ -87,11 +86,11 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </span>
         </button>
 
-        {/* Desktop View Mode Nav Pills */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-medium">
+        {/* Desktop View Mode Nav Pills (Cleanly contained with horizontal scroll if screen is narrow) */}
+        <nav className="hidden md:flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 text-xs font-medium overflow-x-auto scrollbar-none shrink min-w-0">
           <button
             onClick={() => setViewMode('dashboard')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'dashboard'
                 ? 'bg-violet-600 text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -103,7 +102,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
           <button
             onClick={() => setViewMode('bootcamp_11_20')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'bootcamp_11_20'
                 ? 'bg-amber-600 text-white shadow-sm font-semibold'
                 : 'text-amber-400 hover:text-amber-200 hover:bg-slate-800'
@@ -115,7 +114,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
           <button
             onClick={() => setViewMode('exam_quant')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'exam_quant'
                 ? 'bg-emerald-600 text-white shadow-sm font-semibold'
                 : 'text-emerald-400 hover:text-emerald-200 hover:bg-slate-800'
@@ -126,8 +125,20 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </button>
 
           <button
-            onClick={() => setIsCustomModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-violet-300 hover:text-white hover:bg-slate-800 transition-all font-semibold"
+            onClick={() => setViewMode('techniques')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
+              viewMode === 'techniques'
+                ? 'bg-violet-600 text-white shadow-sm font-semibold'
+                : 'text-violet-400 hover:text-violet-200 hover:bg-slate-800'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            Techniques
+          </button>
+
+          <button
+            onClick={() => setIsCustomDrillModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-violet-300 hover:text-white hover:bg-slate-800 transition-all font-semibold shrink-0 whitespace-nowrap"
           >
             <Sliders className="w-3.5 h-3.5" />
             Custom Drill
@@ -135,7 +146,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
           <button
             onClick={() => setViewMode('practice')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'practice'
                 ? 'bg-violet-600 text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -147,7 +158,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
           <button
             onClick={() => setViewMode('anzan')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'anzan'
                 ? 'bg-violet-600 text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -158,14 +169,14 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </button>
 
           {/* Table Chart with Dropdown Menu */}
-          <div className="relative" ref={dropdownRef}>
+          <div className="relative shrink-0" ref={dropdownRef}>
             <div className="flex items-center rounded-lg">
               <button
                 onClick={() => {
                   setViewMode('table_chart');
                   setIsTableDropdownOpen(false);
                 }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-l-lg transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-l-lg transition-all whitespace-nowrap ${
                   viewMode === 'table_chart'
                     ? 'bg-violet-600 text-white shadow-sm font-semibold'
                     : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -230,7 +241,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
           <button
             onClick={() => setViewMode('heatmap')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'heatmap'
                 ? 'bg-violet-600 text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -242,7 +253,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
           <button
             onClick={() => setViewMode('memory_map')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'memory_map'
                 ? 'bg-violet-600 text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -254,7 +265,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
           <button
             onClick={() => setViewMode('profile')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'profile'
                 ? 'bg-violet-600 text-white shadow-sm font-semibold'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -266,7 +277,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
         </nav>
 
         {/* Right HUD Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Tutorial Pill */}
           <button
             onClick={onOpenTutorial}
@@ -318,13 +329,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 setViewMode('dashboard');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
                 viewMode === 'dashboard'
-                  ? 'bg-violet-600 text-white border-violet-500'
+                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
                   : 'bg-slate-900 text-slate-300 border-slate-800'
               }`}
             >
-              <LayoutDashboard className="w-4 h-4" />
+              <LayoutDashboard className="w-4 h-4 shrink-0" />
               <span>Dashboard</span>
             </button>
 
@@ -333,13 +344,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 setViewMode('bootcamp_11_20');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
                 viewMode === 'bootcamp_11_20'
-                  ? 'bg-amber-600 text-white border-amber-500'
+                  ? 'bg-amber-600 text-white border-amber-500 font-semibold'
                   : 'bg-slate-900 text-amber-400 border-slate-800'
               }`}
             >
-              <Flame className="w-4 h-4" />
+              <Flame className="w-4 h-4 shrink-0" />
               <span>Bootcamp 11–20</span>
             </button>
 
@@ -348,25 +359,40 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 setViewMode('exam_quant');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
                 viewMode === 'exam_quant'
-                  ? 'bg-emerald-600 text-white border-emerald-500'
+                  ? 'bg-emerald-600 text-white border-emerald-500 font-semibold'
                   : 'bg-slate-900 text-emerald-400 border-slate-800'
               }`}
             >
-              <Target className="w-4 h-4" />
+              <Target className="w-4 h-4 shrink-0" />
               <span>RRB Exam Quant</span>
             </button>
 
             <button
               onClick={() => {
-                setIsCustomModalOpen(true);
+                setViewMode('techniques');
                 setIsMobileMenuOpen(false);
               }}
-              className="flex items-center gap-2 p-2.5 rounded-xl border bg-violet-950/40 text-violet-300 border-violet-800/60 font-semibold"
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
+                viewMode === 'techniques'
+                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
+                  : 'bg-slate-900 text-violet-300 border-slate-800'
+              }`}
             >
-              <Sliders className="w-4 h-4" />
-              <span>Custom Drill Builder</span>
+              <Sparkles className="w-4 h-4 shrink-0" />
+              <span>Techniques Studio</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setIsCustomDrillModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] bg-violet-950/40 text-violet-300 border-violet-800/60 font-semibold"
+            >
+              <Sliders className="w-4 h-4 shrink-0" />
+              <span>Custom Drill</span>
             </button>
 
             <button
@@ -374,13 +400,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 setViewMode('practice');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
                 viewMode === 'practice'
-                  ? 'bg-violet-600 text-white border-violet-500'
+                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
                   : 'bg-slate-900 text-slate-300 border-slate-800'
               }`}
             >
-              <Calculator className="w-4 h-4" />
+              <Calculator className="w-4 h-4 shrink-0" />
               <span>Zen Drill</span>
             </button>
 
@@ -389,13 +415,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 setViewMode('anzan');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
                 viewMode === 'anzan'
-                  ? 'bg-violet-600 text-white border-violet-500'
+                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
                   : 'bg-slate-900 text-slate-300 border-slate-800'
               }`}
             >
-              <Zap className="w-4 h-4" />
+              <Zap className="w-4 h-4 shrink-0" />
               <span>Anzan Flash</span>
             </button>
 
@@ -404,13 +430,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 setViewMode('heatmap');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
                 viewMode === 'heatmap'
-                  ? 'bg-violet-600 text-white border-violet-500'
+                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
                   : 'bg-slate-900 text-slate-300 border-slate-800'
               }`}
             >
-              <Grid className="w-4 h-4" />
+              <Grid className="w-4 h-4 shrink-0" />
               <span>100 Tables</span>
             </button>
 
@@ -419,14 +445,29 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                 setViewMode('memory_map');
                 setIsMobileMenuOpen(false);
               }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border ${
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
                 viewMode === 'memory_map'
-                  ? 'bg-violet-600 text-white border-violet-500'
+                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
                   : 'bg-slate-900 text-slate-300 border-slate-800'
               }`}
             >
-              <Brain className="w-4 h-4" />
+              <Brain className="w-4 h-4 shrink-0" />
               <span>Memory Map</span>
+            </button>
+
+            <button
+              onClick={() => {
+                setViewMode('profile');
+                setIsMobileMenuOpen(false);
+              }}
+              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
+                viewMode === 'profile'
+                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
+                  : 'bg-slate-900 text-slate-300 border-slate-800'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 shrink-0 text-violet-400" />
+              <span>Skill Profile</span>
             </button>
           </div>
 
@@ -448,7 +489,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
                   <button
                     key={opt.id}
                     onClick={() => handleSelectTableTab(opt.id)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors ${
+                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors min-h-[44px] ${
                       isSubActive
                         ? 'bg-violet-600 text-white font-semibold'
                         : 'bg-slate-950/60 text-slate-300 hover:bg-slate-800'
@@ -464,11 +505,6 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
         </div>
       )}
 
-      {/* Custom Workout Modal */}
-      <CustomDrillModal
-        isOpen={isCustomModalOpen}
-        onClose={() => setIsCustomModalOpen(false)}
-      />
     </header>
   );
 };

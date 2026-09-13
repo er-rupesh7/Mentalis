@@ -136,39 +136,61 @@ export function resolveActiveDimension(
   return 'anzan_stream';
 }
 
-export const INITIAL_TECHNIQUE_MASTERY_MAP: Record<CalculationTechniqueId, TechniqueMasteryState> = {
-  decade_bridging: { techniqueId: 'decade_bridging', title: 'Decade Bridging (8+7 = 8+2+5)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  l2r_decade_striding: { techniqueId: 'l2r_decade_striding', title: 'L2R Decade Striding (47+38 = 77+8)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  century_crossing: { techniqueId: 'century_crossing', title: 'Century Crossing (345+87 = 425+7)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  triple_digit_accumulation: { techniqueId: 'triple_digit_accumulation', title: '3D Accumulation (H -> T -> U)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  compensation_jump: { techniqueId: 'compensation_jump', title: 'Compensation Jump (x - 29 = x - 30 + 1)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  complements_100: { techniqueId: 'complements_100', title: '100 Complements (100 - 37 = 63)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  doubles_and_halves: { techniqueId: 'doubles_and_halves', title: 'Doubling & Halving', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  tens_units_decomposition: { techniqueId: 'tens_units_decomposition', title: 'Tens & Units Split', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  decade_proximity_anchor: { techniqueId: 'decade_proximity_anchor', title: 'Proximity Anchoring (19×n = 20n - n)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  sq_ending_5_ekadhikena: { techniqueId: 'sq_ending_5_ekadhikena', title: 'Ekadhikena (65² = 6×7 | 25)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  sq_near_50_base: { techniqueId: 'sq_near_50_base', title: 'Base-50 Squares (54² = 2916)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  sq_near_100_base: { techniqueId: 'sq_near_100_base', title: 'Base-100 Squares (96² = 9216)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  sq_algebraic_duplex: { techniqueId: 'sq_algebraic_duplex', title: 'Algebraic Duplex Squares', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-  cube_unit_anchor: { techniqueId: 'cube_unit_anchor', title: 'Cube Unit & Magnitude Anchors', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
-};
+import { storageService } from '../storage/storageRepository';
+import { TECHNIQUE_CURRICULUM } from '../techniques/techniqueCurriculum';
+
+export const INITIAL_TECHNIQUE_MASTERY_MAP: Record<CalculationTechniqueId, TechniqueMasteryState> =
+  Object.keys(TECHNIQUE_CURRICULUM).reduce((acc, key) => {
+    const tId = key as CalculationTechniqueId;
+    const lesson = TECHNIQUE_CURRICULUM[tId];
+    acc[tId] = {
+      techniqueId: tId,
+      title: lesson?.title || tId,
+      consecutiveCorrect: 0,
+      averageLatencyMs: 0,
+      totalExposures: 0,
+      isMastered: false,
+    };
+    return acc;
+  }, {} as Record<CalculationTechniqueId, TechniqueMasteryState>);
 
 export function resolveTechniqueIdFromStrategy(strategyId?: string): CalculationTechniqueId | null {
   if (!strategyId) return null;
-  if (strategyId.includes('decade_bridging')) return 'decade_bridging';
-  if (strategyId.includes('l2r_decade_striding')) return 'l2r_decade_striding';
+  if (strategyId in TECHNIQUE_CURRICULUM) {
+    return strategyId as CalculationTechniqueId;
+  }
+  if (strategyId.includes('nikhilam')) return 'sub_nikhilam_all_from_9';
+  if (strategyId.includes('shopkeeper') || strategyId.includes('count_up')) return 'sub_shopkeeper_count_up';
+  if (strategyId.includes('decade_bridging')) return 'add_bridging_base10';
+  if (strategyId.includes('l2r_decade_striding') || strategyId.includes('accumulator')) return 'add_l2r_place_value';
   if (strategyId.includes('century_crossing')) return 'century_crossing';
-  if (strategyId.includes('triple_digit') || strategyId.includes('accumulation')) return 'triple_digit_accumulation';
-  if (strategyId.includes('compensation')) return 'compensation_jump';
+  if (strategyId.includes('triple_digit') || strategyId.includes('accumulation')) return 'add_l2r_place_value';
+  if (strategyId.includes('compensation')) return 'add_compensation';
   if (strategyId.includes('complement')) return 'complements_100';
-  if (strategyId.includes('doubl')) return 'doubles_and_halves';
+  if (strategyId.includes('half_and_double') || strategyId.includes('doubl')) return 'mult_pattern_half_double';
   if (strategyId.includes('decomposition') || strategyId.includes('tens_units')) return 'tens_units_decomposition';
+  if (strategyId.includes('antyayor_dasakepi') || strategyId.includes('antyayor')) return 'mult_pattern_antyayor_dasakepi';
+  if (strategyId.includes('reverse_antyayor')) return 'mult_pattern_reverse_antyayor';
+  if (strategyId.includes('consecutive_int')) return 'mult_pattern_consecutive_int';
+  if (strategyId.includes('consecutive_gap2')) return 'mult_pattern_consecutive_gap2';
+  if (strategyId.includes('urdhva') || strategyId.includes('crosswise')) return 'mult_vedic_urdhva_tiryag';
+  if (strategyId.includes('trachtenberg')) return 'mult_trachtenberg_rules';
+  if (strategyId.includes('yavadunam') || strategyId.includes('base')) return 'mult_vedic_base_yavadunam';
   if (strategyId.includes('proximity') || strategyId.includes('nines_anchor') || strategyId.includes('teens')) return 'decade_proximity_anchor';
-  if (strategyId.includes('ending_5') || strategyId.includes('ekadhikena')) return 'sq_ending_5_ekadhikena';
-  if (strategyId.includes('near_50')) return 'sq_near_50_base';
-  if (strategyId.includes('near_100')) return 'sq_near_100_base';
-  if (strategyId.includes('duplex')) return 'sq_algebraic_duplex';
-  if (strategyId.includes('cube')) return 'cube_unit_anchor';
+  if (strategyId.includes('ending_5') || strategyId.includes('ekadhikena')) return 'sq_ending_5';
+  if (strategyId.includes('ending_25')) return 'sq_ending_25';
+  if (strategyId.includes('near_50')) return 'sq_base_50';
+  if (strategyId.includes('near_100')) return 'sq_base_100';
+  if (strategyId.includes('duplex')) return 'sq_universal_duplex';
+  if (strategyId.includes('cube_tables') || strategyId.includes('cube_anchor')) return 'cube_tables_1_25';
+  if (strategyId.includes('binomial')) return 'cube_algebraic_binomial';
+  if (strategyId.includes('root_sqrt_perfect')) return 'root_sqrt_perfect_6d';
+  if (strategyId.includes('root_sqrt_approx')) return 'root_sqrt_approx_differential';
+  if (strategyId.includes('root_cbrt')) return 'root_cbrt_perfect_6d';
+  if (strategyId.includes('dhvajanka') || strategyId.includes('flag')) return 'div_vedic_flag_dhvajanka';
+  if (strategyId.includes('osculator')) return 'div_vedic_osculators';
+  if (strategyId.includes('reversible_law') || strategyId.includes('percent')) return 'pct_reversible_law';
+  if (strategyId.includes('fraction_pivot')) return 'pct_fraction_pivots';
   return null;
 }
 
@@ -420,6 +442,11 @@ interface QuizState {
   setIsCustomDrillModalOpen: (open: boolean) => void;
   exportBrainMatrixJSON: () => string;
   importBrainMatrixJSON: (jsonStr: string) => { success: boolean; error?: string };
+  recordTechniquePracticeResult: (
+    techniqueId: CalculationTechniqueId,
+    isCorrect: boolean,
+    latencyMs: number
+  ) => Promise<TechniqueMasteryState>;
 }
 
 const initialOverallStats: OverallStats = {
@@ -728,6 +755,28 @@ export const useQuizStore = create<QuizState>()(
         } catch (err) {
           return { success: false, error: err instanceof Error ? err.message : 'Unknown JSON parse error' };
         }
+      },
+
+      recordTechniquePracticeResult: async (
+        techniqueId: CalculationTechniqueId,
+        isCorrect: boolean,
+        latencyMs: number
+      ) => {
+        const lesson = TECHNIQUE_CURRICULUM[techniqueId];
+        const title = lesson?.title || techniqueId;
+        const updated = await storageService.recordTechniqueAttempt(
+          techniqueId,
+          title,
+          isCorrect,
+          latencyMs
+        );
+        set((state) => ({
+          techniqueMasteryMap: {
+            ...state.techniqueMasteryMap,
+            [techniqueId]: updated,
+          },
+        }));
+        return updated;
       },
 
       startSession: (config?: Partial<SessionDrillConfig>) => {
