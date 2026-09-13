@@ -3,7 +3,7 @@
  * Pure functions: Deterministic or randomized mathematical generation with zero side-effects.
  */
 
-import { Question, AnzanSequence, AnzanConfig, LevelDefinition } from './types';
+import { Question, AnzanSequence, AnzanConfig, LevelDefinition, ArithmeticCombination } from './types';
 import {
   getAdditionStrategy,
   getSubtractionStrategy,
@@ -228,6 +228,255 @@ export function generateAddSubQuestion(
       subTrack: `level_${levelNumber}`,
     };
   }
+}
+
+/**
+ * Detailed combinations for 2-digit, 3-digit, 4-digit addition and subtraction.
+ * Perfectly handles:
+ * - 2-digit ± 1-digit
+ * - 2-digit ± 2-digit
+ * - 3-digit ± 1-digit
+ * - 3-digit ± 2-digit
+ * - 3-digit ± 3-digit
+ * - 4-digit ± 2-digit
+ * - 4-digit ± 3-digit
+ * - 4-digit ± 4-digit
+ * - 3-number chain
+ */
+export function generateArithmeticComboQuestion(
+  combo: ArithmeticCombination,
+  options?: {
+    forceOperator?: '+' | '-';
+    forceBridging?: boolean;
+  }
+): Question {
+  const isAddition = options?.forceOperator ? options.forceOperator === '+' : Math.random() > 0.45;
+  let a = 0;
+  let b = 0;
+  let targetTime = 3.0;
+
+  switch (combo) {
+    case 'add_sub_2d_1d': {
+      targetTime = 1.8;
+      const bridging = options?.forceBridging !== undefined ? options.forceBridging : Math.random() > 0.5;
+      if (isAddition) {
+        if (bridging) {
+          const unitA = randomInt(1, 9);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA;
+          b = randomInt(10 - unitA, 9);
+        } else {
+          const unitA = randomInt(0, 8);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA;
+          b = randomInt(1, 9 - unitA);
+        }
+      } else {
+        if (bridging) {
+          const unitA = randomInt(0, 8);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA;
+          b = randomInt(unitA + 1, 9);
+        } else {
+          const unitA = randomInt(1, 9);
+          const tensA = randomInt(1, 9) * 10;
+          a = tensA + unitA;
+          b = randomInt(1, unitA);
+        }
+      }
+      break;
+    }
+
+    case 'add_sub_2d_2d': {
+      targetTime = 2.5;
+      a = randomInt(11, 99);
+      b = randomInt(11, 99);
+      break;
+    }
+
+    case 'add_sub_3d_1d': {
+      targetTime = 2.2;
+      a = randomInt(101, 999);
+      b = randomInt(1, 9);
+      break;
+    }
+
+    case 'add_sub_3d_2d': {
+      targetTime = 3.2;
+      a = randomInt(101, 999);
+      b = randomInt(11, 99);
+      break;
+    }
+
+    case 'add_sub_3d_3d': {
+      targetTime = 4.2;
+      a = randomInt(101, 999);
+      b = randomInt(101, 999);
+      break;
+    }
+
+    case 'add_sub_4d_2d': {
+      targetTime = 4.0;
+      a = randomInt(1001, 9999);
+      b = randomInt(11, 99);
+      break;
+    }
+
+    case 'add_sub_4d_3d': {
+      targetTime = 5.0;
+      a = randomInt(1001, 9999);
+      b = randomInt(101, 999);
+      break;
+    }
+
+    case 'add_sub_4d_4d': {
+      targetTime = 6.0;
+      a = randomInt(1001, 9999);
+      b = randomInt(1001, 9999);
+      break;
+    }
+
+    case 'add_sub_chain_3': {
+      targetTime = 4.5;
+      const n1 = randomInt(15, 60);
+      const n2 = randomInt(15, 50);
+      const n3 = randomInt(10, Math.min(40, n1 + n2 - 5));
+      const isMinus = Math.random() > 0.5;
+      const ans = isMinus ? n1 + n2 - n3 : n1 + n2 + n3;
+      const op2 = isMinus ? '-' : '+';
+      const promptStr = `${n1} + ${n2} ${op2} ${n3}`;
+
+      return {
+        id: `chain_${n1}_${n2}_${n3}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        module: 'add_sub',
+        operandA: n1,
+        operandB: n2,
+        operator: '+',
+        correctAnswer: ans,
+        prompt: promptStr,
+        strategyTitle: '3-Number Chain Accumulator',
+        steps: [
+          {
+            stepNumber: 1,
+            title: `Step 1: ${n1} + ${n2}`,
+            subVocalization: `Running sum: ${n1 + n2}`,
+            intermediateValue: n1 + n2,
+            explanation: `Accumulate first pair: ${n1} + ${n2} = ${n1 + n2}.`,
+          },
+          {
+            stepNumber: 2,
+            title: `Step 2: ${n1 + n2} ${op2} ${n3}`,
+            subVocalization: `Final: ${ans}`,
+            intermediateValue: ans,
+            explanation: `Apply final term: ${n1 + n2} ${op2} ${n3} = ${ans}.`,
+          },
+        ],
+        mentalTip: 'Hold the intermediate accumulator in working memory before adjusting the final term.',
+        targetTimeSeconds: targetTime,
+        difficultyRating: 4,
+        subTrack: 'chain_3',
+      };
+    }
+  }
+
+  // Ensure minuend > subtrahend so subtraction NEVER produces negative or zero results
+  if (!isAddition) {
+    if (a < b) {
+      const temp = a;
+      a = b;
+      b = temp;
+    } else if (a === b) {
+      a += randomInt(1, 9);
+    }
+  }
+
+  if (isAddition) {
+    const sum = a + b;
+    const { strategyTitle, steps, mentalTip } = getAdditionStrategy(a, b);
+    return {
+      id: `add_${combo}_${a}_${b}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      module: 'add_sub',
+      operandA: a,
+      operandB: b,
+      operator: '+',
+      correctAnswer: sum,
+      prompt: `${a} + ${b}`,
+      strategyTitle,
+      steps,
+      mentalTip,
+      targetTimeSeconds: targetTime,
+      difficultyRating: combo === 'add_sub_2d_1d' ? 1 : combo === 'add_sub_2d_2d' ? 2 : combo === 'add_sub_3d_3d' ? 4 : 5,
+      subTrack: combo,
+    };
+  } else {
+    const diff = a - b;
+    const { strategyTitle, steps, mentalTip } = getSubtractionStrategy(a, b);
+    return {
+      id: `sub_${combo}_${a}_${b}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      module: 'add_sub',
+      operandA: a,
+      operandB: b,
+      operator: '-',
+      correctAnswer: diff,
+      prompt: `${a} - ${b}`,
+      strategyTitle,
+      steps,
+      mentalTip,
+      targetTimeSeconds: targetTime,
+      difficultyRating: combo === 'add_sub_2d_1d' ? 1 : combo === 'add_sub_2d_2d' ? 2 : combo === 'add_sub_3d_3d' ? 4 : 5,
+      subTrack: combo,
+    };
+  }
+}
+
+/**
+ * Generates custom square question for any range [min, max].
+ */
+export function generateCustomSquareQuestion(min: number = 1, max: number = 100): Question {
+  const n = randomInt(Math.max(1, min), Math.min(100, max));
+  const { strategyTitle, steps, mentalTip } = getSquareStrategy(n);
+  const targetTime = n <= 25 ? 1.8 : n <= 50 ? 2.5 : 3.5;
+  return {
+    id: `sq_custom_${n}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    module: 'squares_cubes',
+    operandA: n,
+    operandB: 2,
+    operator: '^2',
+    correctAnswer: n * n,
+    prompt: `${n}²`,
+    strategyTitle,
+    steps,
+    mentalTip,
+    targetTimeSeconds: targetTime,
+    difficultyRating: n <= 25 ? 2 : n <= 50 ? 4 : 6,
+    subTrack: 'general_duplex',
+    factKey: `square:${n}`,
+  };
+}
+
+/**
+ * Generates custom cube question for any range [min, max].
+ */
+export function generateCustomCubeQuestion(min: number = 1, max: number = 30): Question {
+  const n = randomInt(Math.max(1, min), Math.min(100, max));
+  const { strategyTitle, steps, mentalTip } = getCubeStrategy(n);
+  const targetTime = n <= 10 ? 2.0 : n <= 20 ? 3.5 : 5.0;
+  return {
+    id: `cube_custom_${n}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    module: 'squares_cubes',
+    operandA: n,
+    operandB: 3,
+    operator: '^3',
+    correctAnswer: n * n * n,
+    prompt: `${n}³`,
+    strategyTitle,
+    steps,
+    mentalTip,
+    targetTimeSeconds: targetTime,
+    difficultyRating: n <= 10 ? 3 : n <= 20 ? 5 : 8,
+    subTrack: 'cubes_anchor',
+    factKey: `cube:${n}`,
+  };
 }
 
 /**

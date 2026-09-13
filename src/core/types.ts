@@ -10,7 +10,8 @@ export type ModuleId =
   | 'working_memory'
   | 'tables_bootcamp'
   | 'exam_quant'
-  | 'fractions_percentages';
+  | 'fractions_percentages'
+  | 'custom_drill';
 
 export type Operator = '+' | '-' | '×' | '÷' | '^2' | '^3' | '%' | '≈' | ':';
 
@@ -76,6 +77,7 @@ export interface Question {
   tableMode?: TableTrainingMode;
   examSubSkill?: string;
   anchorFactPrompt?: string;
+  strategyId?: string;
 }
 
 export type LearningMode = 'learn' | 'recall' | 'speed' | 'repair' | 'review';
@@ -159,6 +161,7 @@ export interface SessionDrillConfig {
   goalCount: number; // e.g. 10, 20, 0 for endless
   isEndless: boolean;
   mode: 'standard' | 'targeted_refresh' | 'weak_spots';
+  timeLimitSeconds?: number;
 }
 
 export interface SessionSummary {
@@ -220,6 +223,80 @@ export interface ExamTransferScores {
   foundationScore: number;        // 0 - 100
   retentionScore: number;         // 0 - 100
   rrbReadiness: number;           // 0 - 100
+}
+
+export type ArithmeticCombination =
+  | 'add_sub_2d_1d'
+  | 'add_sub_2d_2d'
+  | 'add_sub_3d_1d'
+  | 'add_sub_3d_2d'
+  | 'add_sub_3d_3d'
+  | 'add_sub_4d_2d'
+  | 'add_sub_4d_3d'
+  | 'add_sub_4d_4d'
+  | 'add_sub_chain_3';
+
+export interface CustomDrillConfig {
+  id: string;
+  name: string;
+  selectedTables: number[];                             // e.g. [17, 18, 19]
+  selectedSquareRanges: { min: number; max: number }[]; // e.g. [{ min: 11, max: 25 }]
+  selectedCubeRanges: { min: number; max: number }[];   // e.g. [{ min: 1, max: 20 }]
+  selectedArithmeticCombos: ArithmeticCombination[];
+  selectedExamSkills: ExamSubSkill[];
+  operatorPreference: '+' | '-' | '×' | 'mixed';
+  timeLimitSeconds?: number;                            // e.g. 300 for 5 min
+  goalCount?: number;                                   // e.g. 25 questions
+  interleavePreviousLearned: boolean;                   // default true
+  targetMasteryTable?: number;                          // if single-table mastery run
+}
+
+export type CalculationTechniqueId =
+  | 'decade_bridging'
+  | 'l2r_decade_striding'
+  | 'century_crossing'
+  | 'triple_digit_accumulation'
+  | 'compensation_jump'
+  | 'complements_100'
+  | 'doubles_and_halves'
+  | 'tens_units_decomposition'
+  | 'decade_proximity_anchor'
+  | 'sq_ending_5_ekadhikena'
+  | 'sq_near_50_base'
+  | 'sq_near_100_base'
+  | 'sq_algebraic_duplex'
+  | 'cube_unit_anchor';
+
+export interface TechniqueMasteryState {
+  techniqueId: CalculationTechniqueId;
+  title: string;
+  consecutiveCorrect: number;
+  averageLatencyMs: number;
+  totalExposures: number;
+  isMastered: boolean;
+  unlockedAt?: number;
+  masteredAt?: number;
+}
+
+export interface TableMasteryAlert {
+  table: number;
+  nextTable: number;
+  accuracy: number;
+  medianLatencyMs: number;
+}
+
+export interface BrainMatrix {
+  schemaVersion: number;
+  userId: string | null;
+  exportedAt: number;
+  lastSyncedAt: number | null;
+  learnerProfile: any;
+  factMemoryMap: Record<string, any>;
+  techniqueMasteryMap: Record<string, TechniqueMasteryState>;
+  progressMap: Record<string, any>;
+  overallStats: any;
+  customDrillPresets: CustomDrillConfig[];
+  examTransferScores: ExamTransferScores | null;
 }
 
 

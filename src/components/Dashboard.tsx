@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain,
   Flame,
@@ -21,6 +21,12 @@ import {
   Play,
   Table,
   Target,
+  Sliders,
+  Download,
+  Upload,
+  Copy,
+  Check,
+  X,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ADD_SUB_LEVELS } from '../core/calcEngine';
@@ -33,6 +39,7 @@ import {
 import { AICoachCard } from './AICoachCard';
 import { AICoachDrawer } from './AICoachDrawer';
 import { MyLearningPlan } from './MyLearningPlan';
+import { CustomDrillModal } from './CustomDrillModal';
 
 interface DashboardProps {
   onOpenTutorial: () => void;
@@ -60,9 +67,62 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
     startTablesBootcamp,
     calculateExamTransferScores,
     examTransferScores,
+    startSingleTableMastery,
+    startCustomDrill,
+    exportBrainMatrixJSON,
+    importBrainMatrixJSON,
   } = useQuizStore();
 
   const [isCoachDrawerOpen, setIsCoachDrawerOpen] = useState(false);
+  const [isCustomDrillModalOpen, setIsCustomDrillModalOpen] = useState(false);
+  const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [importJsonText, setImportJsonText] = useState('');
+  const [importError, setImportError] = useState<string | null>(null);
+
+  const handleExportCopy = () => {
+    try {
+      const json = exportBrainMatrixJSON();
+      navigator.clipboard.writeText(json);
+      setBackupFeedback('Brain Matrix copied to clipboard!');
+      setTimeout(() => setBackupFeedback(null), 3000);
+    } catch {
+      setBackupFeedback('Failed to copy to clipboard');
+      setTimeout(() => setBackupFeedback(null), 3000);
+    }
+  };
+
+  const handleExportDownload = () => {
+    try {
+      const json = exportBrainMatrixJSON();
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mentalis_brain_matrix_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setBackupFeedback('Brain Matrix backup downloaded!');
+      setTimeout(() => setBackupFeedback(null), 3000);
+    } catch {
+      setBackupFeedback('Failed to export backup file');
+      setTimeout(() => setBackupFeedback(null), 3000);
+    }
+  };
+
+  const handleImportConfirm = () => {
+    if (!importJsonText.trim()) return;
+    const res = importBrainMatrixJSON(importJsonText);
+    if (res.success) {
+      setIsImportModalOpen(false);
+      setImportJsonText('');
+      setImportError(null);
+      setBackupFeedback('Brain Matrix restored successfully!');
+      setTimeout(() => setBackupFeedback(null), 3000);
+    } else {
+      setImportError(res.error || 'Failed to restore Brain Matrix');
+    }
+  };
 
   const studyDay = Math.max(1, overallStats.dailyActiveStreak || 1);
   const currentPhase = evaluateActiveCurriculumPhase(studyDay, learnerProfile);
@@ -121,6 +181,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
 
             <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => setIsCustomDrillModalOpen(true)}
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white border border-violet-400/30 text-xs font-bold transition-all shadow-md shadow-violet-600/30"
+              >
+                <Sliders className="w-4 h-4" />
+                Custom Workout
+              </button>
               <button
                 onClick={onOpenTutorial}
                 className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/30 text-xs font-semibold transition-all shadow-sm"
@@ -201,6 +268,157 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 space-y-8">
         {/* Prominent My Learning Plan Section */}
         <MyLearningPlan />
+
+        {/* Custom Workout & Automaticity Hub */}
+        <section className="p-6 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-2xl bg-violet-600/20 text-violet-400 border border-violet-500/30">
+                <Sliders className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-white">Custom Workout & Automaticity Hub</h3>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
+                    Offline First
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Target Table 18 or 19 automaticity, multi-digit place-value addition/subtraction, or build your own workout.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsCustomDrillModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-md shadow-violet-600/30 transition-all"
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Open Workout Builder</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            {/* Table 18 Mastery */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-white">Table ×18 Automaticity</span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Drill Table 18 multiples randomly until 95% accuracy with previous table revision.
+              </p>
+              <button
+                onClick={() => startSingleTableMastery(18)}
+                className="w-full py-2 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+              >
+                <Play className="w-3.5 h-3.5 fill-violet-300" />
+                <span>Master Table ×18</span>
+              </button>
+            </div>
+
+            {/* Table 19 Mastery */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold text-white">Table ×19 Automaticity</span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Drill Table 19 multiples randomly until 95% accuracy with previous table revision.
+              </p>
+              <button
+                onClick={() => startSingleTableMastery(19)}
+                className="w-full py-2 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+              >
+                <Play className="w-3.5 h-3.5 fill-violet-300" />
+                <span>Master Table ×19</span>
+              </button>
+            </div>
+
+            {/* Multi-digit 2d/3d Add/Sub */}
+            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-bold text-white">2d±2d & 3d±2d L2R</span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400">Non-negative</span>
+              </div>
+              <p className="text-[11px] text-slate-400">
+                Left-to-Right mental striding across multi-digit combinations.
+              </p>
+              <button
+                onClick={() =>
+                  startCustomDrill({
+                    id: 'multidigit_quick',
+                    name: 'Multi-Digit L2R Speed Drill',
+                    selectedTables: [],
+                    selectedSquareRanges: [],
+                    selectedCubeRanges: [],
+                    selectedArithmeticCombos: ['add_sub_2d_2d', 'add_sub_3d_2d'],
+                    selectedExamSkills: [],
+                    operatorPreference: 'mixed',
+                    timeLimitSeconds: 300,
+                    goalCount: 20,
+                    interleavePreviousLearned: true,
+                  })
+                }
+                className="w-full py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/80 border border-emerald-700/40 text-emerald-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+              >
+                <Play className="w-3.5 h-3.5 fill-emerald-300" />
+                <span>Start Multi-Digit Drill</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Brain Matrix Backup & Sync Strip */}
+          <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2 text-slate-400">
+              <Download className="w-4 h-4 text-cyan-400" />
+              <span>
+                <strong>Brain Matrix:</strong> All progress, facts, and techniques are saved offline in localStorage.
+              </span>
+              {backupFeedback && (
+                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold animate-pulse">
+                  {backupFeedback}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportCopy}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition-colors"
+                title="Copy full JSON matrix to clipboard"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy JSON</span>
+              </button>
+              <button
+                onClick={handleExportDownload}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition-colors"
+                title="Download JSON matrix file"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download</span>
+              </button>
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-cyan-950/50 hover:bg-cyan-900/60 text-cyan-300 border border-cyan-800/50 font-semibold transition-colors"
+                title="Restore from JSON matrix"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Restore</span>
+              </button>
+            </div>
+          </div>
+        </section>
 
         {/* RRB PO Prelims Speed Quant Readiness Card */}
         <section className="p-6 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-indigo-950/40 border border-emerald-500/30 shadow-2xl space-y-5">
@@ -754,6 +972,75 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
         isOpen={isCoachDrawerOpen}
         onClose={() => setIsCoachDrawerOpen(false)}
       />
+
+      {/* Custom Workout Modal */}
+      <CustomDrillModal
+        isOpen={isCustomDrillModalOpen}
+        onClose={() => setIsCustomDrillModalOpen(false)}
+      />
+
+      {/* Brain Matrix JSON Import Modal */}
+      <AnimatePresence>
+        {isImportModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <Upload className="w-5 h-5 text-cyan-400" />
+                  <h3 className="text-base font-bold text-white">Restore Brain Matrix Backup</h3>
+                </div>
+                <button
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="p-1 rounded-lg text-slate-400 hover:text-white"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-400">
+                Paste your exported Brain Matrix JSON below to restore your learner profile, fact memory states, and custom workout presets.
+              </p>
+
+              <textarea
+                value={importJsonText}
+                onChange={(e) => {
+                  setImportJsonText(e.target.value);
+                  setImportError(null);
+                }}
+                placeholder="Paste Brain Matrix JSON here..."
+                className="w-full h-44 p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+              />
+
+              {importError && (
+                <div className="p-2.5 rounded-lg bg-red-950/40 border border-red-800/40 text-xs text-red-300">
+                  {importError}
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleImportConfirm}
+                  disabled={!importJsonText.trim()}
+                  className="px-5 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-cyan-600/30"
+                >
+                  Restore Data
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

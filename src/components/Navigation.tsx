@@ -17,9 +17,11 @@ import {
   Menu,
   X,
   Target,
+  Sliders,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
+import { CustomDrillModal } from './CustomDrillModal';
 
 interface NavigationProps {
   onOpenTutorial: () => void;
@@ -38,6 +40,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
   const [isTableDropdownOpen, setIsTableDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -120,6 +123,14 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           >
             <Target className="w-3.5 h-3.5" />
             Exam Quant
+          </button>
+
+          <button
+            onClick={() => setIsCustomModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-violet-300 hover:text-white hover:bg-slate-800 transition-all font-semibold"
+          >
+            <Sliders className="w-3.5 h-3.5" />
+            Custom Drill
           </button>
 
           <button
@@ -349,6 +360,17 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
             <button
               onClick={() => {
+                setIsCustomModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="flex items-center gap-2 p-2.5 rounded-xl border bg-violet-950/40 text-violet-300 border-violet-800/60 font-semibold"
+            >
+              <Sliders className="w-4 h-4" />
+              <span>Custom Drill Builder</span>
+            </button>
+
+            <button
+              onClick={() => {
                 setViewMode('practice');
                 setIsMobileMenuOpen(false);
               }}
@@ -441,6 +463,12 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </div>
         </div>
       )}
+
+      {/* Custom Workout Modal */}
+      <CustomDrillModal
+        isOpen={isCustomModalOpen}
+        onClose={() => setIsCustomModalOpen(false)}
+      />
     </header>
   );
 };

@@ -10,12 +10,18 @@ import {
   UserProgressItem,
   TableTrainingMode,
   ExamSubSkill,
+  CustomDrillConfig,
+  CalculationTechniqueId,
 } from './types';
 import {
   generateAddSubQuestion,
   generateMultiplicationQuestion,
   generateSquareCubeQuestion,
+  generateArithmeticComboQuestion,
+  generateCustomSquareQuestion,
+  generateCustomCubeQuestion,
   SquareCubeSubTrack,
+  randomInt,
 } from './calcEngine';
 import { SEVEN_DAYS_MS } from './mastery';
 import {
@@ -25,6 +31,98 @@ import {
 import {
   generateFractionPercentageQuestion,
 } from './examQuantGenerators';
+
+export interface TableAutomaticityResult {
+  table: number;
+  isMastered: boolean;
+  accuracy: number;
+  medianLatencyMs: number;
+  testedMultiplesCount: number;
+  unmasteredMultiples: number[];
+}
+
+export function checkTableAutomaticity(
+  tableNum: number,
+  factMap: Record<string, any> = {}
+): TableAutomaticityResult {
+  const tested: number[] = [];
+  const unmastered: number[] = [];
+  let totalAttempts = 0;
+  let correctAttempts = 0;
+  const latencies: number[] = [];
+
+  // Check multiples 1 to 12 (primary automaticity band)
+  for (let m = 1; m <= 12; m++) {
+    const key = `mul:${tableNum}:${m}`;
+    const mem = factMap[key];
+    const attempts = mem ? (mem.totalAttempts ?? mem.attempts ?? 0) : 0;
+    if (mem && attempts > 0) {
+      tested.push(m);
+      totalAttempts += attempts;
+      const correct = mem.correctAttempts ?? (mem.totalAttempts !== undefined ? mem.totalAttempts - (mem.consecutiveErrors || 0) : attempts - (mem.errors || 0));
+      correctAttempts += correct;
+      if (mem.medianLatencyMs > 0) {
+        latencies.push(mem.medianLatencyMs);
+      }
+      const factAcc = correct / Math.max(1, attempts);
+      if (factAcc < 0.90 || mem.medianLatencyMs > 2200) {
+        unmastered.push(m);
+      }
+    } else {
+      unmastered.push(m);
+    }
+  }
+
+  const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
+  latencies.sort((a, b) => a - b);
+  const medianLatencyMs =
+    latencies.length > 0 ? latencies[Math.floor(latencies.length / 2)] : 0;
+
+  // Mastered if at least 10 of 12 multiples tested, accuracy >= 95%, median latency <= 2200ms
+  const isMastered =
+    tested.length >= 10 && accuracy >= 95 && medianLatencyMs > 0 && medianLatencyMs <= 2200 && unmastered.length <= 1;
+
+  return {
+    table: tableNum,
+    isMastered,
+    accuracy,
+    medianLatencyMs,
+    testedMultiplesCount: tested.length,
+    unmasteredMultiples: unmastered,
+  };
+}
+
+export function evaluateTechniqueMastery(
+  techniqueId: CalculationTechniqueId,
+  consecutiveCorrect: number,
+  averageLatencyMs: number,
+  totalExposures: number
+): { isMastered: boolean; nextTechnique?: CalculationTechniqueId } {
+  const progression: CalculationTechniqueId[] = [
+    'decade_bridging',
+    'l2r_decade_striding',
+    'century_crossing',
+    'compensation_jump',
+    'complements_100',
+    'doubles_and_halves',
+    'tens_units_decomposition',
+    'decade_proximity_anchor',
+    'sq_ending_5_ekadhikena',
+    'sq_near_50_base',
+    'sq_near_100_base',
+    'sq_algebraic_duplex',
+    'cube_unit_anchor',
+  ];
+
+  const isMastered = consecutiveCorrect >= 6 && averageLatencyMs <= 2600 && totalExposures >= 8;
+  const currIdx = progression.indexOf(techniqueId);
+  const nextTechnique =
+    isMastered && currIdx >= 0 && currIdx < progression.length - 1
+      ? progression[currIdx + 1]
+      : undefined;
+
+  return { isMastered, nextTechnique };
+}
 
 export interface AdaptiveAnalysis {
   decayedSkills: UserProgressItem[];
@@ -274,6 +372,8 @@ export interface AdaptiveQuestionOptions {
   mode?: 'standard' | 'targeted_refresh' | 'weak_spots' | 'speed';
   tableMode?: TableTrainingMode;
   examSubSkill?: ExamSubSkill;
+  customDrillConfig?: CustomDrillConfig;
+  targetMasteryTable?: number;
 }
 
 /**
@@ -290,7 +390,84 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
     mode = 'standard',
     tableMode = 'recall',
     examSubSkill,
+    customDrillConfig,
   } = options;
+
+  // 1. Custom Drill Mode (multi-select tables, squares, arithmetic combos, target mastery table)
+  if (module === 'custom_drill' && customDrillConfig) {
+    const cfg = customDrillConfig;
+
+    // Single Table Mastery Mode (e.g. Table 18 or 19)
+    if (cfg.targetMasteryTable) {
+      const t = cfg.targetMasteryTable;
+      const roll = Math.random();
+
+      // 65% of the time: pick a multiple for this table (preferring unmastered multiples if factMemoryMap exists)
+      if (roll < 0.65 || !cfg.interleavePreviousLearned || t <= 2) {
+        const auto = checkTableAutomaticity(t, factMemoryMap);
+        let m = randomInt(1, 12);
+        if (auto.unmasteredMultiples.length > 0 && Math.random() < 0.8) {
+          m = auto.unmasteredMultiples[Math.floor(Math.random() * auto.unmasteredMultiples.length)];
+        }
+        return generateTableModeQuestion(t, m, tableMode);
+      }
+
+      // 25% of the time: interleave previously learned tables (e.g. 2 to t - 1) to retain automaticity!
+      if (roll < 0.90) {
+        const prevTable = randomInt(2, Math.max(2, t - 1));
+        const prevMult = randomInt(1, 12);
+        const q = generateMultiplicationQuestion(prevTable, prevMult);
+        q.selectionReason = `Interleaved retention review of Table ${prevTable}`;
+        return q;
+      }
+
+      // 10% of the time: practice related / decomposition anchors
+      const anchorMult = randomInt(1, 12);
+      const q = generateTableModeQuestion(t, anchorMult, 'decomposition');
+      q.selectionReason = `Decomposition accumulator practice for Table ${t}`;
+      return q;
+    }
+
+    // General Multi-Select Workout Builder
+    type PoolKind = 'table' | 'square' | 'cube' | 'arithmetic' | 'exam';
+    const activePools: PoolKind[] = [];
+    if (cfg.selectedTables && cfg.selectedTables.length > 0) activePools.push('table');
+    if (cfg.selectedSquareRanges && cfg.selectedSquareRanges.length > 0) activePools.push('square');
+    if (cfg.selectedCubeRanges && cfg.selectedCubeRanges.length > 0) activePools.push('cube');
+    if (cfg.selectedArithmeticCombos && cfg.selectedArithmeticCombos.length > 0) activePools.push('arithmetic');
+    if (cfg.selectedExamSkills && cfg.selectedExamSkills.length > 0) activePools.push('exam');
+
+    if (activePools.length > 0) {
+      const chosenPool = activePools[Math.floor(Math.random() * activePools.length)];
+
+      if (chosenPool === 'table') {
+        const t = cfg.selectedTables[Math.floor(Math.random() * cfg.selectedTables.length)];
+        const m = randomInt(1, 12);
+        return generateTableModeQuestion(t, m, tableMode);
+      }
+
+      if (chosenPool === 'square') {
+        const range = cfg.selectedSquareRanges[Math.floor(Math.random() * cfg.selectedSquareRanges.length)];
+        return generateCustomSquareQuestion(range.min, range.max);
+      }
+
+      if (chosenPool === 'cube') {
+        const range = cfg.selectedCubeRanges[Math.floor(Math.random() * cfg.selectedCubeRanges.length)];
+        return generateCustomCubeQuestion(range.min, range.max);
+      }
+
+      if (chosenPool === 'arithmetic') {
+        const combo = cfg.selectedArithmeticCombos[Math.floor(Math.random() * cfg.selectedArithmeticCombos.length)];
+        const op = cfg.operatorPreference === 'mixed' ? undefined : (cfg.operatorPreference as '+' | '-');
+        return generateArithmeticComboQuestion(combo, { forceOperator: op });
+      }
+
+      if (chosenPool === 'exam') {
+        const skill = cfg.selectedExamSkills[Math.floor(Math.random() * cfg.selectedExamSkills.length)];
+        return generateQuestionFromFact(`exam:${skill}` as any);
+      }
+    }
+  }
 
   const analysis = analyzeProgress(progressMap);
 

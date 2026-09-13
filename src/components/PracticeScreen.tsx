@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft,
@@ -61,6 +61,12 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     sessionAnswered,
     sessionCorrect,
     sessionSummary,
+    sessionStartTime,
+    customDrillConfig,
+    targetMasteryTable,
+    tableMasteryAlert,
+    advanceToNextTable,
+    dismissTableMasteryAlert,
     learningMode,
     activeRepairCard,
     setLearningMode,
@@ -84,6 +90,29 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     dismissSessionSummary,
     setViewMode,
   } = useQuizStore();
+
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!sessionConfig.timeLimitSeconds) {
+      setSecondsRemaining(null);
+      return;
+    }
+
+    const updateTimer = () => {
+      if (isPaused) return;
+      const elapsedSec = Math.floor((Date.now() - sessionStartTime) / 1000);
+      const rem = Math.max(0, (sessionConfig.timeLimitSeconds || 0) - elapsedSec);
+      setSecondsRemaining(rem);
+      if (rem <= 0) {
+        endSession();
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 500);
+    return () => clearInterval(interval);
+  }, [sessionConfig.timeLimitSeconds, sessionStartTime, isPaused, endSession]);
 
   // Load initial question if absent
   useEffect(() => {
@@ -222,6 +251,14 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     trackTitle = activeExamSkill ? activeExamSkill.replace(/_/g, ' ').toUpperCase() : 'RRB PO QUANT';
   } else if (activeModule === 'fractions_percentages') {
     trackTitle = 'Fraction ↔ Percentage';
+  } else if (activeModule === 'custom_drill') {
+    if (targetMasteryTable) {
+      trackTitle = `Table ×${targetMasteryTable} Automaticity`;
+    } else if (customDrillConfig?.name) {
+      trackTitle = customDrillConfig.name;
+    } else {
+      trackTitle = 'Custom Workout';
+    }
   } else {
     trackTitle = activeSquareTrack.replace(/_/g, ' ').toUpperCase();
   }
@@ -348,6 +385,57 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
           </div>
         )}
       </div>
+
+      {/* Session Progress Bar & Questions Left HUD */}
+      {(!sessionConfig.isEndless || secondsRemaining !== null) && (
+        <div className="w-full max-w-2xl mx-auto px-4 pt-3 pb-1">
+          <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-slate-200">
+                {sessionConfig.goalCount
+                  ? `${sessionAnswered} of ${sessionConfig.goalCount} Questions`
+                  : `${sessionAnswered} Questions Completed`}
+              </span>
+              {sessionConfig.goalCount && sessionConfig.goalCount > sessionAnswered && (
+                <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 text-[11px] font-mono">
+                  {sessionConfig.goalCount - sessionAnswered} left
+                </span>
+              )}
+            </div>
+
+            {secondsRemaining !== null && (
+              <div
+                className={`flex items-center gap-1 font-mono font-bold text-xs px-2 py-0.5 rounded ${
+                  secondsRemaining < 30
+                    ? 'bg-red-500/20 text-red-300 border border-red-500/30 animate-pulse'
+                    : secondsRemaining < 60
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : 'bg-slate-900 text-slate-300 border border-slate-800'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>
+                  {Math.floor(secondsRemaining / 60)}:
+                  {(secondsRemaining % 60).toString().padStart(2, '0')} left
+                </span>
+              </div>
+            )}
+          </div>
+
+          {sessionConfig.goalCount && (
+            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-400 rounded-full"
+                initial={{ width: 0 }}
+                animate={{
+                  width: `${Math.min(100, (sessionAnswered / sessionConfig.goalCount) * 100)}%`,
+                }}
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Main Zen Drill Area */}
       <div className="flex-1 flex flex-col justify-center items-center px-4 py-4 max-w-md mx-auto w-full relative">
@@ -966,6 +1054,68 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Table Automaticity Level-Up Celebration Modal */}
+      <AnimatePresence>
+        {tableMasteryAlert && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="w-full max-w-md bg-slate-900 border-2 border-emerald-500/60 rounded-2xl p-6 shadow-2xl shadow-emerald-500/20 text-center space-y-4"
+            >
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-3xl shadow-lg shadow-emerald-500/20">
+                🏆
+              </div>
+
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                  Automaticity Achieved!
+                </span>
+                <h3 className="text-2xl font-black text-white mt-1">
+                  Table ×{tableMasteryAlert.table} Mastered!
+                </h3>
+                <p className="text-xs text-slate-300 mt-2">
+                  You have hit zero-hesitation retrieval speed across all multiples of {tableMasteryAlert.table}!
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-slate-500">Accuracy</div>
+                  <div className="text-lg font-black text-emerald-400 font-mono">
+                    {tableMasteryAlert.accuracy}%
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase font-bold text-slate-500">Median Speed</div>
+                  <div className="text-lg font-black text-cyan-400 font-mono">
+                    {(tableMasteryAlert.medianLatencyMs / 1000).toFixed(2)}s
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <button
+                  onClick={() => advanceToNextTable()}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-sm shadow-lg shadow-emerald-500/30 flex items-center justify-center gap-2 transition-all"
+                >
+                  <span>Advance to Table ×{tableMasteryAlert.nextTable}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => dismissTableMasteryAlert()}
+                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors"
+                >
+                  Keep Practicing Table ×{tableMasteryAlert.table}
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

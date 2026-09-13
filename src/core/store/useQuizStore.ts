@@ -24,10 +24,21 @@ import {
   TableTrainingMode,
   ExamSubSkill,
   ExamTransferScores,
+  CustomDrillConfig,
+  CalculationTechniqueId,
+  TechniqueMasteryState,
+  TableMasteryAlert,
+  BrainMatrix,
 } from '../types';
 import { SquareCubeSubTrack } from '../calcEngine';
 import { evaluateMasteryStatus, updateDailyStreak, calculateMedian, calculateCPM } from '../mastery';
-import { getAdaptiveQuestion, getRecommendedNextDrill, analyzeProgress } from '../adaptive';
+import {
+  getAdaptiveQuestion,
+  getRecommendedNextDrill,
+  analyzeProgress,
+  checkTableAutomaticity,
+  evaluateTechniqueMastery,
+} from '../adaptive';
 import { soundEngine } from '../soundEngine';
 import {
   LearnerProfile,
@@ -118,7 +129,47 @@ export function resolveActiveDimension(
     if (squareTrack === 'cubes_anchor') return 'cubes_anchors';
     return 'cubes_advanced';
   }
+  if (module === 'custom_drill') {
+    if (table && table >= 2 && table <= 20) return `table_${table}` as SkillDimension;
+    return 'mult_core_tables';
+  }
   return 'anzan_stream';
+}
+
+export const INITIAL_TECHNIQUE_MASTERY_MAP: Record<CalculationTechniqueId, TechniqueMasteryState> = {
+  decade_bridging: { techniqueId: 'decade_bridging', title: 'Decade Bridging (8+7 = 8+2+5)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  l2r_decade_striding: { techniqueId: 'l2r_decade_striding', title: 'L2R Decade Striding (47+38 = 77+8)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  century_crossing: { techniqueId: 'century_crossing', title: 'Century Crossing (345+87 = 425+7)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  triple_digit_accumulation: { techniqueId: 'triple_digit_accumulation', title: '3D Accumulation (H -> T -> U)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  compensation_jump: { techniqueId: 'compensation_jump', title: 'Compensation Jump (x - 29 = x - 30 + 1)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  complements_100: { techniqueId: 'complements_100', title: '100 Complements (100 - 37 = 63)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  doubles_and_halves: { techniqueId: 'doubles_and_halves', title: 'Doubling & Halving', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  tens_units_decomposition: { techniqueId: 'tens_units_decomposition', title: 'Tens & Units Split', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  decade_proximity_anchor: { techniqueId: 'decade_proximity_anchor', title: 'Proximity Anchoring (19×n = 20n - n)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  sq_ending_5_ekadhikena: { techniqueId: 'sq_ending_5_ekadhikena', title: 'Ekadhikena (65² = 6×7 | 25)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  sq_near_50_base: { techniqueId: 'sq_near_50_base', title: 'Base-50 Squares (54² = 2916)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  sq_near_100_base: { techniqueId: 'sq_near_100_base', title: 'Base-100 Squares (96² = 9216)', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  sq_algebraic_duplex: { techniqueId: 'sq_algebraic_duplex', title: 'Algebraic Duplex Squares', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+  cube_unit_anchor: { techniqueId: 'cube_unit_anchor', title: 'Cube Unit & Magnitude Anchors', consecutiveCorrect: 0, averageLatencyMs: 0, totalExposures: 0, isMastered: false },
+};
+
+export function resolveTechniqueIdFromStrategy(strategyId?: string): CalculationTechniqueId | null {
+  if (!strategyId) return null;
+  if (strategyId.includes('decade_bridging')) return 'decade_bridging';
+  if (strategyId.includes('l2r_decade_striding')) return 'l2r_decade_striding';
+  if (strategyId.includes('century_crossing')) return 'century_crossing';
+  if (strategyId.includes('triple_digit') || strategyId.includes('accumulation')) return 'triple_digit_accumulation';
+  if (strategyId.includes('compensation')) return 'compensation_jump';
+  if (strategyId.includes('complement')) return 'complements_100';
+  if (strategyId.includes('doubl')) return 'doubles_and_halves';
+  if (strategyId.includes('decomposition') || strategyId.includes('tens_units')) return 'tens_units_decomposition';
+  if (strategyId.includes('proximity') || strategyId.includes('nines_anchor') || strategyId.includes('teens')) return 'decade_proximity_anchor';
+  if (strategyId.includes('ending_5') || strategyId.includes('ekadhikena')) return 'sq_ending_5_ekadhikena';
+  if (strategyId.includes('near_50')) return 'sq_near_50_base';
+  if (strategyId.includes('near_100')) return 'sq_near_100_base';
+  if (strategyId.includes('duplex')) return 'sq_algebraic_duplex';
+  if (strategyId.includes('cube')) return 'cube_unit_anchor';
+  return null;
 }
 
 export function computeExamTransferScores(
@@ -267,6 +318,13 @@ interface QuizState {
   activeMicroSession: string | null;
   examTransferScores: ExamTransferScores | null;
 
+  // Custom Drill, Single Table Mastery & Techniques
+  customDrillConfig: CustomDrillConfig | null;
+  targetMasteryTable: number | null;
+  techniqueMasteryMap: Record<CalculationTechniqueId, TechniqueMasteryState>;
+  tableMasteryAlert: TableMasteryAlert | null;
+  isCustomDrillModalOpen: boolean;
+
   // Settings & Accessibility
   soundEnabled: boolean;
   reducedMotion: boolean;
@@ -353,6 +411,15 @@ interface QuizState {
   markPendingAISync: () => void;
   toggleAICoaching: () => void;
   dismissAICoachInsight: () => void;
+
+  // Actions - Custom Drill & Single Table Automaticity
+  startCustomDrill: (config: CustomDrillConfig) => void;
+  startSingleTableMastery: (tableNum: number) => void;
+  advanceToNextTable: () => void;
+  dismissTableMasteryAlert: () => void;
+  setIsCustomDrillModalOpen: (open: boolean) => void;
+  exportBrainMatrixJSON: () => string;
+  importBrainMatrixJSON: (jsonStr: string) => { success: boolean; error?: string };
 }
 
 const initialOverallStats: OverallStats = {
@@ -428,6 +495,13 @@ export const useQuizStore = create<QuizState>()(
       activeExamSkill: 'quant_simplification',
       activeMicroSession: null,
       examTransferScores: null,
+
+      // Custom Drill, Single Table Mastery & Techniques
+      customDrillConfig: null,
+      targetMasteryTable: null,
+      techniqueMasteryMap: INITIAL_TECHNIQUE_MASTERY_MAP,
+      tableMasteryAlert: null,
+      isCustomDrillModalOpen: false,
 
       soundEnabled: true,
       reducedMotion: false,
@@ -556,6 +630,104 @@ export const useQuizStore = create<QuizState>()(
 
       setActiveTableChartTab: (tab: TableChartTab) => {
         set({ activeTableChartTab: tab, viewMode: 'table_chart' });
+      },
+
+      startCustomDrill: (config: CustomDrillConfig) => {
+        set({
+          activeModule: 'custom_drill',
+          customDrillConfig: config,
+          targetMasteryTable: config.targetMasteryTable || null,
+          tableMasteryAlert: null,
+          viewMode: 'practice',
+          sessionConfig: {
+            mode: 'standard',
+            goalCount: config.goalCount || 25,
+            timeLimitSeconds: config.timeLimitSeconds,
+            isEndless: !config.goalCount && !config.timeLimitSeconds,
+          },
+          sessionAnswered: 0,
+          sessionCorrect: 0,
+          sessionStartTime: Date.now(),
+          sessionResponseTimes: [],
+          sessionSummary: null,
+          isPaused: false,
+        });
+        get().loadNextQuestion();
+      },
+
+      startSingleTableMastery: (tableNum: number) => {
+        const config: CustomDrillConfig = {
+          id: `table_mastery_${tableNum}`,
+          name: `Table ×${tableNum} Automaticity Sprint`,
+          selectedTables: [tableNum],
+          selectedSquareRanges: [],
+          selectedCubeRanges: [],
+          selectedArithmeticCombos: [],
+          selectedExamSkills: [],
+          operatorPreference: '×',
+          timeLimitSeconds: 300,
+          goalCount: 20,
+          interleavePreviousLearned: true,
+          targetMasteryTable: tableNum,
+        };
+        get().startCustomDrill(config);
+      },
+
+      advanceToNextTable: () => {
+        const current = get().targetMasteryTable || get().activeTable || 12;
+        const nextTable = current + 1;
+        set({ tableMasteryAlert: null });
+        get().startSingleTableMastery(nextTable);
+      },
+
+      dismissTableMasteryAlert: () => {
+        set({ tableMasteryAlert: null });
+      },
+
+      setIsCustomDrillModalOpen: (open: boolean) => {
+        set({ isCustomDrillModalOpen: open });
+      },
+
+      exportBrainMatrixJSON: () => {
+        const state = get();
+        const matrix: BrainMatrix = {
+          schemaVersion: 1,
+          userId: null,
+          exportedAt: Date.now(),
+          lastSyncedAt: Date.now(),
+          learnerProfile: state.learnerProfile,
+          factMemoryMap: state.factMemoryMap,
+          techniqueMasteryMap: state.techniqueMasteryMap,
+          progressMap: state.progressMap,
+          overallStats: state.overallStats,
+          customDrillPresets: state.customDrillConfig ? [state.customDrillConfig] : [],
+          examTransferScores: state.examTransferScores,
+        };
+        return JSON.stringify(matrix, null, 2);
+      },
+
+      importBrainMatrixJSON: (jsonStr: string) => {
+        try {
+          const data = JSON.parse(jsonStr) as BrainMatrix;
+          if (!data || typeof data !== 'object') {
+            return { success: false, error: 'Invalid JSON payload' };
+          }
+          if (!data.schemaVersion || !data.learnerProfile) {
+            return { success: false, error: 'Incompatible Brain Matrix schema' };
+          }
+          set({
+            learnerProfile: data.learnerProfile,
+            factMemoryMap: data.factMemoryMap || {},
+            techniqueMasteryMap: data.techniqueMasteryMap || INITIAL_TECHNIQUE_MASTERY_MAP,
+            progressMap: data.progressMap || {},
+            overallStats: data.overallStats || initialOverallStats,
+            examTransferScores: data.examTransferScores || null,
+            customDrillConfig: data.customDrillPresets?.[0] || null,
+          });
+          return { success: true };
+        } catch (err) {
+          return { success: false, error: err instanceof Error ? err.message : 'Unknown JSON parse error' };
+        }
       },
 
       startSession: (config?: Partial<SessionDrillConfig>) => {
@@ -775,6 +947,9 @@ export const useQuizStore = create<QuizState>()(
           mode: modeToUse,
           tableMode: state.currentTableMode,
           examSubSkill: state.activeExamSkill,
+          customDrillConfig: state.customDrillConfig || undefined,
+          targetMasteryTable: state.targetMasteryTable || undefined,
+          factMemoryMap: state.factMemoryMap,
         });
         if (!q.selectionReason) {
           q.selectionReason = 'Curriculum progression question';
@@ -991,9 +1166,9 @@ export const useQuizStore = create<QuizState>()(
         let factKey: FactKey | null = null;
         if (state.currentQuestion.factKey) {
           factKey = state.currentQuestion.factKey as FactKey;
-        } else if (state.activeModule === 'multiplication' || state.activeModule === 'tables_bootcamp') {
+        } else if (state.activeModule === 'multiplication' || state.activeModule === 'tables_bootcamp' || (state.activeModule === 'custom_drill' && state.currentQuestion.operator === '×')) {
           factKey = `mul:${state.currentQuestion.operandA}:${state.currentQuestion.operandB}`;
-        } else if (state.activeModule === 'squares_cubes') {
+        } else if (state.activeModule === 'squares_cubes' || (state.activeModule === 'custom_drill' && (state.currentQuestion.operator === '^2' || state.currentQuestion.operator === '^3'))) {
           factKey = state.currentQuestion.operator === '^3'
             ? `cube:${state.currentQuestion.operandA}`
             : `square:${state.currentQuestion.operandA}`;
@@ -1105,6 +1280,40 @@ export const useQuizStore = create<QuizState>()(
           }
         }
 
+        // Check single-table automaticity
+        let tableMasteryAlert = state.tableMasteryAlert;
+        const targetTable = state.targetMasteryTable || (state.activeModule === 'custom_drill' && state.customDrillConfig?.targetMasteryTable ? state.customDrillConfig.targetMasteryTable : null);
+        if (targetTable && !tableMasteryAlert) {
+          const autoCheck = checkTableAutomaticity(targetTable, updatedFactMap);
+          if (autoCheck.isMastered) {
+            tableMasteryAlert = {
+              table: targetTable,
+              nextTable: targetTable + 1,
+              accuracy: autoCheck.accuracy,
+              medianLatencyMs: autoCheck.medianLatencyMs,
+            };
+          }
+        }
+
+        // Update technique mastery map
+        let updatedTechniqueMap = { ...state.techniqueMasteryMap };
+        const techId = resolveTechniqueIdFromStrategy(state.currentQuestion.strategyId);
+        if (techId && updatedTechniqueMap[techId]) {
+          const prevTech = updatedTechniqueMap[techId];
+          const consecutive = isCorrect ? prevTech.consecutiveCorrect + 1 : 0;
+          const exposures = prevTech.totalExposures + 1;
+          const avgLatency = prevTech.averageLatencyMs === 0 ? responseTimeMs : Math.round((prevTech.averageLatencyMs * prevTech.totalExposures + responseTimeMs) / exposures);
+          const evalResult = evaluateTechniqueMastery(techId, consecutive, avgLatency, exposures);
+          updatedTechniqueMap[techId] = {
+            ...prevTech,
+            consecutiveCorrect: consecutive,
+            totalExposures: exposures,
+            averageLatencyMs: avgLatency,
+            isMastered: evalResult.isMastered,
+            masteredAt: evalResult.isMastered && !prevTech.isMastered ? Date.now() : prevTech.masteredAt,
+          };
+        }
+
         // Mark pending AI sync if practiced during cooldown or offline
         get().markPendingAISync();
         const nextBatchCount = (state.batchAnswerCount || 0) + 1;
@@ -1125,6 +1334,8 @@ export const useQuizStore = create<QuizState>()(
             [progressKey]: updatedItem,
           },
           factMemoryMap: updatedFactMap,
+          techniqueMasteryMap: updatedTechniqueMap,
+          tableMasteryAlert,
           activeRepairCard,
           delayedReviewQueue: updatedDelayedQueue,
           batchAnswerCount: nextBatchCount >= 10 ? 0 : nextBatchCount,
@@ -1770,6 +1981,8 @@ export const useQuizStore = create<QuizState>()(
           activeTrainingPlan: null,
           activeTrainingBlockIndex: 0,
           isPlanActive: false,
+          techniqueMasteryMap: (old as any).techniqueMasteryMap || INITIAL_TECHNIQUE_MASTERY_MAP,
+          customDrillConfig: (old as any).customDrillConfig || null,
           aiCoachingEnabled: old.aiCoachingEnabled ?? true,
           aiCoachInsight: null,
           isLoadingAiCoach: false,
@@ -1791,6 +2004,8 @@ export const useQuizStore = create<QuizState>()(
         progressMap: state.progressMap,
         factMemoryMap: state.factMemoryMap,
         learningMode: state.learningMode,
+        techniqueMasteryMap: state.techniqueMasteryMap,
+        customDrillConfig: state.customDrillConfig,
         overallStats: state.overallStats,
         anzanStats: state.anzanStats,
         soundEnabled: state.soundEnabled,
