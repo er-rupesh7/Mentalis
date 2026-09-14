@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { AIProviderStatus } from '../core/learnerModel';
+import { useTranslations } from 'next-intl';
 
 interface AICoachDrawerProps {
   isOpen: boolean;
@@ -29,6 +30,9 @@ interface AICoachDrawerProps {
 }
 
 export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ isOpen, onClose }) => {
+  const tCoach = useTranslations('aiCoach');
+  const tCommon = useTranslations('common');
+
   const {
     aiCoachInsight,
     isLoadingAiCoach,
@@ -96,7 +100,7 @@ export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ isOpen, onClose })
             </div>
             <div>
               <h2 className="text-base font-bold text-white flex items-center gap-2">
-                Mentalis Local Adaptive Coach
+                {tCoach('title')}
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   100% Offline
                 </span>
@@ -107,6 +111,7 @@ export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ isOpen, onClose })
 
           <button
             onClick={onClose}
+            aria-label={tCommon('close')}
             className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700 transition-colors"
           >
             <X className="w-4 h-4" />
@@ -273,7 +278,7 @@ export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ isOpen, onClose })
                     : 'bg-violet-600 hover:bg-violet-500'
                 }`}
               >
-                Request Coach Guidance
+                {tCoach('requestFeedback')}
               </button>
             </div>
           )}
@@ -309,7 +314,7 @@ export const AICoachDrawer: React.FC<AICoachDrawerProps> = ({ isOpen, onClose })
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoadingAiCoach ? 'animate-spin' : ''}`} />
               <span>
-                {isLoadingAiCoach ? 'Updating...' : 'Refresh Advice'}
+                {isLoadingAiCoach ? tCoach('analyzing') : tCoach('requestFeedback')}
               </span>
             </button>
           </div>

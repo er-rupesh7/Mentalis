@@ -31,10 +31,14 @@ import {
   createInitialFactMemoryState,
 } from '../core/factModel';
 import { getBestStrategyForFact } from '../core/strategyCatalog';
+import { useTranslations } from 'next-intl';
 
 type MemoryMapTab = 'multiplication' | 'squares' | 'cubes';
 
 export const MemoryMap: React.FC = () => {
+  const tMemory = useTranslations('memoryMap');
+  const tCommon = useTranslations('common');
+
   const {
     factMemoryMap,
     practiceFact,
@@ -169,10 +173,10 @@ export const MemoryMap: React.FC = () => {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                  Adaptive Memory Map
+                  {tMemory('title')}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-400">
-                  Granular SM-2 memory retention, stability curves, and error diagnostics across all 2,000+ facts
+                  {tMemory('subtitle')}
                 </p>
               </div>
             </div>
@@ -182,17 +186,17 @@ export const MemoryMap: React.FC = () => {
           <div className="flex items-center gap-2 overflow-x-auto text-xs font-mono">
             <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5 shrink-0">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Mastered:</span>
+              <span>{tMemory('filterMastered')}:</span>
               <strong className="text-emerald-400">{stats.mastered}</strong>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5 shrink-0">
               <Clock className="w-4 h-4 text-amber-400" />
-              <span>Review Due:</span>
+              <span>{tMemory('filterDue')}:</span>
               <strong className="text-amber-400">{stats.due}</strong>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5 shrink-0">
               <AlertTriangle className="w-4 h-4 text-rose-400" />
-              <span>Weak/Repair:</span>
+              <span>{tMemory('filterWeak')}:</span>
               <strong className="text-rose-400">{stats.weak}</strong>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center gap-1.5 shrink-0">
@@ -209,9 +213,9 @@ export const MemoryMap: React.FC = () => {
           <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-900 border border-slate-800 text-xs font-semibold">
             {(
               [
-                { id: 'multiplication', label: 'Multiplication (1–100 × 1–20)' },
-                { id: 'squares', label: 'Squares (1²–100²)' },
-                { id: 'cubes', label: 'Cubes (1³–100³)' },
+                { id: 'multiplication', label: tMemory('tabMultiplication') },
+                { id: 'squares', label: tMemory('tabSquares') },
+                { id: 'cubes', label: tMemory('tabCubes') },
               ] as const
             ).map((tab) => (
               <button

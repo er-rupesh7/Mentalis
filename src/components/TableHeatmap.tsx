@@ -21,10 +21,14 @@ import {
 import { useQuizStore } from '../core/store/useQuizStore';
 import { SEVEN_DAYS_MS } from '../core/mastery';
 import { checkTableAutomaticity } from '../core/adaptive';
+import { useTranslations } from 'next-intl';
 
 type HeatmapMode = 'tables' | 'squares' | 'cubes';
 
 export const TableHeatmap: React.FC = () => {
+  const tHeatmap = useTranslations('heatmap');
+  const tCommon = useTranslations('common');
+
   const {
     progressMap,
     factMemoryMap,
@@ -235,13 +239,13 @@ export const TableHeatmap: React.FC = () => {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors border border-slate-800"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Dashboard</span>
+          <span>{tCommon('back')}</span>
         </button>
 
         <div className="flex items-center gap-2">
           <Grid className="w-4 h-4 text-emerald-400" />
           <h1 className="text-sm font-bold text-white tracking-wide">
-            Fluency & Automaticity Matrix
+            {tHeatmap('title')}
           </h1>
         </div>
 
@@ -270,7 +274,7 @@ export const TableHeatmap: React.FC = () => {
               }`}
             >
               <Grid className="w-3.5 h-3.5" />
-              <span>Tables (2–100)</span>
+              <span>{tHeatmap('modeTables')}</span>
             </button>
 
             <button
@@ -285,7 +289,7 @@ export const TableHeatmap: React.FC = () => {
               }`}
             >
               <Zap className="w-3.5 h-3.5" />
-              <span>Squares (1²–100²)</span>
+              <span>{tHeatmap('modeSquares')}</span>
             </button>
 
             <button
@@ -300,7 +304,7 @@ export const TableHeatmap: React.FC = () => {
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Cubes (1³–30³)</span>
+              <span>{tHeatmap('modeCubes')}</span>
             </button>
           </div>
 

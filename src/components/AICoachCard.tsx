@@ -17,12 +17,17 @@ import {
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { AIProviderStatus } from '../core/learnerModel';
+import { useTranslations } from 'next-intl';
 
 interface AICoachCardProps {
   onOpenCoachDrawer: () => void;
 }
 
 export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) => {
+  const tCoach = useTranslations('aiCoach');
+  const tPlan = useTranslations('learningPlan');
+  const tCommon = useTranslations('common');
+
   const {
     activeTrainingPlan,
     startTrainingBlock,
@@ -111,30 +116,30 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
         <div className="flex items-center gap-2 flex-wrap">
           <span className="px-2.5 py-0.5 rounded-full bg-violet-600/30 text-violet-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-violet-500/40 flex items-center gap-1.5">
             <Sparkles className="w-3 h-3 text-violet-400" />
-            Daily Training Plan
+            {tPlan('adaptiveCurriculum')}
           </span>
 
           {/* Plan Source Label */}
           {plan.isLevel0 ? (
             <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 text-[10px] font-mono font-semibold border border-emerald-500/30 flex items-center gap-1">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              Level 0 Foundation Plan (Offline)
+              {tPlan('level0Plan')}
             </span>
           ) : plan.source === 'ai_enhanced' ? (
             <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-mono font-semibold border border-indigo-500/30 flex items-center gap-1">
               <Zap className="w-3 h-3 text-indigo-400" />
-              AI-Enhanced Plan (Groq LLaMA 3.3)
+              {tCoach('title')}
             </span>
           ) : (
             <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 text-[10px] font-mono font-semibold border border-cyan-500/30 flex items-center gap-1">
               <Brain className="w-3 h-3 text-cyan-400" />
-              Personalized Offline Plan
+              {tPlan('offlinePlan')}
             </span>
           )}
 
           <span className="text-xs font-mono text-slate-400 flex items-center gap-1">
             <Clock className="w-3 h-3 text-slate-500" />
-            {plan.totalEstimatedMinutes} min target
+            {plan.totalEstimatedMinutes} min
           </span>
 
           {fatigue.level !== 'fresh' && (
@@ -146,7 +151,7 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
               }`}
             >
               <AlertCircle className="w-3 h-3" />
-              {fatigue.level.replace('_', ' ')}
+              {fatigue.level === 'high_fatigue' ? tCoach('fatigueHigh') : tCoach('fatigueMed')}
             </span>
           )}
         </div>
@@ -155,7 +160,7 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
           onClick={onOpenCoachDrawer}
           className="text-xs font-semibold text-violet-300 hover:text-violet-200 flex items-center gap-1 hover:underline transition-all self-start sm:self-auto"
         >
-          <span>Coach Insights & Guidance</span>
+          <span>{tCoach('title')}</span>
           <ChevronRight className="w-3.5 h-3.5" />
         </button>
       </div>
@@ -216,7 +221,7 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
           className="px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-all bg-violet-600 hover:bg-violet-500 text-white shadow-md shadow-violet-600/20 disabled:opacity-50"
         >
           <Sparkles className={`w-3 h-3 ${isLoadingAiCoach ? 'animate-spin' : ''}`} />
-          <span>{isLoadingAiCoach ? 'Analyzing...' : 'Refresh Coach Insights'}</span>
+          <span>{isLoadingAiCoach ? tCoach('analyzing') : tCoach('requestFeedback')}</span>
         </button>
       </div>
 
@@ -239,7 +244,7 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
               }`}
             >
               <div className="flex items-center justify-between text-[10px] font-mono">
-                <span className="text-slate-500">Block {idx + 1}</span>
+                <span className="text-slate-500">{tPlan('block')} {idx + 1}</span>
                 {isDone ? (
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                 ) : (
@@ -250,7 +255,7 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
                 {block.title.split(':')[0]}
               </div>
               <div className="text-[10px] text-slate-400 font-mono">
-                {block.completedCount}/{block.targetCount} items
+                {block.completedCount}/{block.targetCount}
               </div>
             </div>
           );
@@ -264,7 +269,7 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
           className="text-xs text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-lg border border-slate-800 hover:bg-slate-800 transition-colors flex items-center gap-1.5"
         >
           <RefreshCw className="w-3 h-3" />
-          <span>Regenerate Plan (Offline)</span>
+          <span>{tPlan('recalibrate')}</span>
         </button>
 
         {!isPlanCompleted ? (
@@ -273,12 +278,12 @@ export const AICoachCard: React.FC<AICoachCardProps> = ({ onOpenCoachDrawer }) =
             className="px-6 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center gap-2"
           >
             <Play className="w-3.5 h-3.5 fill-white" />
-            <span>Start Block {targetIndex + 1} ({plan.blocks[targetIndex]?.title.split(':')[0]})</span>
+            <span>{tCommon('start')} {tPlan('block')} {targetIndex + 1}</span>
           </button>
         ) : (
           <div className="text-xs font-semibold text-emerald-400 flex items-center gap-1.5">
             <CheckCircle2 className="w-4 h-4" />
-            <span>Great work today! All 5 training blocks complete.</span>
+            <span>{tCommon('completed')}</span>
           </div>
         )}
       </div>

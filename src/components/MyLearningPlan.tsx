@@ -280,14 +280,14 @@ export const MyLearningPlan: React.FC = () => {
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-amber-500/30 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
-                Diagnostic Assessment Paused
+                {tPlan('diagnosticPaused')}
               </span>
               <span className="text-xs font-mono text-slate-400">
-                Question {activeAssessment.currentQuestionIndex + 1} of {activeAssessment.questions.length}
+                {tPlan('questionOf', { current: activeAssessment.currentQuestionIndex + 1, total: activeAssessment.questions.length })}
               </span>
             </div>
             <h3 className="text-sm font-bold text-white">
-              Resume your 10–20 minute calibration diagnostic
+              {tPlan('diagnosticPaused')}
             </h3>
             <p className="text-xs text-slate-300">
               Continue calibrating your calculation speed, strategy gaps, and hesitation patterns across all 5 arithmetic domains.
@@ -302,7 +302,7 @@ export const MyLearningPlan: React.FC = () => {
             className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 shrink-0"
           >
             <Play className="w-3.5 h-3.5 fill-slate-950" />
-            <span>Resume Diagnostic</span>
+            <span>{tPlan('resumeDiagnostic')}</span>
           </button>
         </div>
       ) : !baseline ? (
@@ -413,7 +413,7 @@ export const MyLearningPlan: React.FC = () => {
                   }`}
                 >
                   <div className="flex items-center justify-between text-[10px] font-mono">
-                    <span className="text-slate-500 font-bold">Block {idx + 1}</span>
+                    <span className="text-slate-500 font-bold">{tPlan('block')} {idx + 1}</span>
                     {isDone ? (
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                     ) : (
@@ -424,7 +424,7 @@ export const MyLearningPlan: React.FC = () => {
                     {block.title.split(':')[0]}
                   </div>
                   <div className="text-[10px] text-slate-400 font-mono">
-                    {block.completedCount}/{block.targetCount} done
+                    {block.completedCount}/{block.targetCount} {tCommon('completed')}
                   </div>
                 </button>
               );

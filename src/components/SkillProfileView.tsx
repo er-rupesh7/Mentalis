@@ -23,6 +23,8 @@ import {
   getDimensionModule,
 } from '../core/learnerModel';
 import { getDrillsForDimension } from '../core/catalog';
+import { useTranslations } from 'next-intl';
+import { getLocalizedSkillCategory } from '../i18n/contentTranslations';
 
 export const SkillProfileView: React.FC = () => {
   const {
@@ -34,29 +36,29 @@ export const SkillProfileView: React.FC = () => {
     setActiveTable,
     setActiveSquareTrack,
     startSession,
+    locale,
   } = useQuizStore();
+
+  const tProfile = useTranslations('skillProfile');
+  const tCommon = useTranslations('common');
 
   const skills = learnerProfile.skills;
 
   const categories = [
     {
-      title: 'Addition & Subtraction Foundations',
-      description: 'Single-digit, decade crossing, base-100 complements, and left-to-right multi-digit',
+      ...getLocalizedSkillCategory('add_sub', locale),
       dims: ALL_SKILL_DIMENSIONS.filter((d) => d.startsWith('add_sub')),
     },
     {
-      title: 'Multiplication Tables & Expansion',
-      description: 'Foundations (2-5, 10), core times tables (6-12), teen tables, and decade anchors',
+      ...getLocalizedSkillCategory('multiplication', locale),
       dims: ALL_SKILL_DIMENSIONS.filter((d) => d.startsWith('mult')),
     },
     {
-      title: 'Mental Squares & Cubes',
-      description: 'Vedic ending-5, base-50, base-100, duplex cross-multiplication, and anchor cubes',
+      ...getLocalizedSkillCategory('squares_cubes', locale),
       dims: ALL_SKILL_DIMENSIONS.filter((d) => d.startsWith('squares') || d.startsWith('cubes')),
     },
     {
-      title: 'Working Memory & Anzan Stream',
-      description: 'Sequential flashed additions and dynamic working memory holding capacity',
+      ...getLocalizedSkillCategory('anzan', locale),
       dims: ALL_SKILL_DIMENSIONS.filter((d) => d === 'anzan_stream'),
     },
   ];
@@ -91,11 +93,11 @@ export const SkillProfileView: React.FC = () => {
               <Brain className="w-5 h-5" />
             </div>
             <h1 className="text-2xl font-black text-white tracking-tight">
-              Cognitive Skill Profile
+              {tProfile('title')}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-400">
-            Bayesian ability metrics ($\theta$), confidence intervals, and decay risk across all 16 curriculum dimensions.
+            {tProfile('subtitle')}
           </p>
         </div>
 
@@ -104,7 +106,7 @@ export const SkillProfileView: React.FC = () => {
           className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Retake Diagnostic Assessment</span>
+          <span>{tProfile('recalibrate')}</span>
         </button>
       </div>
 

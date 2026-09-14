@@ -26,6 +26,8 @@ import { useQuizStore } from '../core/store/useQuizStore';
 import { generateAnzanSequence } from '../core/calcEngine';
 import { AnzanSequence, AnzanConfig } from '../core/types';
 import { soundEngine } from '../core/soundEngine';
+import { useTranslations } from 'next-intl';
+import { getLocalizedAnzanPreset } from '../i18n/contentTranslations';
 
 const PRESETS: { name: string; description: string; config: AnzanConfig }[] = [
   {
@@ -61,7 +63,11 @@ export const AnzanFlashScreen: React.FC = () => {
     reducedMotion,
     toggleReducedMotion,
     setViewMode,
+    locale,
   } = useQuizStore();
+
+  const tAnzan = useTranslations('anzan');
+  const tCommon = useTranslations('common');
 
   const [phase, setPhase] = useState<'idle' | 'countdown' | 'flashing' | 'input' | 'result'>('idle');
   const [countdown, setCountdown] = useState<number>(3);
@@ -255,13 +261,13 @@ export const AnzanFlashScreen: React.FC = () => {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors border border-slate-800"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Dashboard</span>
+          <span>{tCommon('back')}</span>
         </button>
 
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-violet-400" />
           <span className="text-xs font-bold text-white tracking-wide">
-            Anzan Flash Memory
+            {tAnzan('title')}
           </span>
         </div>
 
@@ -290,21 +296,21 @@ export const AnzanFlashScreen: React.FC = () => {
               <div className="inline-flex p-3 rounded-2xl bg-violet-600/20 text-violet-400 border border-violet-500/30 mb-1">
                 <Zap className="w-6 h-6" />
               </div>
-              <h2 className="text-xl font-extrabold text-white">Working Memory Engine</h2>
+              <h2 className="text-xl font-extrabold text-white">{tAnzan('title')}</h2>
               <p className="text-xs text-slate-400 leading-relaxed max-w-xs mx-auto">
-                Numbers flash sequentially and vanish. Hold the running sum in your{' '}
-                <span className="text-violet-300 font-semibold">phonological loop</span> without paper.
+                {tAnzan('subtitle')}
               </p>
             </div>
 
             {/* Quick Presets */}
             <div className="space-y-2">
               <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
-                Select Training Preset
+                {tAnzan('presets')}
               </span>
               <div className="grid grid-cols-2 gap-2">
                 {PRESETS.map((p) => {
                   const isSelected = anzanConfig.presetName === p.name;
+                  const locPreset = getLocalizedAnzanPreset(p.name, locale);
                   return (
                     <button
                       key={p.name}
@@ -315,7 +321,7 @@ export const AnzanFlashScreen: React.FC = () => {
                           : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:bg-slate-800/60'
                       }`}
                     >
-                      <div className="font-semibold">{p.name}</div>
+                      <div className="font-semibold">{locPreset.name}</div>
                       <div className="text-[10px] text-slate-400 font-normal mt-0.5 line-clamp-1">
                         {p.config.count}n • {p.config.digits}d • {p.config.intervalMs}ms
                       </div>
@@ -325,67 +331,66 @@ export const AnzanFlashScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Custom Controls */}
-            <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-3 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Numbers in Flash</span>
-                <div className="flex gap-1 font-mono">
-                  {[3, 5, 8, 10].map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => updateAnzanConfig({ count: c, presetName: undefined })}
-                      className={`px-2.5 py-1 rounded-lg ${
-                        anzanConfig.count === c
-                          ? 'bg-violet-600 text-white font-bold'
-                          : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
-                      }`}
-                    >
-                      {c}
-                    </button>
-                  ))}
+            {/* Custom Sliders */}
+            <div className="space-y-3 pt-2 border-t border-slate-850">
+              {/* Digit Count */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-mono">
+                  <span className="text-slate-400">{tAnzan('digits')}</span>
+                  <span className="text-violet-400 font-bold">{anzanConfig.digits}</span>
                 </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  value={anzanConfig.digits}
+                  onChange={(e) =>
+                    updateAnzanConfig({ digits: Number(e.target.value) as 1 | 2 | 3, presetName: undefined })
+                  }
+                  className="w-full accent-violet-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+                />
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Digit Magnitude</span>
-                <div className="flex gap-1 font-mono">
-                  {([1, 2, 3] as const).map((d) => (
-                    <button
-                      key={d}
-                      onClick={() => updateAnzanConfig({ digits: d, presetName: undefined })}
-                      className={`px-3 py-1 rounded-lg ${
-                        anzanConfig.digits === d
-                          ? 'bg-violet-600 text-white font-bold'
-                          : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
-                      }`}
-                    >
-                      {d}-digit
-                    </button>
-                  ))}
+              {/* Number Count */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-mono">
+                  <span className="text-slate-400">{tAnzan('numbers')}</span>
+                  <span className="text-violet-400 font-bold">{anzanConfig.count}</span>
                 </div>
+                <input
+                  type="range"
+                  min={3}
+                  max={15}
+                  value={anzanConfig.count}
+                  onChange={(e) =>
+                    updateAnzanConfig({ count: Number(e.target.value), presetName: undefined })
+                  }
+                  className="w-full accent-violet-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+                />
               </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-slate-400">Flash Interval</span>
-                <div className="flex gap-1 font-mono">
-                  {[1200, 800, 500, 300].map((ms) => (
-                    <button
-                      key={ms}
-                      onClick={() => updateAnzanConfig({ intervalMs: ms, presetName: undefined })}
-                      className={`px-2 py-1 rounded-lg ${
-                        anzanConfig.intervalMs === ms
-                          ? 'bg-violet-600 text-white font-bold'
-                          : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
-                      }`}
-                    >
-                      {ms}ms
-                    </button>
-                  ))}
+              {/* Flash Interval Speed */}
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs font-mono">
+                  <span className="text-slate-400">{tAnzan('speedMs')}</span>
+                  <span className="text-violet-400 font-bold">{anzanConfig.intervalMs}ms</span>
                 </div>
+                <input
+                  type="range"
+                  min={200}
+                  max={2000}
+                  step={50}
+                  value={anzanConfig.intervalMs}
+                  onChange={(e) =>
+                    updateAnzanConfig({ intervalMs: Number(e.target.value), presetName: undefined })
+                  }
+                  className="w-full accent-violet-500 bg-slate-800 h-1.5 rounded-lg cursor-pointer"
+                />
               </div>
 
-              <div className="flex items-center justify-between pt-1 border-t border-slate-850">
-                <span className="text-slate-400">Include Subtraction (Negatives)</span>
+              {/* Negative Numbers Toggle */}
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-xs text-slate-400 font-mono">{tAnzan('allowNegatives')}</span>
                 <button
                   onClick={() =>
                     updateAnzanConfig({
@@ -399,7 +404,7 @@ export const AnzanFlashScreen: React.FC = () => {
                       : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
                   }`}
                 >
-                  {anzanConfig.allowNegatives ? 'Enabled' : 'Disabled'}
+                  {anzanConfig.allowNegatives ? tCommon('enabled') : tCommon('disabled')}
                 </button>
               </div>
             </div>
@@ -410,7 +415,7 @@ export const AnzanFlashScreen: React.FC = () => {
               className="w-full py-3.5 rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-98 text-white font-bold text-sm transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2"
             >
               <Play className="w-4 h-4 fill-white" />
-              Begin Flash Countdown
+              {tAnzan('start')}
             </button>
 
             {/* Offline Anzan Record Pill */}

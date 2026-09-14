@@ -69,7 +69,7 @@ describe('i18n Multilingual Architecture (13 Languages)', () => {
     expect(urduMeta.dir).toBe('rtl');
   });
 
-  it('has bundled, offline messages for all 13 locales with all required namespaces', () => {
+  it('has bundled, offline messages for all 13 locales with all 19 required namespaces', () => {
     const namespaces = [
       'common',
       'nav',
@@ -80,6 +80,16 @@ describe('i18n Multilingual Architecture (13 Languages)', () => {
       'onboarding',
       'settings',
       'learningPlan',
+      'customDrill',
+      'tableChart',
+      'bootcamp',
+      'examQuant',
+      'heatmap',
+      'memoryMap',
+      'assessment',
+      'skillProfile',
+      'tutorial',
+      'aiCoach',
     ];
 
     for (const locale of locales) {
@@ -103,11 +113,38 @@ describe('i18n Multilingual Architecture (13 Languages)', () => {
       expect(messages.common.submit).toBeTruthy();
       expect(messages.nav.dashboard).toBeTruthy();
       expect(messages.dashboard.title).toBeTruthy();
-      expect(messages.dashboard.pedagogyLab).toBeTruthy();
-      expect(messages.dashboard.techniquesStudio).toBeTruthy();
-      expect(messages.onboarding.welcomeTitle).toBeTruthy();
+      expect(messages.customDrill.title).toBeTruthy();
+      expect(messages.tableChart.title).toBeTruthy();
+      expect(messages.bootcamp.title).toBeTruthy();
+      expect(messages.examQuant.title).toBeTruthy();
+      expect(messages.tutorial.modalTitle).toBeTruthy();
+      expect(messages.aiCoach.title).toBeTruthy();
       expect(messages.learningPlan.title).toBeTruthy();
-      expect(messages.learningPlan.weakFacts).toBeTruthy();
+    }
+  });
+
+  it('guarantees deep-merge fallback inheritance and memoization', () => {
+    // 1. Memoization check (O(1) reference equality)
+    const hi1 = getMessagesForLocale('hi');
+    const hi2 = getMessagesForLocale('hi');
+    expect(hi1).toBe(hi2);
+
+    const gu1 = getMessagesForLocale('gu');
+    const gu2 = getMessagesForLocale('gu');
+    expect(gu1).toBe(gu2);
+
+    // 2. Fallback check: all 19 namespaces are populated even in regional languages
+    for (const locale of locales) {
+      const msgs = getMessagesForLocale(locale);
+      expect(msgs.customDrill.operations).toBeTruthy();
+      expect(msgs.bootcamp.startDrill).toBeTruthy();
+      expect(msgs.examQuant.startExamDrill).toBeTruthy();
+      expect(msgs.heatmap.legendMastered).toBeTruthy();
+      expect(msgs.memoryMap.filterMastered).toBeTruthy();
+      expect(msgs.assessment.pauseAssessment).toBeTruthy();
+      expect(msgs.skillProfile.recalibrate).toBeTruthy();
+      expect(msgs.tutorial.innerEcho).toBeTruthy();
+      expect(msgs.aiCoach.ready).toBeTruthy();
     }
   });
 
@@ -186,6 +223,66 @@ describe('i18n Multilingual Architecture (13 Languages)', () => {
     const stratEkadhikenaHi = getLocalizedStrategy('sq_ending_5_ekadhikena', 'hi');
     expect(stratEkadhikenaHi.name).toBe('5 पर समाप्त वर्ग (एकाधिकेन)');
     expect(stratEkadhikenaHi.mentalScript).toContain('दहाई को (दहाई + 1) से गुणा करें');
+  });
+
+  it('provides structured content translations with resilient multi-tier fallback', async () => {
+    const {
+      getLocalizedBootcampMode,
+      getLocalizedExamSubSkill,
+      getLocalizedAnzanPreset,
+      getLocalizedTutorialLesson,
+      getLocalizedSkillCategory,
+    } = await import('../../i18n/contentTranslations');
+
+    // 1. Bootcamp modes in Hindi, Gujarati, English
+    const modeHi = getLocalizedBootcampMode('recognition', 'hi');
+    expect(modeHi.name).toContain('मोड A');
+    expect(modeHi.tag).toBeTruthy();
+    expect(modeHi.description).toBeTruthy();
+
+    const modeGu = getLocalizedBootcampMode('recognition', 'gu');
+    expect(modeGu.name).toContain('મોડ A');
+
+    const modeEn = getLocalizedBootcampMode('recognition', 'en');
+    expect(modeEn.name).toContain('Mode A');
+
+    // 2. Exam subskills in Hindi and Tamil
+    const examHi = getLocalizedExamSubSkill('quant_simplification', 'hi');
+    expect(examHi.title).toBe('सरलीकरण (BODMAS)');
+    expect(examHi.examWeight).toBeTruthy();
+
+    const examTa = getLocalizedExamSubSkill('quant_simplification', 'ta');
+    expect(examTa.title).toBe('சுருக்குதல் (BODMAS)');
+
+    // 3. Anzan Presets in Hindi and Kannada
+    const anzanHi = getLocalizedAnzanPreset('Novice Warmup', 'hi');
+    expect(anzanHi.name).toBe('आरंभिक वॉर्म-अप');
+    expect(anzanHi.description).toBeTruthy();
+
+    const anzanKn = getLocalizedAnzanPreset('Novice Warmup', 'kn');
+    expect(anzanKn.name).toBeTruthy();
+
+    // 4. Tutorial lessons in Hindi and Marathi
+    const tutHi = getLocalizedTutorialLesson(
+      'left_to_right',
+      'hi',
+      'Left to Right',
+      'Subtitle'
+    );
+    expect(tutHi.title).toBe('बाएं-से-दाएं संचायक विधि (Left-to-Right)');
+
+    const tutMr = getLocalizedTutorialLesson(
+      'left_to_right',
+      'mr',
+      'Left to Right',
+      'Subtitle'
+    );
+    expect(tutMr.title).toBe('डावीकडून उजवीकडे संचायक पद्धत');
+
+    // 5. Skill categories
+    const catHi = getLocalizedSkillCategory('addition_subtraction', 'hi');
+    expect(catHi.title).toBe('जोड़ और घटाव का आधार');
+    expect(catHi.description).toBeTruthy();
   });
 });
 

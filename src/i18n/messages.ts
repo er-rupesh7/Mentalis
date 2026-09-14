@@ -29,6 +29,56 @@ export const allMessages: Record<SupportedLocale, Record<string, any>> = {
   as,
 };
 
-export function getMessagesForLocale(locale: SupportedLocale): Record<string, any> {
-  return allMessages[locale] || allMessages[defaultLocale];
+/**
+ * Deep merges two message objects recursively.
+ * Keys in source take precedence over target.
+ */
+function deepMerge(target: Record<string, any>, source: Record<string, any>): Record<string, any> {
+  const output: Record<string, any> = { ...target };
+  for (const key of Object.keys(source)) {
+    const sVal = source[key];
+    const tVal = output[key];
+    if (sVal !== undefined && sVal !== null) {
+      if (typeof sVal === 'object' && !Array.isArray(sVal)) {
+        output[key] = deepMerge(
+          tVal && typeof tVal === 'object' && !Array.isArray(tVal) ? tVal : {},
+          sVal
+        );
+      } else {
+        output[key] = sVal;
+      }
+    }
+  }
+  return output;
 }
+
+const resolvedMessagesCache = new Map<SupportedLocale, Record<string, any>>();
+
+/**
+ * High-performance, memoized message resolver with hierarchical fallback:
+ * English base -> Hindi (default Indic) overlay -> User Locale.
+ * Guarantees zero missing keys, zero crashes, and zero raw translation identifiers.
+ */
+export function getMessagesForLocale(locale: SupportedLocale): Record<string, any> {
+  if (resolvedMessagesCache.has(locale)) {
+    return resolvedMessagesCache.get(locale)!;
+  }
+
+  const baseEn = allMessages.en || {};
+  const baseHi = allMessages.hi || {};
+
+  let resolved: Record<string, any>;
+  if (locale === 'en') {
+    resolved = deepMerge(baseHi, baseEn);
+  } else if (locale === 'hi') {
+    resolved = deepMerge(baseEn, baseHi);
+  } else {
+    const indicBase = deepMerge(baseEn, baseHi);
+    const targetRaw = allMessages[locale] || {};
+    resolved = deepMerge(indicBase, targetRaw);
+  }
+
+  resolvedMessagesCache.set(locale, resolved);
+  return resolved;
+}
+

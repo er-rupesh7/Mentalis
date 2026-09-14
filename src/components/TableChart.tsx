@@ -28,6 +28,7 @@ import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
 import { FactKey, formatFactKey } from '../core/factModel';
 import { getBestStrategyForFact } from '../core/strategyCatalog';
+import { useTranslations } from 'next-intl';
 import {
   getMultiplicationTable,
   getSquaresTable,
@@ -42,6 +43,9 @@ import {
 } from '../core/tableChartData';
 
 export const TableChart: React.FC = () => {
+  const tChart = useTranslations('tableChart');
+  const tCommon = useTranslations('common');
+
   const {
     activeTableChartTab,
     setActiveTableChartTab,
@@ -188,11 +192,11 @@ export const TableChart: React.FC = () => {
 
   // Tab definitions
   const tabs: { id: TableChartTab; label: string; sub: string }[] = [
-    { id: 'mul', label: '1. Mul Table', sub: 'Up to 100 (× 20 multiples)' },
-    { id: 'squares', label: '2. Squares Table', sub: '1² to 100²' },
-    { id: 'cubes', label: '3. Cube Table', sub: '1³ to 100³' },
-    { id: 'sqrt', label: '4. Square Root Table', sub: '√1 to √100' },
-    { id: 'cbrt', label: '5. Cuberoot Table', sub: '∛1 to ∛100' },
+    { id: 'mul', label: tChart('tabMul'), sub: 'Up to 100 (× 20 multiples)' },
+    { id: 'squares', label: tChart('tabSquares'), sub: '1² to 100²' },
+    { id: 'cubes', label: tChart('tabCubes'), sub: '1³ to 100³' },
+    { id: 'sqrt', label: tChart('tabSqrt'), sub: '√1 to √100' },
+    { id: 'cbrt', label: tChart('tabCbrt'), sub: '∛1 to ∛100' },
   ];
 
   return (
@@ -210,12 +214,12 @@ export const TableChart: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 border border-violet-500/20">
-                Mathematical Reference
+                {tChart('badge')}
               </span>
               <span className="text-xs text-slate-500">• 1 to 100</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2 mt-0.5">
-              <span>Table Chart</span>
+              <span>{tChart('title')}</span>
               <Sparkles className="w-5 h-5 text-violet-400" />
             </h1>
           </div>
@@ -229,7 +233,7 @@ export const TableChart: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search number or result..."
+              placeholder={tChart('searchPlaceholder')}
               className="w-full pl-9 pr-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 transition-colors"
             />
             {searchQuery && (

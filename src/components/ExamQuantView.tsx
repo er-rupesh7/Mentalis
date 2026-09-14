@@ -21,6 +21,8 @@ import {
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ExamSubSkill } from '../core/types';
 import { BANK_FRACTION_PERCENTAGE_TABLE } from '../core/examQuantGenerators';
+import { useTranslations } from 'next-intl';
+import { getLocalizedExamSubSkill } from '../i18n/contentTranslations';
 
 interface SubSkillMetadata {
   id: ExamSubSkill;
@@ -140,7 +142,11 @@ export const ExamQuantView: React.FC = () => {
     startExamQuantDrill,
     calculateExamTransferScores,
     examTransferScores,
+    locale,
   } = useQuizStore();
+
+  const tQuant = useTranslations('examQuant');
+  const tCommon = useTranslations('common');
 
   const [filterCategory, setFilterCategory] = useState<'all' | 'speed_math' | 'arithmetic' | 'data_interpretation'>('all');
   const [showFractionTable, setShowFractionTable] = useState(false);
@@ -164,12 +170,11 @@ export const ExamQuantView: React.FC = () => {
                   <Target className="w-6 h-6" />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  RRB PO Prelims <span className="text-emerald-400 font-serif italic">Speed Quant</span>
+                  {tQuant('title')}
                 </h1>
               </div>
               <p className="text-xs sm:text-sm text-slate-400 max-w-2xl">
-                Deterministic, offline calculation drills specifically calibrated for RRB PO / IBPS RRB Scale-I.
-                Target: 35/35 in 20–22 minutes with zero paper rough work.
+                {tQuant('subtitle')}
               </p>
             </div>
 
@@ -179,7 +184,7 @@ export const ExamQuantView: React.FC = () => {
               className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 shrink-0 group"
             >
               <Zap className="w-4 h-4 fill-white" />
-              <span>Launch 15-Q Speed Drill</span>
+              <span>{tQuant('startExamDrill')}</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
@@ -336,17 +341,22 @@ export const ExamQuantView: React.FC = () => {
                     </span>
                   </div>
 
-                  <div>
-                    <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
-                      {sub.title}
-                    </h3>
-                    <div className="text-[11px] font-mono text-emerald-400 font-medium mt-0.5">
-                      {sub.examWeight}
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-                      {sub.strategyTip}
-                    </p>
-                  </div>
+                  {(() => {
+                    const locSub = getLocalizedExamSubSkill(sub.id, locale);
+                    return (
+                      <div>
+                        <h3 className="text-base font-bold text-white group-hover:text-emerald-300 transition-colors">
+                          {locSub.title || sub.title}
+                        </h3>
+                        <div className="text-[11px] font-mono text-emerald-400 font-medium mt-0.5">
+                          {locSub.examWeight || sub.examWeight}
+                        </div>
+                        <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                          {locSub.strategyTip || sub.strategyTip}
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className="pt-3 border-t border-slate-800/80 space-y-3">

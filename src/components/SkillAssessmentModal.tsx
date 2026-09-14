@@ -22,8 +22,12 @@ import { useQuizStore } from '../core/store/useQuizStore';
 import { getDimensionLabel } from '../core/learnerModel';
 import { getBestStrategyForFact } from '../core/strategyCatalog';
 import { FactKey } from '../core/factModel';
+import { useTranslations } from 'next-intl';
 
 export const SkillAssessmentModal: React.FC = () => {
+  const tAssessment = useTranslations('assessment');
+  const tCommon = useTranslations('common');
+
   const {
     activeAssessment,
     assessmentInputBuffer,
@@ -247,8 +251,10 @@ export const SkillAssessmentModal: React.FC = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs font-mono text-slate-400">
                 <span>
-                  Question {activeAssessment.currentQuestionIndex + 1} of{' '}
-                  {activeAssessment.totalQuestions}
+                  {tAssessment('questionOf', {
+                    current: activeAssessment.currentQuestionIndex + 1,
+                    total: activeAssessment.totalQuestions,
+                  })}
                 </span>
                 <span className="text-violet-400">{progressPercent}% Calibrated</span>
               </div>

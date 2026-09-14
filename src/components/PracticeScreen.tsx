@@ -31,12 +31,16 @@ import {
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ADD_SUB_LEVELS } from '../core/calcEngine';
 import { LearningMode } from '../core/types';
+import { useTranslations } from 'next-intl';
 
 interface PracticeScreenProps {
   onOpenTutorial?: () => void;
 }
 
 export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }) => {
+  const tPractice = useTranslations('practice');
+  const tCommon = useTranslations('common');
+
   const {
     currentQuestion,
     inputBuffer,
@@ -452,7 +456,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 <Pause className="w-8 h-8" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xl font-bold text-white">Session Paused</h3>
+                <h3 className="text-xl font-bold text-white">{tPractice('sessionPaused')}</h3>
                 <p className="text-xs text-slate-400 max-w-xs">
                   Your timer is frozen. Take a breath and resume whenever your working memory is ready.
                 </p>
@@ -463,13 +467,13 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                   className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2"
                 >
                   <Play className="w-4 h-4" />
-                  Resume Drill (Enter or Space)
+                  {tPractice('resume')}
                 </button>
                 <button
                   onClick={endSession}
                   className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition-colors"
                 >
-                  End Session & View Summary
+                  {tPractice('returnDashboard')}
                 </button>
               </div>
             </motion.div>
@@ -986,37 +990,37 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">
                   <Award className="w-7 h-7" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Drill Session Complete!</h3>
+                <h3 className="text-xl font-bold text-white">{tPractice('sessionComplete')}</h3>
                 <p className="text-xs text-slate-400">
-                  Calculations saved offline. Review your performance metrics below:
+                  {tPractice('congratulations')}
                 </p>
               </div>
 
               {/* Stat Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center text-xs font-mono">
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="text-slate-500 text-[10px] uppercase">Accuracy</div>
+                  <div className="text-slate-500 text-[10px] uppercase">{tCommon('accuracy')}</div>
                   <div className="text-lg font-bold text-emerald-400">
                     {sessionSummary.accuracy}%
                   </div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="text-slate-500 text-[10px] uppercase">Speed</div>
+                  <div className="text-slate-500 text-[10px] uppercase">{tCommon('speed')}</div>
                   <div className="text-lg font-bold text-sky-400">
                     {sessionSummary.cpm} <span className="text-[10px] font-normal">CPM</span>
                   </div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="text-slate-500 text-[10px] uppercase">Avg Latency</div>
+                  <div className="text-slate-500 text-[10px] uppercase">{tPractice('avgSpeed')}</div>
                   <div className="text-lg font-bold text-violet-400">
                     {(sessionSummary.avgResponseTimeMs / 1000).toFixed(1)}s
                   </div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="text-slate-500 text-[10px] uppercase">Solved</div>
+                  <div className="text-slate-500 text-[10px] uppercase">{tPractice('totalAnswered')}</div>
                   <div className="text-lg font-bold text-white">
                     {sessionSummary.correctCount}/{sessionSummary.totalAnswered}
                   </div>
@@ -1043,13 +1047,13 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                   }}
                   className="py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all"
                 >
-                  Start Another Drill
+                  {tPractice('practiceAgain')}
                 </button>
                 <button
                   onClick={dismissSessionSummary}
                   className="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors"
                 >
-                  Return to Dashboard
+                  {tPractice('returnDashboard')}
                 </button>
               </div>
             </motion.div>

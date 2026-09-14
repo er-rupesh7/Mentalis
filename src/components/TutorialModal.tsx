@@ -3,6 +3,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Brain, Lightbulb, Volume2, Sparkles } from 'lucide-react';
+import { useQuizStore } from '../core/store/useQuizStore';
+import { useTranslations } from 'next-intl';
+import { getLocalizedTutorialLesson } from '../i18n/contentTranslations';
 
 interface TutorialModalProps {
   isOpen: boolean;
@@ -232,17 +235,27 @@ const LESSONS: Record<string, TutorialLesson> = {
         explanation: 'Fuse 35 into 42. Output final held sum: 77.',
       },
     ],
-    keyTakeaway: 'The screen will go dark. Trust your internal auditory loop and fuse numbers without hesitating.',
+    keyTakeaway: 'The screen will go dark. Trust your internal auditory loop and fuse numbers without pen and paper.',
   },
 };
 
 export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, topic = 'left_to_right' }) => {
+  const { locale } = useQuizStore();
+  const tTutorial = useTranslations('tutorial');
+  const tCommon = useTranslations('common');
+
   const [activeTopic, setActiveTopic] = useState<string>(topic);
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
 
   if (!isOpen) return null;
 
   const lesson = LESSONS[activeTopic] || LESSONS.left_to_right;
+  const locLesson = getLocalizedTutorialLesson(
+    lesson.id,
+    locale,
+    lesson.title,
+    lesson.subtitle
+  );
   const currentStep = lesson.steps[currentStepIndex] || lesson.steps[0];
 
   const handleNextStep = () => {
@@ -280,12 +293,12 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
               </div>
               <div>
                 <h2 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                  Mental Math Pedagogical Lab
+                  {tTutorial('modalTitle')}
                   <span className="text-xs px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 font-normal">
                     Interactive
                   </span>
                 </h2>
-                <p className="text-xs text-slate-400">Cognitive methods for working memory expansion</p>
+                <p className="text-xs text-slate-400">{tTutorial('modalSubtitle')}</p>
               </div>
             </div>
             <button
@@ -298,19 +311,22 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
 
           {/* Topic Pills */}
           <div className="flex items-center gap-2 px-6 py-3 border-b border-slate-800/80 bg-slate-900/50 overflow-x-auto text-xs scrollbar-none">
-            {Object.entries(LESSONS).map(([key, item]) => (
-              <button
-                key={key}
-                onClick={() => handleSelectTopic(key)}
-                className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-all ${
-                  activeTopic === key
-                    ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/30'
-                    : 'bg-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                }`}
-              >
-                {item.title.split(' ')[0]} {item.exampleProblem}
-              </button>
-            ))}
+            {Object.entries(LESSONS).map(([key, item]) => {
+              const loc = getLocalizedTutorialLesson(item.id, locale, item.title, item.subtitle);
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleSelectTopic(key)}
+                  className={`px-3 py-1.5 rounded-lg whitespace-nowrap font-medium transition-all ${
+                    activeTopic === key
+                      ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/30'
+                      : 'bg-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                  }`}
+                >
+                  {loc.title.split(' ')[0]} {item.exampleProblem}
+                </button>
+              );
+            })}
           </div>
 
           {/* Content Body */}
@@ -318,19 +334,19 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
             {/* Title & Overview */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-white tracking-tight">{lesson.title}</h3>
+                <h3 className="text-xl font-bold text-white tracking-tight">{locLesson.title}</h3>
                 <span className="text-sm font-mono font-semibold px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  Example: {lesson.exampleProblem}
+                  {lesson.exampleProblem}
                 </span>
               </div>
-              <p className="text-sm text-slate-300 leading-relaxed">{lesson.description}</p>
+              <p className="text-sm text-slate-300 leading-relaxed">{locLesson.subtitle}</p>
             </div>
 
             {/* Interactive Step Slider / Stepper */}
             <div className="p-5 rounded-xl bg-slate-950/70 border border-slate-800 space-y-4">
               <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
                 <span>
-                  STEP {currentStepIndex + 1} OF {lesson.steps.length}
+                  {tTutorial('step')} {currentStepIndex + 1} / {lesson.steps.length}
                 </span>
                 <span className="text-violet-400 font-semibold">{currentStep.title}</span>
               </div>
@@ -363,7 +379,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
                     <div className="p-4 rounded-lg bg-slate-900 border border-violet-500/30 flex flex-col justify-between">
                       <div className="flex items-center gap-2 text-violet-400 text-xs font-semibold uppercase tracking-wider mb-2">
                         <Volume2 className="w-4 h-4" />
-                        Phonological Loop (Auditory Echo)
+                        {tTutorial('innerEcho')}
                       </div>
                       <div className="text-lg font-mono font-bold text-white bg-slate-950 p-3 rounded-md border border-slate-800">
                         {currentStep.subVocalization}
@@ -407,7 +423,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
                   className="flex items-center gap-1 px-4 py-2 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:pointer-events-none text-slate-200 transition-colors"
                 >
                   <ChevronLeft className="w-4 h-4" />
-                  Previous Step
+                  {tTutorial('prevLesson')}
                 </button>
 
                 <button
@@ -415,7 +431,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
                   disabled={currentStepIndex === lesson.steps.length - 1}
                   className="flex items-center gap-1 px-4 py-2 text-xs font-medium rounded-lg bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:pointer-events-none text-white transition-colors"
                 >
-                  Next Step
+                  {tTutorial('nextLesson')}
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
@@ -425,7 +441,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
             <div className="p-4 rounded-xl bg-gradient-to-r from-violet-950/40 to-slate-900 border border-violet-800/40 flex items-start gap-3">
               <Sparkles className="w-5 h-5 text-violet-400 shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-bold text-violet-300 uppercase tracking-wider">Cognitive Takeaway</h4>
+                <h4 className="text-xs font-bold text-violet-300 uppercase tracking-wider">{tTutorial('keyTakeaway')}</h4>
                 <p className="text-xs text-slate-300 mt-1 leading-relaxed">{lesson.keyTakeaway}</p>
               </div>
             </div>
@@ -437,7 +453,7 @@ export const TutorialModal: React.FC<TutorialModalProps> = ({ isOpen, onClose, t
               onClick={onClose}
               className="px-5 py-2 text-sm font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-white transition-colors"
             >
-              Close & Start Drills
+              {tTutorial('closeLab')}
             </button>
           </div>
         </motion.div>

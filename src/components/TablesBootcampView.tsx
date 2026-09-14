@@ -18,6 +18,8 @@ import {
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableTrainingMode, SpeedLadderLevel } from '../core/types';
 import { TABLE_BANDS, getTableBand } from '../core/memoryScheduler';
+import { useTranslations } from 'next-intl';
+import { getLocalizedBootcampMode } from '../i18n/contentTranslations';
 
 const MODE_DESCRIPTIONS: Record<
   TableTrainingMode,
@@ -92,7 +94,11 @@ export const TablesBootcampView: React.FC = () => {
     startTablesBootcamp,
     startMicroSession,
     learnerProfile,
+    locale,
   } = useQuizStore();
+
+  const tBootcamp = useTranslations('bootcamp');
+  const tCommon = useTranslations('common');
 
   const [selectedMode, setSelectedMode] = useState<TableTrainingMode>(currentTableMode || 'recognition');
 
@@ -125,11 +131,10 @@ export const TablesBootcampView: React.FC = () => {
               RRB PO / IBPS Prelims Bootcamp
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Tables 11–20 Adaptive Mastery Bootcamp
+              {tBootcamp('title')}
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Eliminate calculation hesitation on teen tables. Move from deliberate counting to
-              sub-2.0s automatic reflex recall through continuous multi-band spaced retrieval.
+              {tBootcamp('subtitle')}
             </p>
           </div>
 
@@ -139,7 +144,7 @@ export const TablesBootcampView: React.FC = () => {
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 active:scale-95 text-white font-bold text-sm shadow-xl shadow-amber-600/30 transition-all cursor-pointer"
             >
               <Zap className="w-4 h-4 fill-white" />
-              Launch Adaptive Band Bootcamp
+              {tBootcamp('startDrill')}
             </button>
             <button
               onClick={() => startMicroSession('table_sprint_2m')}
@@ -179,16 +184,16 @@ export const TablesBootcampView: React.FC = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-amber-400" />
-            Select Training Mode (8 Pedagogical Approaches)
+            {tBootcamp('selectMode')}
           </h2>
           <span className="text-xs text-slate-400 hidden sm:inline">
-            Active: <span className="text-amber-400 font-semibold">{MODE_DESCRIPTIONS[selectedMode].name}</span>
+            Active: <span className="text-amber-400 font-semibold">{getLocalizedBootcampMode(selectedMode, locale).name}</span>
           </span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {(Object.keys(MODE_DESCRIPTIONS) as TableTrainingMode[]).map((modeKey) => {
-            const mode = MODE_DESCRIPTIONS[modeKey];
+            const mode = getLocalizedBootcampMode(modeKey, locale);
             const isSelected = selectedMode === modeKey;
             return (
               <button
@@ -217,7 +222,7 @@ export const TablesBootcampView: React.FC = () => {
         <div className="p-3 rounded-xl bg-slate-900/50 border border-slate-800/80 text-xs text-slate-300 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
           <span>
-            <strong className="text-amber-300">Mode Tip:</strong> {MODE_DESCRIPTIONS[selectedMode].hint}
+            <strong className="text-amber-300">Tip:</strong> {getLocalizedBootcampMode(selectedMode, locale).hint}
           </span>
         </div>
       </div>
@@ -227,7 +232,7 @@ export const TablesBootcampView: React.FC = () => {
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-white flex items-center gap-2">
             <Flame className="w-4 h-4 text-amber-400" />
-            Teen Tables Matrix (11 to 20)
+            {tBootcamp('allTeenTables')}
           </h2>
           <span className="text-xs text-slate-400">
             Click any table to set focus or launch direct drill

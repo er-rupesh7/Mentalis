@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ArithmeticCombination, CustomDrillConfig } from '../core/types';
+import { useTranslations } from 'next-intl';
 
 interface CustomDrillModalProps {
   isOpen: boolean;
@@ -136,6 +137,8 @@ const PRESET_WORKOUTS: {
 
 export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onClose }) => {
   const { startCustomDrill, startSingleTableMastery } = useQuizStore();
+  const tDrill = useTranslations('customDrill');
+  const tCommon = useTranslations('common');
 
   const [activeTab, setActiveTab] = useState<DrillTab>('tables');
 
@@ -317,13 +320,13 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Custom Workout Builder</h2>
+                  <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">{tDrill('title')}</h2>
                   <span className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-300 border border-violet-500/20">
                     Adaptive Engine
                   </span>
                 </div>
                 <p className="text-[11px] sm:text-xs text-slate-400">
-                  Select tables, squares, multi-digit arithmetic, and session goals.
+                  {tDrill('subtitle')}
                 </p>
               </div>
             </div>
@@ -339,15 +342,15 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
                     setSingleTableMasteryMode(false);
                   }}
                   className="text-xs text-slate-400 hover:text-rose-400 font-semibold px-2.5 py-1.5 rounded-xl hover:bg-slate-800 transition-colors min-h-[36px]"
-                  title="Clear all selections"
+                  title={tCommon('clear')}
                 >
-                  Reset All
+                  {tCommon('clear')}
                 </button>
               )}
               <button
                 onClick={onClose}
                 className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Close custom workout builder"
+                aria-label={tCommon('close')}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -365,7 +368,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
               }`}
             >
               <Grid className="w-3.5 h-3.5" />
-              <span>Multiplication Tables</span>
+              <span>{tDrill('multiplication')}</span>
               {selectedTables.length > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 text-[10px] font-bold font-mono">
                   {selectedTables.length}
@@ -382,7 +385,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
               }`}
             >
               <Zap className="w-3.5 h-3.5" />
-              <span>Squares & Cubes</span>
+              <span>{tDrill('squares')} & {tDrill('cubes')}</span>
               {totalSquaresAndCubesCount > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold font-mono">
                   {totalSquaresAndCubesCount}
@@ -399,7 +402,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
               }`}
             >
               <Calculator className="w-3.5 h-3.5" />
-              <span>Addition & Subtraction</span>
+              <span>{tDrill('multiDigit')}</span>
               {selectedArithmeticCombos.length > 0 && (
                 <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold font-mono">
                   {selectedArithmeticCombos.length}
@@ -416,7 +419,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Exam Presets</span>
+              <span>{tDrill('competitivePresets')}</span>
             </button>
           </div>
 
@@ -821,7 +824,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
                 {/* Time Budget */}
                 <div>
                   <label className="text-xs font-bold text-slate-400 block mb-1.5">
-                    Time Budget
+                    {tDrill('timerSetting')}
                   </label>
                   <div className="flex items-center gap-1.5">
                     {[2, 3, 5, 10, 0].map((mins) => (
@@ -843,7 +846,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
                 {/* Question Count Goal */}
                 <div>
                   <label className="text-xs font-bold text-slate-400 block mb-1.5">
-                    Question Count Goal
+                    {tDrill('problemCount')}
                   </label>
                   <div className="flex items-center gap-1.5">
                     {[10, 20, 30, 50].map((count) => (
@@ -902,7 +905,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
                 onClick={onClose}
                 className="flex-1 sm:flex-none py-2.5 px-4 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors min-h-[44px]"
               >
-                Cancel
+                {tCommon('cancel')}
               </button>
 
               <button
@@ -911,7 +914,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all min-h-[44px]"
               >
                 <Play className="w-4 h-4 fill-white" />
-                <span>Launch Workout</span>
+                <span>{tDrill('startWorkout')}</span>
               </button>
             </div>
           </div>

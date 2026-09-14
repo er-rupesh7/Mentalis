@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
 import { useQuizStore } from '../core/store/useQuizStore';
-import { allMessages } from '../i18n/messages';
+import { allMessages, getMessagesForLocale } from '../i18n/messages';
 import { Navigation } from '../components/Navigation';
 import { Dashboard } from '../components/Dashboard';
 import { PracticeScreen } from '../components/PracticeScreen';
@@ -55,7 +55,7 @@ export default function MentalisApp() {
     );
   }
 
-  const currentMessages = allMessages[locale] || allMessages.hi;
+  const currentMessages = getMessagesForLocale(locale);
 
   return (
     <NextIntlClientProvider
