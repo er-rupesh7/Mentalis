@@ -36,6 +36,7 @@ export interface PublicProfileView {
     totalTimeSpentSeconds: number;
     lastActiveDate: string | null;
     progressMap: Record<string, any>;
+    dailyActivityMap?: Record<string, number>;
   };
   rankInfo: UserRank;
   followersCount: number;
@@ -181,6 +182,7 @@ class SocialEngine {
         totalTimeSpentSeconds,
         lastActiveDate: statsRow?.last_active_date || null,
         progressMap: (statsRow?.progress_map as any) || {},
+        dailyActivityMap: (statsRow?.progress_map as any)?._dailyActivityMap || {},
       },
       rankInfo,
       followersCount: followersRes.count || 0,
@@ -584,13 +586,14 @@ class SocialEngine {
       updated_at: new Date().toISOString(),
     };
 
-    if (equippedMasteryBadgeId) {
-      payload.equipped_badge_id = equippedMasteryBadgeId;
+    if (avatarType === 'mastery') {
+      payload.equipped_badge_id = equippedMasteryBadgeId || null;
       payload.equipped_badge_type = 'mastery';
     } else if (avatarType === 'badge') {
       payload.equipped_badge_id = String(selectedBadgeLevel);
       payload.equipped_badge_type = 'level';
     } else {
+      payload.equipped_badge_id = null;
       payload.equipped_badge_type = 'google';
     }
 

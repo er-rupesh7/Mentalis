@@ -177,6 +177,7 @@ class SupabaseSyncEngine {
             totalTimeSpentSeconds: remoteStats.total_time_spent_seconds || localState?.overallStats?.totalTimeSpentSeconds || 0,
           },
           progressMap: remoteStats.progress_map || {},
+          dailyActivityMap: (remoteStats.progress_map as any)?._dailyActivityMap || localState?.dailyActivityMap || {},
           anzanStats: remoteStats.anzan_stats || {},
         };
 
@@ -304,7 +305,10 @@ class SupabaseSyncEngine {
         last_active_date: state.overallStats?.lastActiveDate || null,
         overall_cpm: cpm,
         overall_accuracy: accuracy,
-        progress_map: state.progressMap || {},
+        progress_map: {
+          ...(state.progressMap || {}),
+          _dailyActivityMap: state.dailyActivityMap || {},
+        },
         anzan_stats: state.anzanStats || {},
         updated_at: new Date().toISOString(),
       });

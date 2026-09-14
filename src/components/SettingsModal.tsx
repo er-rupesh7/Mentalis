@@ -361,6 +361,7 @@ export const SettingsModal: React.FC = () => {
                       }`}
                     >
                       {currentUser.avatarUrl ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={currentUser.avatarUrl}
                           alt="Google Profile"

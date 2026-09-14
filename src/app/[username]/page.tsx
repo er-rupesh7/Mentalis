@@ -34,12 +34,20 @@ import { MasteryBadgeEmblem } from '../../components/badges/MasteryBadgeEmblem';
 import { getLevelProgress } from '../../core/levelEngine';
 import { formatInvestedTime } from '../../core/mastery';
 import { getEvaluatedMasteryBadges, getMasteryBadgeById } from '../../core/badges/masteryBadges';
+import { ActivityHeatmap } from '../../components/profile/ActivityHeatmap';
+
+function formatPercentile(raw?: string | number | null): string {
+  if (!raw) return 'Top 50%';
+  const str = String(raw).trim();
+  const clean = str.replace(/^top\s*/i, '').replace(/%+$/, '').trim();
+  return `Top ${clean || '50'}%`;
+}
 
 export default function PublicProfilePage() {
   const params = useParams();
   const username = Array.isArray(params?.username) ? params.username[0] : (params?.username as string);
 
-  const { currentUser, setAuthModalOpen } = useQuizStore();
+  const { currentUser, setAuthModalOpen, dailyActivityMap } = useQuizStore();
 
   const [profileView, setProfileView] = useState<PublicProfileView | null>(null);
   const [friendsList, setFriendsList] = useState<FriendSummary[]>([]);
@@ -505,7 +513,7 @@ export default function PublicProfilePage() {
                   </div>
                 </div>
                 <span className="px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-300 font-bold text-xs border border-violet-500/30">
-                  Top {rankInfo?.percentile || 50}% Globally
+                  {formatPercentile(rankInfo?.percentile)} Globally
                 </span>
               </div>
 
@@ -538,7 +546,7 @@ export default function PublicProfilePage() {
                 <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80">
                   <span className="text-slate-400 block mb-1">Leaderboard Standing</span>
                   <div className="text-2xl font-black text-violet-300 font-mono">
-                    Top {rankInfo?.percentile || 50}%
+                    {formatPercentile(rankInfo?.percentile)}
                   </div>
                   <span className="text-[11px] text-slate-500 mt-1 block">
                     among registered mentalists
@@ -546,6 +554,15 @@ export default function PublicProfilePage() {
                 </div>
               </div>
             </div>
+
+            {/* 30-Day LeetCode-Style Activity Matrix */}
+            <ActivityHeatmap
+              activityMap={stats.dailyActivityMap || (stats.progressMap as any)?._dailyActivityMap || (isOwnProfile ? dailyActivityMap : {})}
+              currentStreak={stats.currentStreak}
+              longestStreak={stats.longestStreak}
+              totalCalculations={stats.totalQuestions}
+              lastActiveDate={stats.lastActiveDate}
+            />
 
             {/* Mastered Feats & Badges Showcase Shelf */}
             <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl">

@@ -87,10 +87,12 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     );
   }
 
-  // 3. Google / Image Avatar Mode
+  // 3. Google / Default Avatar Mode
+  // If user has a Google avatar photo, display it; otherwise display their max rank badge emblem
   return (
     <div className={`relative inline-flex shrink-0 items-center justify-center ${className}`}>
       {avatarUrl && !imageError ? (
+        /* eslint-disable-next-line @next/next/no-img-element */
         <img
           src={avatarUrl}
           alt={cleanName}
@@ -100,11 +102,7 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
           className={`${sizeConfig.box} rounded-full object-cover border border-violet-500/40 shadow-sm`}
         />
       ) : (
-        <div
-          className={`${sizeConfig.box} rounded-full bg-gradient-to-tr from-violet-600 to-indigo-500 border border-violet-400/40 flex items-center justify-center font-bold text-white shadow-sm ${sizeConfig.text}`}
-        >
-          {initial}
-        </div>
+        <BadgeEmblem level={level || 1} size={size} showLevel={false} showStars={false} />
       )}
 
       {showOnlineDot && (

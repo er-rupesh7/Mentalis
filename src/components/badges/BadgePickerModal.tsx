@@ -119,7 +119,7 @@ export const BadgePickerModal: React.FC<BadgePickerModalProps> = ({
             }`}
           >
             <User className="w-3.5 h-3.5" />
-            <span className="truncate">Google Avatar</span>
+            <span className="truncate">Default / Google DP</span>
           </button>
           <button
             onClick={() => {
@@ -281,26 +281,32 @@ export const BadgePickerModal: React.FC<BadgePickerModalProps> = ({
               {/* Equip Button */}
               <div className="w-full pt-4 border-t border-slate-800/80 mt-2">
                 {isPreviewLevelUnlocked ? (
-                  <button
-                    onClick={() => {
-                      onSelectBadge(previewLevel);
-                      onSelectAvatarType('badge');
-                    }}
-                    className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all shadow-md ${
-                      isLevelSelected
-                        ? 'bg-emerald-600 text-white cursor-default'
-                        : 'bg-violet-600 hover:bg-violet-500 active:scale-95 text-white'
-                    }`}
-                  >
-                    {isLevelSelected ? (
-                      <>
+                  isLevelSelected ? (
+                    <div className="flex flex-col gap-2 w-full">
+                      <div className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-xs">
                         <Check className="w-4 h-4" />
-                        <span>Equipped as Avatar</span>
-                      </>
-                    ) : (
+                        <span>Currently Equipped as Avatar</span>
+                      </div>
+                      <button
+                        onClick={() => onSelectAvatarType('google')}
+                        className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all shadow-md bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 active:scale-95"
+                        title="Unequip badge and revert to Google/Default profile avatar"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Unequip Avatar</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        onSelectBadge(previewLevel);
+                        onSelectAvatarType('badge');
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all shadow-md bg-violet-600 hover:bg-violet-500 active:scale-95 text-white"
+                    >
                       <span>Equip as Profile Badge DP</span>
-                    )}
-                  </button>
+                    </button>
+                  )
                 ) : (
                   <div className="flex items-center justify-center gap-1.5 text-xs text-amber-400 font-semibold p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
                     <Lock className="w-3.5 h-3.5" />
@@ -418,26 +424,32 @@ export const BadgePickerModal: React.FC<BadgePickerModalProps> = ({
               {/* Equip Button */}
               <div className="w-full pt-4 border-t border-slate-800/80 mt-2">
                 {previewMasteryBadge.isUnlocked ? (
-                  <button
-                    onClick={() => {
-                      onSelectMasteryBadge(previewMasteryBadge.id);
-                      onSelectAvatarType('mastery');
-                    }}
-                    className={`w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all shadow-md ${
-                      isMasterySelected
-                        ? 'bg-emerald-600 text-white cursor-default'
-                        : 'bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-95 text-white'
-                    }`}
-                  >
-                    {isMasterySelected ? (
-                      <>
+                  isMasterySelected ? (
+                    <div className="flex flex-col gap-2 w-full">
+                      <div className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 font-bold text-xs">
                         <Check className="w-4 h-4" />
-                        <span>Equipped as Avatar</span>
-                      </>
-                    ) : (
+                        <span>Currently Equipped as Avatar</span>
+                      </div>
+                      <button
+                        onClick={() => onSelectAvatarType('google')}
+                        className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl font-bold text-xs transition-all shadow-md bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 active:scale-95"
+                        title="Unequip badge and revert to Google/Default profile avatar"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Unequip Avatar</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        onSelectMasteryBadge(previewMasteryBadge.id);
+                        onSelectAvatarType('mastery');
+                      }}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl font-bold text-xs transition-all shadow-md bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 active:scale-95 text-white"
+                    >
                       <span>Equip as Profile Mastery DP</span>
-                    )}
-                  </button>
+                    </button>
+                  )
                 ) : (
                   <div className="flex items-center justify-center gap-1.5 text-xs text-amber-400 font-semibold p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
                     <Lock className="w-3.5 h-3.5" />

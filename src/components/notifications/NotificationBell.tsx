@@ -48,7 +48,7 @@ export const NotificationBell: React.FC = () => {
       isMounted = false;
       unsubscribe();
     };
-  }, [currentUser?.id]);
+  }, [currentUser]);
 
   // Click outside listener
   useEffect(() => {
@@ -145,7 +145,7 @@ export const NotificationBell: React.FC = () => {
               <div className="p-8 text-center">
                 <Bell className="w-8 h-8 text-slate-600 mx-auto mb-2 opacity-50" />
                 <p className="text-sm text-slate-400 font-medium">All caught up!</p>
-                <p className="text-xs text-slate-600 mt-1">You'll see followers and friend alerts here.</p>
+                <p className="text-xs text-slate-600 mt-1">You&apos;ll see followers and friend alerts here.</p>
               </div>
             ) : (
               notifications.map((item) => {

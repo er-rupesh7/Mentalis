@@ -30,6 +30,7 @@ export const UserProfileMenu: React.FC = () => {
     level,
     avatarType,
     selectedBadgeLevel,
+    selectedMasteryBadgeId,
     username,
     syncStatus,
     syncError,
@@ -120,6 +121,7 @@ export const UserProfileMenu: React.FC = () => {
           avatarUrl={currentUser.avatarUrl}
           avatarType={avatarType}
           selectedBadgeLevel={selectedBadgeLevel}
+          selectedMasteryBadgeId={selectedMasteryBadgeId}
           level={levelProgress.level}
           size="xs"
           showOnlineDot={true}
@@ -153,6 +155,7 @@ export const UserProfileMenu: React.FC = () => {
               avatarUrl={currentUser.avatarUrl}
               avatarType={avatarType}
               selectedBadgeLevel={selectedBadgeLevel}
+              selectedMasteryBadgeId={selectedMasteryBadgeId}
               level={levelProgress.level}
               size="md"
               showOnlineDot={true}

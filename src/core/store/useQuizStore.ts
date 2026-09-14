@@ -327,6 +327,7 @@ interface QuizState {
 
   // Persistent Progress Storage
   progressMap: Record<string, UserProgressItem>;
+  dailyActivityMap: Record<string, number>;
   overallStats: OverallStats;
   anzanStats: AnzanStats;
 
@@ -555,6 +556,7 @@ export const useQuizStore = create<QuizState>()(
       bestStreak: 0,
 
       progressMap: {},
+      dailyActivityMap: {},
       overallStats: initialOverallStats,
       anzanStats: initialAnzanStats,
 
@@ -1504,6 +1506,10 @@ export const useQuizStore = create<QuizState>()(
         get().markPendingAISync();
         const nextBatchCount = (state.batchAnswerCount || 0) + 1;
 
+        const todayKey = streakResult.lastActiveDate || new Date().toISOString().split('T')[0];
+        const nextDailyActivity = { ...(state.dailyActivityMap || {}) };
+        nextDailyActivity[todayKey] = (nextDailyActivity[todayKey] || 0) + 1;
+
         set({
           isEvaluating: true,
           lastResult: isCorrect ? 'correct' : 'incorrect',
@@ -1523,6 +1529,7 @@ export const useQuizStore = create<QuizState>()(
             ...state.progressMap,
             [progressKey]: updatedItem,
           },
+          dailyActivityMap: nextDailyActivity,
           factMemoryMap: updatedFactMap,
           techniqueMasteryMap: updatedTechniqueMap,
           tableMasteryAlert,
@@ -1694,6 +1701,7 @@ export const useQuizStore = create<QuizState>()(
       resetProgress: () => {
         set({
           progressMap: {},
+          dailyActivityMap: {},
           factMemoryMap: {},
           learningMode: 'recall',
           activeRepairCard: null,
@@ -2146,7 +2154,10 @@ export const useQuizStore = create<QuizState>()(
 
       setAvatarPreference: async (type: 'google' | 'badge' | 'mastery', badgeLevel?: number, masteryBadgeId?: string) => {
         const lvl = badgeLevel || get().selectedBadgeLevel || 1;
-        const mId = masteryBadgeId !== undefined ? masteryBadgeId : (get().selectedMasteryBadgeId || 'sq_20');
+        // Mutual exclusivity: mastery badge is cleared (null) when selecting level badge or google avatar
+        const mId = type === 'mastery'
+          ? (masteryBadgeId || get().selectedMasteryBadgeId || 'sq_20')
+          : null;
         set({ avatarType: type, selectedBadgeLevel: lvl, selectedMasteryBadgeId: mId });
         const { currentUser, username, level } = get();
         if (currentUser) {
@@ -2368,6 +2379,7 @@ export const useQuizStore = create<QuizState>()(
       },
       partialize: (state) => ({
         progressMap: state.progressMap,
+        dailyActivityMap: state.dailyActivityMap,
         factMemoryMap: state.factMemoryMap,
         learningMode: state.learningMode,
         techniqueMasteryMap: state.techniqueMasteryMap,
