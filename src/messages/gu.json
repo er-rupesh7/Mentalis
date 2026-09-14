@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Mentalis",
+    "appName": "Mentalab",
     "calculateMentally": "માનસિક ગણતરી કરો",
     "submit": "સબમિટ કરો",
     "enter": "દાખલ કરો",
@@ -184,7 +184,7 @@
     "bestStreak": "सर्वश्रेष्ठ स्ट्रीक"
   },
   "onboarding": {
-    "welcomeTitle": "Mentalis માં આપનું સ્વાગત છે",
+    "welcomeTitle": "Mentalab માં આપનું સ્વાગત છે",
     "welcomeSubtitle": "માનસિક ગણિત શીખવા માટે આપની પસંદગીની ભાષા પસંદ કરો",
     "continue": "આગળ વધો",
     "defaultNotice": "ડિફોલ્ટ તરીકે હિન્દી પસંદ કરેલ છે. તમે તેને ગમે ત્યારે બદલી શકો છો."

@@ -20,6 +20,11 @@ import { TechniquesCurriculumView } from '../components/TechniquesCurriculumView
 import { CustomDrillModal } from '../components/CustomDrillModal';
 import { LanguageOnboardingModal } from '../components/LanguageOnboardingModal';
 import { SettingsModal } from '../components/SettingsModal';
+import { AuthModal } from '../components/auth/AuthModal';
+import { BadgePickerModal } from '../components/badges/BadgePickerModal';
+import { LevelUpModal } from '../components/badges/LevelUpModal';
+import { ChatDrawer } from '../components/chat/ChatDrawer';
+import { MobileTabBar } from '../components/MobileTabBar';
 
 export default function MentalisApp() {
   const {
@@ -27,6 +32,15 @@ export default function MentalisApp() {
     isCustomDrillModalOpen,
     setIsCustomDrillModalOpen,
     locale,
+    initializeAuthAndSync,
+    isBadgePickerOpen,
+    setIsBadgePickerOpen,
+    level,
+    xp,
+    selectedBadgeLevel,
+    selectedMasteryBadgeId,
+    avatarType,
+    setAvatarPreference,
   } = useQuizStore();
 
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -34,7 +48,8 @@ export default function MentalisApp() {
 
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    initializeAuthAndSync();
+  }, [initializeAuthAndSync]);
 
   // Update dynamic document lang and RTL direction whenever locale changes
   useEffect(() => {
@@ -64,8 +79,10 @@ export default function MentalisApp() {
       timeZone="Asia/Kolkata"
     >
       <main className="flex-1 flex flex-col min-h-screen bg-slate-950 relative">
-        {/* Navigation Top Bar */}
-        <Navigation onOpenTutorial={() => setIsTutorialOpen(true)} />
+        {/* Navigation Top Bar (Hidden during practice/anzan for 100% full screen focus) */}
+        {viewMode !== 'practice' && viewMode !== 'anzan' && (
+          <Navigation onOpenTutorial={() => setIsTutorialOpen(true)} />
+        )}
 
         {/* Dynamic View Router */}
         <div className="flex-1 flex flex-col">
@@ -103,6 +120,32 @@ export default function MentalisApp() {
 
         {/* Centralized Settings & Accessibility Modal */}
         <SettingsModal />
+
+        {/* Cloud Authentication & Sync Modal */}
+        <AuthModal />
+
+        {/* 1000-Level & Mastery Badge Equipment Modal */}
+        <BadgePickerModal
+          isOpen={isBadgePickerOpen}
+          onClose={() => setIsBadgePickerOpen(false)}
+          currentLevel={level}
+          currentXP={xp}
+          selectedBadgeLevel={selectedBadgeLevel}
+          selectedMasteryBadgeId={selectedMasteryBadgeId}
+          avatarType={avatarType}
+          onSelectBadge={(lvl) => setAvatarPreference('badge', lvl)}
+          onSelectMasteryBadge={(badgeId) => setAvatarPreference('mastery', selectedBadgeLevel, badgeId)}
+          onSelectAvatarType={(type) => setAvatarPreference(type)}
+        />
+
+        {/* Level Up Celebration Alert */}
+        <LevelUpModal />
+
+        {/* Realtime 1v1 Chat & Friends Drawer */}
+        <ChatDrawer />
+
+        {/* Native Mobile Bottom Navigation Dock */}
+        <MobileTabBar />
       </main>
     </NextIntlClientProvider>
   );

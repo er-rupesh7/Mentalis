@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -16,14 +16,30 @@ import {
   Check,
   RotateCcw,
   Sliders,
+  User,
+  Shield,
+  ExternalLink,
+  Sparkles,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { LanguageSelector } from './LanguageSelector';
+import { BadgeEmblem } from './badges/BadgeEmblem';
+import { getBadgeForLevel } from '../core/levelEngine';
+
+import { socialEngine } from '../core/social/socialEngine';
 
 export const SettingsModal: React.FC = () => {
   const {
     isSettingsModalOpen,
     setIsSettingsModalOpen,
+    currentUser,
+    username,
+    avatarType,
+    selectedBadgeLevel,
+    level,
+    setAvatarPreference,
+    updateUsername,
+    setIsBadgePickerOpen,
     soundEnabled,
     toggleSound,
     reducedMotion,
@@ -41,7 +57,92 @@ export const SettingsModal: React.FC = () => {
   const [importError, setImportError] = useState<string | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  // Username form state
+  const [inputUsername, setInputUsername] = useState(username || '');
+  const [usernameSaving, setUsernameSaving] = useState(false);
+  const [usernameMessage, setUsernameMessage] = useState<{ text: string; isError: boolean } | null>(null);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [availabilityResult, setAvailabilityResult] = useState<{
+    available?: boolean;
+    text: string;
+    isError?: boolean;
+    remainingMinute?: number;
+    remainingHour?: number;
+  } | null>(null);
+
+  useEffect(() => {
+    setInputUsername(username || '');
+    setAvailabilityResult(null);
+  }, [username]);
+
   if (!isSettingsModalOpen) return null;
+
+  const handleCheckAvailability = async () => {
+    if (!currentUser) {
+      setAvailabilityResult({ text: 'Please sign in to check username availability.', isError: true });
+      return;
+    }
+    const clean = inputUsername.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,20}$/.test(clean)) {
+      setAvailabilityResult({
+        text: 'Must be 3-20 characters using only lowercase letters, numbers, or underscores.',
+        isError: true,
+      });
+      return;
+    }
+    if (clean === username) {
+      setAvailabilityResult({ text: `@${clean} is currently your assigned username!`, available: true });
+      return;
+    }
+
+    setIsCheckingAvailability(true);
+    setAvailabilityResult(null);
+    const res = await socialEngine.checkUsernameAvailability(currentUser.id, clean);
+    setIsCheckingAvailability(false);
+
+    if (res.available) {
+      setAvailabilityResult({
+        text: `✓ @${clean} is available! (${res.remainingMinute ?? 4} checks left this min)`,
+        available: true,
+        remainingMinute: res.remainingMinute,
+        remainingHour: res.remainingHour,
+      });
+    } else {
+      setAvailabilityResult({
+        text: res.error || 'Username is not available.',
+        isError: true,
+        remainingMinute: res.remainingMinute,
+        remainingHour: res.remainingHour,
+      });
+    }
+  };
+
+  const handleSaveUsername = async () => {
+    if (!currentUser) {
+      setUsernameMessage({ text: 'Please log in to set a username.', isError: true });
+      return;
+    }
+    const clean = inputUsername.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,20}$/.test(clean)) {
+      setUsernameMessage({
+        text: 'Must be 3-20 characters using only letters, numbers, or underscores.',
+        isError: true,
+      });
+      return;
+    }
+
+    setUsernameSaving(true);
+    setUsernameMessage(null);
+    const res = await updateUsername(clean);
+    setUsernameSaving(false);
+
+    if (res.success) {
+      setUsernameMessage({ text: `Username successfully updated to @${clean}!`, isError: false });
+      setAvailabilityResult(null);
+    } else {
+      setUsernameMessage({ text: res.error || 'Failed to update username.', isError: true });
+    }
+  };
 
   const handleCopyBackup = () => {
     try {
@@ -62,7 +163,7 @@ export const SettingsModal: React.FC = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `mentalis_backup_${Date.now()}.json`;
+      a.download = `mentalab_backup_${Date.now()}.json`;
       a.click();
       URL.revokeObjectURL(url);
       setBackupFeedback('Backup downloaded!');
@@ -94,6 +195,8 @@ export const SettingsModal: React.FC = () => {
     setTimeout(() => setBackupFeedback(null), 3000);
   };
 
+  const equippedBadge = getBadgeForLevel(selectedBadgeLevel || level || 1);
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
@@ -111,10 +214,10 @@ export const SettingsModal: React.FC = () => {
               </div>
               <div>
                 <h2 className="text-lg sm:text-xl font-bold text-white">
-                  Settings & Accessibility
+                  Settings & Profile
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Manage language, audio, animations, and data
+                  Manage username, badge avatar, language, audio, and data
                 </p>
               </div>
             </div>
@@ -134,6 +237,190 @@ export const SettingsModal: React.FC = () => {
             {backupFeedback && (
               <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-xs font-semibold text-emerald-300 text-center animate-in fade-in">
                 {backupFeedback}
+              </div>
+            )}
+
+            {/* Profile & Avatar Customization Section */}
+            {currentUser && (
+              <div className="space-y-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-violet-400" />
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                      Public Profile & Display Picture
+                    </h3>
+                  </div>
+                  {username && (
+                    <a
+                      href={`/${username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] font-semibold text-violet-400 hover:text-violet-300 flex items-center gap-1 hover:underline"
+                    >
+                      <span>/{username}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+
+                {/* Username Input with Availability Checker */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-300">
+                      Custom Username (Public Profile URL)
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      1 change / 30 days
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-2.5 text-xs text-slate-500 font-mono">@</span>
+                      <input
+                        type="text"
+                        value={inputUsername}
+                        onChange={(e) => {
+                          setInputUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''));
+                          setAvailabilityResult(null);
+                          setUsernameMessage(null);
+                        }}
+                        placeholder="your_username"
+                        maxLength={20}
+                        className="w-full pl-7 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white font-mono placeholder:text-slate-600 focus:outline-none focus:border-violet-500"
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={handleCheckAvailability}
+                        disabled={isCheckingAvailability || !inputUsername.trim()}
+                        className="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 border border-slate-700 transition-all flex items-center justify-center gap-1 min-h-[38px]"
+                        title="Check if this username is available (max 5/min, 10/hr)"
+                      >
+                        {isCheckingAvailability ? 'Checking...' : 'Check'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleSaveUsername}
+                        disabled={usernameSaving || !inputUsername.trim() || inputUsername === username}
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all shadow-md shadow-violet-600/20 min-h-[38px]"
+                      >
+                        {usernameSaving ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Availability feedback */}
+                  {availabilityResult && (
+                    <div
+                      className={`text-[11px] font-medium p-2 rounded-xl border flex items-center justify-between ${
+                        availabilityResult.isError
+                          ? 'bg-rose-950/40 border-rose-800/60 text-rose-300'
+                          : 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
+                      }`}
+                    >
+                      <span>{availabilityResult.text}</span>
+                    </div>
+                  )}
+
+                  {/* Save success or error message */}
+                  {usernameMessage && (
+                    <div
+                      className={`text-[11px] font-medium p-2 rounded-xl border ${
+                        usernameMessage.isError
+                          ? 'bg-rose-950/40 border-rose-800/60 text-rose-300'
+                          : 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
+                      }`}
+                    >
+                      {usernameMessage.text}
+                    </div>
+                  )}
+
+                  <p className="text-[10px] text-slate-500 leading-tight">
+                    * Availability check rate limits: 5 checks / minute, 10 checks / hour. Changes locked for 30 days after updating.
+                  </p>
+                </div>
+
+                {/* Avatar DP Selection: Google Photo vs Level Badge */}
+                <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                  <label className="text-xs font-semibold text-slate-300 block">
+                    Display Picture (DP) Source
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Google DP Option */}
+                    <button
+                      type="button"
+                      onClick={() => setAvatarPreference('google')}
+                      className={`p-3 rounded-2xl border flex flex-col items-center text-center gap-2 transition-all ${
+                        avatarType === 'google'
+                          ? 'bg-violet-600/10 border-violet-500 shadow-sm shadow-violet-500/20'
+                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      {currentUser.avatarUrl ? (
+                        <img
+                          src={currentUser.avatarUrl}
+                          alt="Google Profile"
+                          referrerPolicy="no-referrer"
+                          crossOrigin="anonymous"
+                          className="w-10 h-10 rounded-full object-cover border border-slate-700"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-violet-600/30 text-violet-300 flex items-center justify-center font-bold text-sm">
+                          {currentUser.displayName?.charAt(0) || 'G'}
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-xs font-bold text-white">Google Profile</p>
+                        <p className="text-[10px] text-slate-400">Social Account Photo</p>
+                      </div>
+                      {avatarType === 'google' && (
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                          Active DP
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Level Badge Option */}
+                    <button
+                      type="button"
+                      onClick={() => setAvatarPreference('badge')}
+                      className={`p-3 rounded-2xl border flex flex-col items-center text-center gap-2 transition-all ${
+                        avatarType === 'badge'
+                          ? 'bg-amber-500/10 border-amber-500 shadow-sm shadow-amber-500/20'
+                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <BadgeEmblem level={selectedBadgeLevel || level || 1} size="sm" showLevel={false} showStars={false} />
+                      <div>
+                        <p className="text-xs font-bold text-white">Equipped Badge</p>
+                        <p className="text-[10px] text-amber-300 font-mono">Lv.{selectedBadgeLevel || level || 1} {equippedBadge.tier.name}</p>
+                      </div>
+                      {avatarType === 'badge' && (
+                        <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          Active DP
+                        </span>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsSettingsModalOpen(false);
+                        setIsBadgePickerOpen(true);
+                      }}
+                      className="flex items-center gap-1.5 text-xs font-bold text-amber-400 hover:text-amber-300 hover:underline"
+                    >
+                      <Shield className="w-3.5 h-3.5" />
+                      <span>Browse all 1000 Badges to Equip</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 

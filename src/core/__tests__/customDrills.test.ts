@@ -209,6 +209,39 @@ describe('Adaptive Custom Drill Dispatcher', () => {
     // Should sample from multiple domains in the pool
     expect(modulesSeen.size).toBeGreaterThanOrEqual(2);
   });
+
+  it('strictly restricts table drills to selected tables (e.g. 13..19) and never leaks table 8 or unrelated facts', () => {
+    const config: CustomDrillConfig = {
+      id: 'custom_tables_13_19',
+      name: 'Tables 13 to 19 Drill',
+      selectedTables: [13, 14, 15, 16, 17, 18, 19],
+      selectedSquareRanges: [],
+      selectedCubeRanges: [],
+      selectedArithmeticCombos: [],
+      selectedExamSkills: [],
+      operatorPreference: '×',
+      interleavePreviousLearned: false,
+    };
+
+    const allowedTables = new Set([13, 14, 15, 16, 17, 18, 19]);
+
+    for (let i = 0; i < 50; i++) {
+      const q = getAdaptiveQuestion({
+        module: 'custom_drill',
+        activeAddSubLevel: 1,
+        activeTable: 13,
+        activeSquareTrack: 'near_50',
+        customDrillConfig: config,
+      });
+
+      expect(q).toBeDefined();
+      expect(q.operator).toBe('×');
+      // The table operand MUST be strictly one of the selectedTables [13..19]
+      expect(allowedTables.has(q.operandA)).toBe(true);
+      // It must NEVER produce table 8 questions like 8 × 8
+      expect(q.operandA).not.toBe(8);
+    }
+  });
 });
 
 describe('Brain Matrix Cloud-Readiness & Portability', () => {

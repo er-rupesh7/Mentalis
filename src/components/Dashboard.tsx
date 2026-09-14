@@ -166,7 +166,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-12">
+    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-24 sm:pb-12">
       {/* Top Banner / Hero */}
       <div className="border-b border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
@@ -358,22 +358,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          <div className="flex sm:grid sm:grid-cols-3 gap-3 pt-2 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 -mx-6 px-6 sm:mx-0 sm:px-0">
             {/* Table 18 Mastery */}
-            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-white">{tDash('table18Title')}</span>
+            <div className="w-[250px] sm:w-auto shrink-0 snap-start p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-bold text-white">{tDash('table18Title')}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
+                <p className="text-[11px] text-slate-400 line-clamp-2">
+                  {tDash('table18Desc')}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-400">
-                {tDash('table18Desc')}
-              </p>
               <button
                 onClick={() => startSingleTableMastery(18)}
-                className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px] active:scale-95"
               >
                 <Play className="w-3.5 h-3.5 fill-violet-300" />
                 <span>{tDash('masterTable18')}</span>
@@ -381,20 +383,22 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
 
             {/* Table 19 Mastery */}
-            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-amber-400" />
-                  <span className="text-xs font-bold text-white">{tDash('table19Title')}</span>
+            <div className="w-[250px] sm:w-auto shrink-0 snap-start p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-amber-400" />
+                    <span className="text-xs font-bold text-white">{tDash('table19Title')}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">&lt;2.2s</span>
+                <p className="text-[11px] text-slate-400 line-clamp-2">
+                  {tDash('table19Desc')}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-400">
-                {tDash('table19Desc')}
-              </p>
               <button
                 onClick={() => startSingleTableMastery(19)}
-                className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                className="w-full py-2.5 rounded-xl bg-violet-950/40 hover:bg-violet-950/80 border border-violet-700/40 text-violet-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px] active:scale-95"
               >
                 <Play className="w-3.5 h-3.5 fill-violet-300" />
                 <span>{tDash('masterTable19')}</span>
@@ -402,17 +406,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
 
             {/* Multi-digit 2d/3d Add/Sub */}
-            <div className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-emerald-400" />
-                  <span className="text-xs font-bold text-white">{tDash('multidigitTitle')}</span>
+            <div className="w-[250px] sm:w-auto shrink-0 snap-start p-4 rounded-2xl bg-slate-950/70 border border-slate-800/80 space-y-2.5 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold text-white">{tDash('multidigitTitle')}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-400">{tDash('nonNegative')}</span>
                 </div>
-                <span className="text-[10px] font-mono text-slate-400">{tDash('nonNegative')}</span>
+                <p className="text-[11px] text-slate-400 line-clamp-2">
+                  {tDash('multidigitDesc')}
+                </p>
               </div>
-              <p className="text-[11px] text-slate-400">
-                {tDash('multidigitDesc')}
-              </p>
               <button
                 onClick={() =>
                   startCustomDrill({
@@ -429,7 +435,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                     interleavePreviousLearned: true,
                   })
                 }
-                className="w-full py-2 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/80 border border-emerald-700/40 text-emerald-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl bg-emerald-950/40 hover:bg-emerald-950/80 border border-emerald-700/40 text-emerald-200 text-xs font-bold transition-all flex items-center justify-center gap-1.5 min-h-[44px] active:scale-95"
               >
                 <Play className="w-3.5 h-3.5 fill-emerald-300" />
                 <span>{tDash('startMultidigit')}</span>

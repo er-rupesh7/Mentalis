@@ -108,7 +108,7 @@ describe('i18n Multilingual Architecture (13 Languages)', () => {
       }
 
       // Check common essential keys
-      expect(messages.common.appName).toBe('Mentalis');
+      expect(messages.common.appName).toBe('Mentalab');
       expect(messages.common.calculateMentally).toBeTruthy();
       expect(messages.common.submit).toBeTruthy();
       expect(messages.nav.dashboard).toBeTruthy();

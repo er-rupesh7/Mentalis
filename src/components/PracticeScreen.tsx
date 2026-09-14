@@ -91,6 +91,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     pauseSession,
     resumeSession,
     endSession,
+    restartCurrentSession,
     dismissSessionSummary,
     setViewMode,
   } = useQuizStore();
@@ -268,10 +269,10 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 select-none">
-      {/* Top Status Bar */}
-      <div className="w-full max-w-2xl mx-auto px-4 py-3 flex items-center justify-between border-b border-slate-800/80">
-        <div className="flex items-center gap-2">
+    <div className="flex-1 flex flex-col h-[100dvh] max-h-[100dvh] overflow-hidden bg-slate-950 text-slate-100 select-none">
+      {/* Top Status Bar - Ultra-compact on mobile */}
+      <div className="w-full max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between border-b border-slate-800/80 shrink-0 h-11 sm:h-13">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <button
             onClick={() => {
               if (sessionAnswered > 0) {
@@ -280,14 +281,14 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 setViewMode('dashboard');
               }
             }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors border border-slate-800 focus-visible:ring-2 focus-visible:ring-violet-400"
+            className="flex items-center gap-1 p-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 transition-colors border border-slate-800 focus-visible:ring-2 focus-visible:ring-violet-400"
             aria-label="Back to dashboard or finish session"
           >
             <ArrowLeft className="w-4 h-4" />
             <span className="hidden sm:inline">Dashboard</span>
           </button>
 
-          <div className="text-xs font-semibold px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-300 border border-violet-500/20 max-w-[140px] sm:max-w-none truncate">
+          <div className="text-[11px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-violet-500/10 text-violet-300 border border-violet-500/20 max-w-[120px] sm:max-w-none truncate">
             {trackTitle}
           </div>
         </div>
@@ -295,12 +296,12 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         {/* Center: Session Goal Indicator & Target Speed */}
         <div className="flex items-center gap-2">
           {!sessionConfig.isEndless ? (
-            <div className="text-xs font-mono px-2.5 py-1 rounded bg-slate-900 border border-slate-800 text-slate-300">
+            <div className="text-[11px] sm:text-xs font-mono px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
               <span className="text-emerald-400 font-bold">{sessionAnswered}</span>
               <span className="text-slate-500"> / {sessionConfig.goalCount}</span>
             </div>
           ) : (
-            <div className="text-xs font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 flex items-center gap-1">
+            <div className="text-[11px] sm:text-xs font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-400 flex items-center gap-1">
               <Zap className="w-3 h-3 text-amber-400" />
               <span>Zen</span>
             </div>
@@ -315,7 +316,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
 
         {/* Right HUD: Pause, Streak, Sound */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Pause Button */}
           <button
             onClick={() => (isPaused ? resumeSession() : pauseSession())}
@@ -323,25 +324,25 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
             title={isPaused ? 'Resume (P)' : 'Pause session (P)'}
             aria-label={isPaused ? 'Resume' : 'Pause'}
           >
-            {isPaused ? <Play className="w-4 h-4 text-emerald-400" /> : <Pause className="w-4 h-4" />}
+            {isPaused ? <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" /> : <Pause className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
           </button>
 
           {/* Streak Indicator */}
           <div
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+            className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-[11px] sm:text-xs font-mono font-bold transition-all ${
               streak > 0
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/20'
                 : 'bg-slate-900 text-slate-500 border border-slate-800'
             }`}
           >
-            <Flame className={`w-4 h-4 ${streak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
+            <Flame className={`w-3.5 h-3.5 ${streak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
             <span>{streak}</span>
           </div>
 
           {/* Sound Toggle */}
           <button
             onClick={toggleSound}
-            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
+            className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors hidden sm:flex"
             title={soundEnabled ? 'Mute sound' : 'Unmute sound'}
             aria-label={soundEnabled ? 'Mute' : 'Unmute'}
           >
@@ -350,8 +351,22 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
       </div>
 
-      {/* 5 Focused Learning Modes Bar */}
-      <div className="w-full max-w-2xl mx-auto px-4 py-2 flex items-center justify-between gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/60 bg-slate-950/60">
+      {/* Sleek 2px Progress Bar Strip */}
+      {sessionConfig.goalCount && (
+        <div className="w-full h-1 bg-slate-900 overflow-hidden shrink-0">
+          <motion.div
+            className="h-full bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-400"
+            initial={{ width: 0 }}
+            animate={{
+              width: `${Math.min(100, (sessionAnswered / sessionConfig.goalCount) * 100)}%`,
+            }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+          />
+        </div>
+      )}
+
+      {/* 5 Focused Learning Modes Bar (Hidden on mobile to protect vertical viewport) */}
+      <div className="hidden sm:flex w-full max-w-5xl xl:max-w-6xl mx-auto px-4 py-2 items-center justify-between gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/60 bg-slate-950/60 shrink-0">
         <div className="flex items-center gap-1.5">
           {(
             [
@@ -383,16 +398,16 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
 
         {learningMode === 'speed' && (
-          <div className="hidden sm:flex items-center gap-1 text-[11px] font-mono text-amber-400 font-bold shrink-0 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
+          <div className="flex items-center gap-1 text-[11px] font-mono text-amber-400 font-bold shrink-0 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
             <Zap className="w-3 h-3" />
             <span>Target: &lt;{currentQuestion.targetTimeSeconds}s</span>
           </div>
         )}
       </div>
 
-      {/* Session Progress Bar & Questions Left HUD */}
+      {/* Session Progress Bar & Questions Left HUD (Desktop only - mobile has top strip) */}
       {(!sessionConfig.isEndless || secondsRemaining !== null) && (
-        <div className="w-full max-w-2xl mx-auto px-4 pt-3 pb-1">
+        <div className="hidden sm:block w-full max-w-5xl xl:max-w-6xl mx-auto px-4 pt-3 pb-1">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-slate-200">
@@ -441,533 +456,628 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
       )}
 
-      {/* Main Zen Drill Area */}
-      <div className="flex-1 flex flex-col justify-center items-center px-4 py-4 max-w-md mx-auto w-full relative">
-        {/* Pause Overlay */}
-        <AnimatePresence>
-          {isPaused && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center space-y-5 rounded-3xl"
-            >
-              <div className="p-4 rounded-2xl bg-violet-600/20 text-violet-400 border border-violet-500/30">
-                <Pause className="w-8 h-8" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-xl font-bold text-white">{tPractice('sessionPaused')}</h3>
-                <p className="text-xs text-slate-400 max-w-xs">
-                  Your timer is frozen. Take a breath and resume whenever your working memory is ready.
-                </p>
-              </div>
-              <div className="flex flex-col gap-2.5 w-full max-w-xs">
-                <button
-                  onClick={resumeSession}
-                  className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2"
-                >
-                  <Play className="w-4 h-4" />
-                  {tPractice('resume')}
-                </button>
-                <button
-                  onClick={endSession}
-                  className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition-colors"
-                >
-                  {tPractice('returnDashboard')}
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Remediation Repair Card Overlay */}
-        <AnimatePresence>
-          {activeRepairCard && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: -8 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: -8 }}
-              className="w-full mb-4 p-4 rounded-2xl bg-amber-950/50 border border-amber-500/40 shadow-xl backdrop-blur-md space-y-3"
-            >
-              <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300">
-                    <AlertTriangle className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-amber-200 uppercase tracking-wider font-mono">
-                      Remediation Repair: {activeRepairCard.prompt}
-                    </h4>
-                    <p className="text-[11px] text-amber-300/90 font-medium">
-                      {activeRepairCard.patternExplanation}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={dismissRepairCard}
-                  className="text-xs px-2.5 py-1 rounded-lg bg-amber-900/60 hover:bg-amber-800/80 text-amber-200 border border-amber-700/50 font-semibold"
-                >
-                  Dismiss
-                </button>
-              </div>
-
-              {/* Anchor & Contrast Fact Anchors */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-                {/* Anchor Fact */}
-                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-1">
-                  <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
-                    Anchor Fact
-                  </div>
-                  <div className="text-sm font-bold text-white">
-                    {activeRepairCard.anchorFact.prompt} = {activeRepairCard.anchorFact.correctAnswer}
-                  </div>
-                  <p className="text-[11px] text-slate-400 font-sans leading-tight">
-                    {activeRepairCard.anchorFact.relationship}
-                  </p>
-                </div>
-
-                {/* Contrast Fact */}
-                <div className="p-2.5 rounded-xl bg-slate-900/90 border border-sky-500/30 space-y-1">
-                  <div className="text-[10px] text-sky-400 font-bold uppercase tracking-wider">
-                    Contrast Fact
-                  </div>
-                  <div className="text-sm font-bold text-white">
-                    {activeRepairCard.contrastFact.prompt} = {activeRepairCard.contrastFact.correctAnswer}
-                  </div>
-                  <p className="text-[11px] text-slate-400 font-sans leading-tight">
-                    {activeRepairCard.contrastFact.preventConfusionTip}
-                  </p>
-                </div>
-              </div>
-
-              {/* Footer row */}
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-[11px] text-amber-300/70 italic">
-                  Scheduled for delayed re-test in 4 items
-                </span>
-                <button
-                  onClick={() => {
-                    dismissRepairCard();
-                    loadNextQuestion();
-                  }}
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-amber-500/30"
-                >
-                  <span>Continue Drill (↵)</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Anchor Fact Landmark & Mental Shortcut Banner */}
-        {currentQuestion.anchorFactPrompt && !activeRepairCard && (
-          <div className="w-full mb-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/60 to-orange-950/40 border border-amber-500/40 text-amber-200 text-xs shadow-lg backdrop-blur-md flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <div className="space-y-0.5">
-              <div className="font-bold text-amber-300 uppercase tracking-wider text-[10px] font-mono">
-                Anchor Fact Landmark & Mental Shortcut
-              </div>
-              <div className="text-amber-100 font-medium font-mono text-sm">
-                {currentQuestion.anchorFactPrompt}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Guided Learn Mode Preview Banner */}
-        {learningMode === 'learn' && !activeRepairCard && (
-          <div className="w-full mb-3 p-3 rounded-2xl bg-violet-950/40 border border-violet-500/30 text-xs text-violet-200 flex items-start gap-2.5">
-            <BookOpen className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold text-violet-300">Guided Learn Mode: </span>
-              <span>Study the strategy below and type the answer once you feel the accumulator pattern.</span>
-            </div>
-          </div>
-        )}
-
-        {/* Arithmetic Card */}
-        <motion.div
-          animate={
-            reducedMotion
-              ? {}
-              : lastResult === 'correct'
-              ? { scale: [1, 1.03, 1], borderColor: '#10b981' }
-              : lastResult === 'skipped'
-              ? { scale: [1, 1.01, 1], borderColor: '#38bdf8' }
-              : lastResult === 'incorrect'
-              ? { x: [-6, 6, -4, 4, -2, 2, 0], borderColor: '#ef4444' }
-              : {}
-          }
-          transition={{ duration: 0.25 }}
-          className={`relative w-full p-6 sm:p-8 rounded-3xl bg-slate-900/90 border-2 transition-colors flex flex-col items-center justify-center shadow-2xl backdrop-blur-xl ${
-            lastResult === 'correct'
-              ? 'border-emerald-500/80 bg-emerald-950/20 shadow-emerald-500/20'
-              : lastResult === 'skipped'
-              ? 'border-sky-500/80 bg-sky-950/20 shadow-sky-500/20'
-              : lastResult === 'incorrect'
-              ? 'border-rose-500/80 bg-rose-950/20 shadow-rose-500/20'
-              : 'border-slate-800 shadow-slate-950/60'
-          }`}
-        >
-          {/* Strategy / Tip Helper Bar */}
-          <div className="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-3">
-            <div className="flex items-center gap-1.5 max-w-[240px] truncate">
-              <span className="flex items-center gap-1 text-violet-400 font-medium truncate">
-                <Zap className="w-3.5 h-3.5 shrink-0" />
-                {currentQuestion.strategyTitle}
-              </span>
-              {currentQuestion.tableMode && (
-                <span className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[10px] font-mono font-bold uppercase shrink-0 border border-violet-500/30">
-                  {currentQuestion.tableMode.replace(/_/g, ' ')}
-                </span>
-              )}
-            </div>
-            <button
-              onClick={() => toggleStrategy()}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 transition-colors shrink-0"
-              aria-label="Toggle Strategy Guide"
-            >
-              <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-              <span>Strategy (H)</span>
-            </button>
-          </div>
-
-          {/* Prompt Display */}
-          <div className="my-4">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentQuestion.id}
-                initial={reducedMotion ? {} : { opacity: 0, y: 6, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={reducedMotion ? {} : { opacity: 0, y: -6, scale: 0.97 }}
-                transition={{ duration: 0.12 }}
-                className="text-5xl sm:text-6xl font-black tracking-tight text-white font-mono text-center"
-              >
-                {currentQuestion.prompt}
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          {/* Why this question explanation badge */}
-          {currentQuestion.selectionReason && (
-            <div className="mb-4 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-300 flex items-center gap-2 max-w-sm text-center shadow-sm">
-              <Brain className="w-3.5 h-3.5 text-violet-400 shrink-0" />
-              <span className="truncate" title={currentQuestion.selectionReason}>
-                <strong className="text-violet-300 font-semibold">Adaptive reason:</strong> {currentQuestion.selectionReason}
-              </span>
-            </div>
-          )}
-
-          {/* Correct / Incorrect / Skipped Clear Comparison Pill */}
+      {/* Practice Workspace Container (Responsive Desktop Arena / Mobile Pinned Keypad) */}
+      <div
+        className={`flex-1 w-full mx-auto min-h-0 relative flex flex-col lg:flex-row items-center lg:items-center justify-center px-3 sm:px-6 py-1.5 sm:py-3 gap-4 lg:gap-8 overflow-y-auto lg:overflow-hidden ${
+          showStrategy ? 'max-w-5xl xl:max-w-6xl' : 'max-w-xl xl:max-w-2xl'
+        }`}
+      >
+        {/* Primary Practice Column: Arithmetic Question & Keypad */}
+        <div className="flex-1 flex flex-col justify-between items-center w-full max-w-md mx-auto h-full min-h-0 relative">
+          {/* Pause Overlay */}
           <AnimatePresence>
-            {lastResult === 'skipped' && (
+            {isPaused && (
               <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="mb-3 px-4 py-2 rounded-xl bg-sky-950/70 border border-sky-600/70 text-xs font-mono flex items-center gap-2 shadow-inner"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-30 flex flex-col items-center justify-center p-6 text-center space-y-5 rounded-3xl"
               >
-                <BookOpen className="w-4 h-4 text-sky-400 shrink-0" />
-                <span className="text-slate-200">
-                  <span className="text-sky-300 font-bold">Marking this for learning.</span> Correct:{' '}
-                  <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
-                </span>
-              </motion.div>
-            )}
-
-            {lastResult === 'incorrect' && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                className="mb-3 px-3.5 py-1.5 rounded-xl bg-rose-950/70 border border-rose-800/80 text-xs font-mono flex items-center gap-2 shadow-inner"
-              >
-                <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span className="text-slate-300">
-                  You entered: {lastAnswerSubmitted}. Correct:{' '}
-                  <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
-                </span>
+                <div className="p-4 rounded-2xl bg-violet-600/20 text-violet-400 border border-violet-500/30">
+                  <Pause className="w-8 h-8" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-white">{tPractice('sessionPaused')}</h3>
+                  <p className="text-xs text-slate-400 max-w-xs">
+                    Your timer is frozen. Take a breath and resume whenever your working memory is ready.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2.5 w-full max-w-xs">
+                  <button
+                    onClick={resumeSession}
+                    className="w-full py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Play className="w-4 h-4" />
+                    {tPractice('resume')}
+                  </button>
+                  <button
+                    onClick={endSession}
+                    className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 transition-colors"
+                  >
+                    {tPractice('returnDashboard')}
+                  </button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Input Buffer / Multiple Choice Prompt Display */}
-          {currentQuestion.options && currentQuestion.options.length > 0 ? (
-            <div className="w-full max-w-xs h-16 rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
-              <span
-                className={`text-2xl sm:text-3xl font-mono font-bold tracking-wider ${
-                  lastResult === 'correct'
-                    ? 'text-emerald-400'
-                    : lastResult === 'incorrect'
-                    ? 'text-rose-400'
-                    : 'text-slate-400'
-                }`}
+          {/* Remediation Repair Card Overlay */}
+          <AnimatePresence>
+            {activeRepairCard && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.96, y: -8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96, y: -8 }}
+                className="absolute inset-x-2 top-2 z-20 p-4 rounded-2xl bg-amber-950/90 border border-amber-500/40 shadow-2xl backdrop-blur-md space-y-3"
               >
-                {isEvaluating ? (lastAnswerSubmitted ?? '...') : 'Select Option (1-4)'}
-              </span>
-              {lastResult === 'correct' && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute right-4 text-emerald-400"
-                >
-                  <CheckCircle2 className="w-6 h-6" />
-                </motion.div>
-              )}
-            </div>
-          ) : (
-            <div className="w-full max-w-xs h-16 rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
-              <span
-                className={`text-3xl sm:text-4xl font-mono font-bold tracking-widest ${
-                  lastResult === 'correct'
-                    ? 'text-emerald-400'
-                    : lastResult === 'incorrect'
-                    ? 'text-rose-400'
-                    : 'text-white'
-                }`}
-              >
-                {inputBuffer || (
-                  <span className="text-slate-600 text-xl font-normal tracking-normal font-sans">
-                    Type answer...
-                  </span>
-                )}
-              </span>
-              <span className="w-0.5 h-7 bg-violet-400 ml-1 animate-pulse" />
-
-              {/* Micro feedback icon */}
-              {lastResult === 'correct' && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute right-4 text-emerald-400"
-                >
-                  <CheckCircle2 className="w-6 h-6" />
-                </motion.div>
-              )}
-            </div>
-          )}
-        </motion.div>
-
-        {/* Post-Error Action Row */}
-        {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
-          <div className="w-full mt-3 flex items-center gap-2">
-            <button
-              onClick={retrySimilarQuestion}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-violet-300 flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Practice Similar
-            </button>
-            <button
-              onClick={() => loadNextQuestion()}
-              className="flex-1 py-2.5 px-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-xs font-bold text-white shadow-md shadow-violet-600/30 flex items-center justify-center gap-1.5 transition-colors"
-            >
-              Next Question (↵)
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
-        {/* Custom Ergonomic Input Area: Options vs Keypad */}
-        {currentQuestion.options && currentQuestion.options.length > 0 ? (
-          <div className="w-full mt-4 space-y-2.5">
-            <div className="flex items-center justify-between text-[11px] font-mono text-slate-400 px-1">
-              <span className="uppercase tracking-wider">Multiple Choice</span>
-              <span className="text-violet-400">Keys [1] [2] [3] [4] or tap</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {currentQuestion.options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => selectMultipleChoiceOption(opt)}
-                  disabled={isEvaluating}
-                  className="h-16 sm:h-20 p-4 rounded-2xl bg-slate-900/90 hover:bg-violet-900/30 hover:border-violet-500/80 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-md flex items-center justify-between group disabled:opacity-50"
-                >
-                  <span className="w-8 h-8 rounded-xl bg-slate-800 group-hover:bg-violet-600 text-slate-300 group-hover:text-white flex items-center justify-center text-xs font-bold border border-slate-700 transition-colors">
-                    {idx + 1}
-                  </span>
-                  <span className="text-right font-black tracking-wide text-white group-hover:text-violet-200">
-                    {opt}
-                  </span>
-                </button>
-              ))}
-            </div>
-            {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
-              <button
-                onClick={() => loadNextQuestion()}
-                className="w-full h-13 mt-3 rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2"
-              >
-                <span>Next Question (↵ or Space)</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="w-full mt-4 grid grid-cols-3 gap-2">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
-              <button
-                key={num}
-                onClick={() => appendDigit(num.toString())}
-                disabled={isEvaluating}
-                className="h-13 sm:h-15 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-2xl font-bold font-mono text-slate-100 transition-all shadow-md active:shadow-none flex items-center justify-center disabled:opacity-50"
-              >
-                {num}
-              </button>
-            ))}
-
-            {/* Bottom row: Negative toggle / Backspace, 0, Submit / Next */}
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                onClick={toggleNegative}
-                disabled={isEvaluating}
-                className="h-13 sm:h-15 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 font-mono font-bold text-lg transition-all flex items-center justify-center disabled:opacity-50"
-                title="Toggle negative number (-)"
-              >
-                ±
-              </button>
-              <button
-                onClick={backspace}
-                disabled={isEvaluating}
-                className="h-13 sm:h-15 rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-400 hover:text-slate-200 transition-all flex items-center justify-center disabled:opacity-50"
-                title="Backspace"
-              >
-                <Delete className="w-5 h-5" />
-              </button>
-            </div>
-
-            <button
-              onClick={() => appendDigit('0')}
-              disabled={isEvaluating}
-              className="h-13 sm:h-15 py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-2xl font-bold font-mono text-slate-100 transition-all shadow-md active:shadow-none flex items-center justify-center disabled:opacity-50"
-            >
-              0
-            </button>
-
-            {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') ? (
-              <button
-                onClick={() => loadNextQuestion()}
-                className="h-13 sm:h-15 rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center"
-              >
-                Next (↵)
-              </button>
-            ) : (
-              <button
-                onClick={() => submitAnswer()}
-                disabled={isEvaluating || !inputBuffer || inputBuffer === '-'}
-                className="h-13 sm:h-15 rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:scale-95 disabled:bg-slate-900 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold text-lg font-mono transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center"
-              >
-                Enter
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Auxiliary actions: Skip, Tutorial, Timer toggle */}
-        <div className="mt-4 flex items-center justify-between w-full text-xs text-slate-400 px-1">
-          <button
-            onClick={skipQuestion}
-            disabled={isEvaluating}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-colors disabled:opacity-40 font-medium"
-            title="Skip if you don't know this fact (Shortcut: S)"
-          >
-            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
-            <span>Skip / I don’t know (S)</span>
-          </button>
-
-          {onOpenTutorial && (
-            <button
-              onClick={onOpenTutorial}
-              className="hover:text-violet-400 transition-colors inline-flex items-center gap-1"
-            >
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span>Pedagogy Guide</span>
-            </button>
-          )}
-
-          <button
-            onClick={toggleTimerVisibility}
-            className="hover:text-slate-200 transition-colors inline-flex items-center gap-1"
-            title="Toggle timer visibility"
-          >
-            {timerVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            <span>Timer</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Step-by-Step Pedagogical Strategy Breakdown Drawer */}
-      <AnimatePresence>
-        {showStrategy && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="w-full border-t border-slate-800 bg-slate-950/95 backdrop-blur-xl p-5 shadow-2xl z-20"
-          >
-            <div className="max-w-xl mx-auto space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-5 h-5 text-amber-400" />
-                  <div>
-                    <h3 className="text-sm font-bold text-white tracking-wide">
-                      {currentQuestion.strategyTitle}
-                    </h3>
-                    <p className="text-xs text-slate-400">Step-by-step mental accumulator breakdown</p>
+                <div className="flex items-center justify-between border-b border-amber-500/20 pb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300">
+                      <AlertTriangle className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-amber-200 uppercase tracking-wider font-mono">
+                        Remediation Repair: {activeRepairCard.prompt}
+                      </h4>
+                      <p className="text-[11px] text-amber-300/90 font-medium line-clamp-1">
+                        {activeRepairCard.patternExplanation}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono px-2.5 py-1 rounded bg-slate-800 text-emerald-400 font-bold border border-slate-700">
-                    Answer: {currentQuestion.correctAnswer}
-                  </span>
                   <button
-                    onClick={() => toggleStrategy(false)}
-                    className="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    onClick={dismissRepairCard}
+                    className="text-xs px-2.5 py-1 rounded-lg bg-amber-900/60 hover:bg-amber-800/80 text-amber-200 border border-amber-700/50 font-semibold"
                   >
-                    Close
+                    Dismiss
                   </button>
                 </div>
-              </div>
 
-              {/* Mental Tip */}
-              <div className="p-3 rounded-lg bg-violet-950/30 border border-violet-800/40 text-xs text-violet-200 flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
-                <span>{currentQuestion.mentalTip}</span>
-              </div>
-
-              {/* Scannable Steps List */}
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                {currentQuestion.steps.map((step) => (
-                  <div
-                    key={step.stepNumber}
-                    className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1.5"
-                  >
-                    <div className="flex items-center justify-between font-mono">
-                      <span className="text-slate-300 font-semibold">{step.title}</span>
-                      <span className="text-emerald-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                        {step.intermediateValue}
-                      </span>
+                {/* Anchor & Contrast Fact Anchors */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+                  <div className="p-2 rounded-xl bg-slate-900/90 border border-emerald-500/30 space-y-0.5">
+                    <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
+                      Anchor Fact
                     </div>
-                    <div className="text-violet-300 font-medium font-sans flex items-center gap-1.5">
-                      <span>🔊 Auditory Echo:</span>
-                      <span className="italic">{step.subVocalization}</span>
+                    <div className="text-sm font-bold text-white">
+                      {activeRepairCard.anchorFact.prompt} = {activeRepairCard.anchorFact.correctAnswer}
                     </div>
-                    <p className="text-slate-400 text-[11px] leading-relaxed">{step.explanation}</p>
+                    <p className="text-[11px] text-slate-400 font-sans leading-tight">
+                      {activeRepairCard.anchorFact.relationship}
+                    </p>
                   </div>
-                ))}
+
+                  <div className="p-2 rounded-xl bg-slate-900/90 border border-sky-500/30 space-y-0.5">
+                    <div className="text-[10px] text-sky-400 font-bold uppercase tracking-wider">
+                      Contrast Fact
+                    </div>
+                    <div className="text-sm font-bold text-white">
+                      {activeRepairCard.contrastFact.prompt} = {activeRepairCard.contrastFact.correctAnswer}
+                    </div>
+                    <p className="text-[11px] text-slate-400 font-sans leading-tight">
+                      {activeRepairCard.contrastFact.preventConfusionTip}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-[11px] text-amber-300/70 italic">
+                    Scheduled for re-test in 4 items
+                  </span>
+                  <button
+                    onClick={() => {
+                      dismissRepairCard();
+                      loadNextQuestion();
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-md shadow-amber-500/30"
+                  >
+                    <span>Continue (↵)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* 1. UPPER ZONE: Centered Arithmetic Question & Input */}
+          <div className="flex-1 w-full flex flex-col items-center justify-center min-h-0 py-1">
+            {/* Anchor Fact Landmark - Compact on mobile */}
+            {currentQuestion.anchorFactPrompt && !activeRepairCard && (
+              <div className="w-full mb-1.5 p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-amber-950/60 to-orange-950/40 border border-amber-500/40 text-amber-200 text-xs shadow-md flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <div className="truncate">
+                  <span className="text-[10px] uppercase font-mono font-bold text-amber-300 mr-1.5 hidden sm:inline">Shortcut:</span>
+                  <span className="text-amber-100 font-mono font-semibold text-xs sm:text-sm">{currentQuestion.anchorFactPrompt}</span>
+                </div>
               </div>
+            )}
+
+            {/* Guided Learn Mode Preview Banner */}
+            {learningMode === 'learn' && !activeRepairCard && (
+              <div className="w-full mb-1.5 p-2 sm:p-2.5 rounded-xl bg-violet-950/40 border border-violet-500/30 text-xs text-violet-200 flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                <span className="text-xs truncate">Guided: Study strategy, then solve.</span>
+              </div>
+            )}
+
+            {/* Arithmetic Card */}
+            <motion.div
+              animate={
+                reducedMotion
+                  ? {}
+                  : lastResult === 'correct'
+                  ? { scale: [1, 1.03, 1], borderColor: '#10b981' }
+                  : lastResult === 'skipped'
+                  ? { scale: [1, 1.01, 1], borderColor: '#38bdf8' }
+                  : lastResult === 'incorrect'
+                  ? { x: [-6, 6, -4, 4, -2, 2, 0], borderColor: '#ef4444' }
+                  : {}
+              }
+              transition={{ duration: 0.25 }}
+              className={`relative w-full p-3.5 sm:p-5 lg:p-6 rounded-2xl sm:rounded-3xl bg-slate-900/90 border-2 transition-colors flex flex-col items-center justify-center shadow-xl backdrop-blur-xl ${
+                lastResult === 'correct'
+                  ? 'border-emerald-500/80 bg-emerald-950/20 shadow-emerald-500/20'
+                  : lastResult === 'skipped'
+                  ? 'border-sky-500/80 bg-sky-950/20 shadow-sky-500/20'
+                  : lastResult === 'incorrect'
+                  ? 'border-rose-500/80 bg-rose-950/20 shadow-rose-500/20'
+                  : 'border-slate-800 shadow-slate-950/60'
+              }`}
+            >
+              {/* Strategy / Tip Helper Bar */}
+              <div className="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1.5 sm:mb-2.5">
+                <div className="flex items-center gap-1.5 max-w-[200px] sm:max-w-[240px] truncate">
+                  <span className="flex items-center gap-1 text-violet-400 font-medium truncate text-xs">
+                    <Zap className="w-3.5 h-3.5 shrink-0" />
+                    {currentQuestion.strategyTitle}
+                  </span>
+                  {currentQuestion.tableMode && (
+                    <span className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[10px] font-mono font-bold uppercase shrink-0 border border-violet-500/30 hidden sm:inline">
+                      {currentQuestion.tableMode.replace(/_/g, ' ')}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => toggleStrategy()}
+                  className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-xs transition-all shrink-0 ${
+                    showStrategy
+                      ? 'bg-violet-600 text-white font-semibold shadow-md shadow-violet-600/30'
+                      : 'bg-slate-800/90 hover:bg-slate-700 text-slate-300'
+                  }`}
+                  aria-label="Toggle Strategy Guide"
+                >
+                  <Lightbulb className={`w-3.5 h-3.5 ${showStrategy ? 'text-amber-300' : 'text-amber-400'}`} />
+                  <span>Strategy</span>
+                </button>
+              </div>
+
+              {/* Prompt Display */}
+              <div className="my-1.5 sm:my-2.5">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentQuestion.id}
+                    initial={reducedMotion ? {} : { opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={reducedMotion ? {} : { opacity: 0, y: -6, scale: 0.97 }}
+                    transition={{ duration: 0.12 }}
+                    className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white font-mono text-center"
+                  >
+                    {currentQuestion.prompt}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Selection reason (Desktop only to prevent vertical pushing on mobile) */}
+              {currentQuestion.selectionReason && (
+                <div className="hidden sm:flex mb-2 px-3 py-1 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-300 items-center gap-2 max-w-sm text-center shadow-sm">
+                  <Brain className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                  <span className="truncate" title={currentQuestion.selectionReason}>
+                    <strong className="text-violet-300 font-semibold">Adaptive:</strong> {currentQuestion.selectionReason}
+                  </span>
+                </div>
+              )}
+
+              {/* Feedback Banners (Skipped or Incorrect) */}
+              <AnimatePresence>
+                {lastResult === 'skipped' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="mb-2 px-3 py-1 rounded-xl bg-sky-950/70 border border-sky-600/70 text-xs font-mono flex items-center gap-1.5"
+                  >
+                    <BookOpen className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                    <span className="text-slate-200">
+                      Correct: <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
+                    </span>
+                  </motion.div>
+                )}
+
+                {lastResult === 'incorrect' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="mb-2 px-3 py-1 rounded-xl bg-rose-950/70 border border-rose-800/80 text-xs font-mono flex items-center gap-1.5"
+                  >
+                    <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                    <span className="text-slate-300">
+                      Entered: {lastAnswerSubmitted} | Correct: <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Input Buffer / Options Answer Box */}
+              {currentQuestion.options && currentQuestion.options.length > 0 ? (
+                <div className="w-full max-w-[240px] sm:max-w-xs h-11 sm:h-13 rounded-xl sm:rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
+                  <span
+                    className={`text-xl sm:text-2xl font-mono font-bold tracking-wider ${
+                      lastResult === 'correct'
+                        ? 'text-emerald-400'
+                        : lastResult === 'incorrect'
+                        ? 'text-rose-400'
+                        : 'text-slate-400'
+                    }`}
+                  >
+                    {isEvaluating ? (lastAnswerSubmitted ?? '...') : 'Select Option (1-4)'}
+                  </span>
+                  {lastResult === 'correct' && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute right-3 text-emerald-400"
+                    >
+                      <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </motion.div>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full max-w-[240px] sm:max-w-xs h-11 sm:h-13 rounded-xl sm:rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
+                  <span
+                    className={`text-2xl sm:text-3xl font-mono font-bold tracking-widest ${
+                      lastResult === 'correct'
+                        ? 'text-emerald-400'
+                        : lastResult === 'incorrect'
+                        ? 'text-rose-400'
+                        : 'text-white'
+                    }`}
+                  >
+                    {inputBuffer || (
+                      <span className="text-slate-600 text-base sm:text-lg font-normal tracking-normal font-sans">
+                        Type answer...
+                      </span>
+                    )}
+                  </span>
+                  <span className="w-0.5 h-6 sm:h-7 bg-violet-400 ml-1 animate-pulse" />
+
+                  {lastResult === 'correct' && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute right-3 text-emerald-400"
+                    >
+                      <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </motion.div>
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </div>
+
+          {/* Desktop Keyboard Hints Toolbar */}
+          <div className="hidden sm:flex items-center justify-center gap-2.5 py-1 text-[11px] font-mono text-slate-400">
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">0-9</kbd>
+              <span>Type</span>
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">↵ Enter</kbd>
+              <span>Submit</span>
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">S</kbd>
+              <span>Skip</span>
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="flex items-center gap-1">
+              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">H</kbd>
+              <span>Strategy</span>
+            </span>
+          </div>
+
+          {/* 2. LOWER ZONE: Pinned Keypad & Ergonomic Controls (Never Pushed Off-Screen) */}
+          <div className="w-full max-w-md shrink-0 pb-safe pb-2 sm:pb-3 pt-0.5">
+            {/* Compact auxiliary toolbar directly above keypad */}
+            <div className="flex items-center justify-between text-xs text-slate-400 px-1 mb-1.5 sm:mb-2">
+              <button
+                onClick={skipQuestion}
+                disabled={isEvaluating}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-colors disabled:opacity-40 font-medium"
+                title="Skip question (Shortcut: S)"
+              >
+                <HelpCircle className="w-3 h-3 text-amber-400" />
+                <span>Skip (S)</span>
+              </button>
 
               {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
                 <button
-                  onClick={() => loadNextQuestion()}
-                  className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 font-semibold text-xs text-white transition-colors flex items-center justify-center gap-1"
+                  onClick={retrySimilarQuestion}
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg bg-violet-950/60 border border-violet-700/60 text-violet-300 text-xs font-semibold hover:bg-violet-900/60 transition-colors"
                 >
-                  <span>Understood, proceed to next (Press Enter or Space)</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Retry Similar</span>
                 </button>
               )}
+
+              <button
+                onClick={toggleTimerVisibility}
+                className="hover:text-slate-200 transition-colors inline-flex items-center gap-1 text-slate-400"
+                title="Toggle timer visibility"
+              >
+                {timerVisible ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                <span className="hidden sm:inline">Timer</span>
+              </button>
             </div>
-          </motion.div>
+
+            {/* Multiple Choice Grid vs Numeric Keypad */}
+            {currentQuestion.options && currentQuestion.options.length > 0 ? (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {currentQuestion.options.map((opt, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => selectMultipleChoiceOption(opt)}
+                      disabled={isEvaluating}
+                      className="h-11 sm:h-13 p-3 rounded-xl sm:rounded-2xl bg-slate-900/90 hover:bg-violet-900/30 hover:border-violet-500/80 active:bg-violet-600 active:scale-95 border border-slate-800 text-lg sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-md flex items-center justify-between group disabled:opacity-50 touch-manipulation select-none"
+                    >
+                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-800 group-hover:bg-violet-600 text-slate-300 group-hover:text-white flex items-center justify-center text-xs font-bold border border-slate-700 transition-colors">
+                        {idx + 1}
+                      </span>
+                      <span className="text-right font-black tracking-wide text-white group-hover:text-violet-200">
+                        {opt}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
+                  <button
+                    onClick={() => loadNextQuestion()}
+                    className="w-full h-11 sm:h-12 rounded-xl sm:rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-sm sm:text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2"
+                  >
+                    <span>Next Question (↵ or Space)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                  <button
+                    key={num}
+                    onClick={() => appendDigit(num.toString())}
+                    disabled={isEvaluating}
+                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/95 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-sm active:shadow-none flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                  >
+                    {num}
+                  </button>
+                ))}
+
+                {/* Bottom row: [± and ⌫] [0] [Enter / Next ↵] */}
+                <div className="grid grid-cols-2 gap-1">
+                  <button
+                    onClick={toggleNegative}
+                    disabled={isEvaluating}
+                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 font-mono font-bold text-base sm:text-lg transition-all flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                    title="Toggle negative (-)"
+                  >
+                    ±
+                  </button>
+                  <button
+                    onClick={backspace}
+                    disabled={isEvaluating}
+                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 hover:text-white transition-all flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                    title="Backspace"
+                  >
+                    <Delete className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => appendDigit('0')}
+                  disabled={isEvaluating}
+                  className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/95 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-sm active:shadow-none flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                >
+                  0
+                </button>
+
+                {/* Enter / Next Key (Always pinned in Row 4 Col 3, never hidden!) */}
+                {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') ? (
+                  <button
+                    onClick={() => loadNextQuestion()}
+                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 active:scale-95 text-white font-bold text-sm sm:text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-1 touch-manipulation select-none"
+                  >
+                    <span>Next ↵</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => submitAnswer()}
+                    disabled={isEvaluating || !inputBuffer || inputBuffer === '-'}
+                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 active:scale-95 disabled:bg-slate-900 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold text-sm sm:text-base font-mono transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center touch-manipulation select-none"
+                  >
+                    Enter ↵
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Desktop Side Panel: Step-by-Step Pedagogical Strategy Breakdown */}
+        <AnimatePresence>
+          {showStrategy && (
+            <motion.aside
+              initial={{ opacity: 0, x: 24, scale: 0.98 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 24, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="hidden lg:flex flex-col w-[380px] xl:w-[420px] shrink-0 h-full max-h-[calc(100dvh-175px)] overflow-y-auto p-5 rounded-3xl bg-slate-900/95 border border-violet-500/30 shadow-2xl backdrop-blur-xl space-y-4 scrollbar-thin"
+            >
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+                      <Lightbulb className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white tracking-wide">
+                        {currentQuestion.strategyTitle}
+                      </h3>
+                      <p className="text-[11px] text-slate-400">Step-by-step mental accumulator breakdown</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-emerald-400 font-bold border border-slate-700">
+                      Answer: {currentQuestion.correctAnswer}
+                    </span>
+                    <button
+                      onClick={() => toggleStrategy(false)}
+                      className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mental Tip */}
+                <div className="p-3 rounded-xl bg-violet-950/30 border border-violet-800/40 text-xs text-violet-200 flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{currentQuestion.mentalTip}</span>
+                </div>
+
+                {/* Scannable Steps List */}
+                <div className="space-y-2 max-h-52 lg:max-h-[46vh] overflow-y-auto pr-1 scrollbar-thin">
+                  {currentQuestion.steps.map((step) => (
+                    <div
+                      key={step.stepNumber}
+                      className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1.5 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between font-mono">
+                        <span className="text-slate-300 font-semibold">{step.title}</span>
+                        <span className="text-emerald-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                          {step.intermediateValue}
+                        </span>
+                      </div>
+                      <div className="text-violet-300 font-medium font-sans flex items-center gap-1.5">
+                        <span>🔊 Auditory Echo:</span>
+                        <span className="italic text-violet-200">&ldquo;{step.subVocalization}&rdquo;</span>
+                      </div>
+                      <p className="text-slate-400 text-[11px] leading-relaxed">{step.explanation}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
+                  <button
+                    onClick={() => loadNextQuestion()}
+                    className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 font-semibold text-xs text-white transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-violet-600/30"
+                  >
+                    <span>Understood, proceed to next (↵ or Space)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Mobile Slide-Up Bottom Sheet: Step-by-Step Pedagogical Strategy Breakdown */}
+      <AnimatePresence>
+        {showStrategy && (
+          <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => toggleStrategy(false)}
+              className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: '100%' }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: '100%' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 320 }}
+              className="relative z-10 w-full max-h-[85vh] overflow-y-auto rounded-t-3xl border-t border-violet-500/40 bg-slate-950/98 backdrop-blur-2xl shadow-2xl p-5 space-y-4"
+            >
+              <div className="w-12 h-1 rounded-full bg-slate-700 mx-auto -mt-1 mb-2" />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+                      <Lightbulb className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white tracking-wide">
+                        {currentQuestion.strategyTitle}
+                      </h3>
+                      <p className="text-[11px] text-slate-400">Step-by-step mental accumulator breakdown</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-emerald-400 font-bold border border-slate-700">
+                      Answer: {currentQuestion.correctAnswer}
+                    </span>
+                    <button
+                      onClick={() => toggleStrategy(false)}
+                      className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+
+                {/* Mental Tip */}
+                <div className="p-3 rounded-xl bg-violet-950/30 border border-violet-800/40 text-xs text-violet-200 flex items-start gap-2.5">
+                  <Sparkles className="w-4 h-4 text-violet-400 shrink-0 mt-0.5" />
+                  <span className="leading-relaxed">{currentQuestion.mentalTip}</span>
+                </div>
+
+                {/* Scannable Steps List */}
+                <div className="space-y-2 max-h-52 overflow-y-auto pr-1 scrollbar-thin">
+                  {currentQuestion.steps.map((step) => (
+                    <div
+                      key={step.stepNumber}
+                      className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1.5 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between font-mono">
+                        <span className="text-slate-300 font-semibold">{step.title}</span>
+                        <span className="text-emerald-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                          {step.intermediateValue}
+                        </span>
+                      </div>
+                      <div className="text-violet-300 font-medium font-sans flex items-center gap-1.5">
+                        <span>🔊 Auditory Echo:</span>
+                        <span className="italic text-violet-200">&ldquo;{step.subVocalization}&rdquo;</span>
+                      </div>
+                      <p className="text-slate-400 text-[11px] leading-relaxed">{step.explanation}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
+                  <button
+                    onClick={() => loadNextQuestion()}
+                    className="w-full py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 font-semibold text-xs text-white transition-colors flex items-center justify-center gap-1.5 shadow-lg shadow-violet-600/30"
+                  >
+                    <span>Understood, proceed to next (↵ or Space)</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -984,7 +1094,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 10 }}
-              className="w-full max-w-lg p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5"
+              className="w-full max-w-lg max-h-[90vh] overflow-y-auto p-5 sm:p-6 rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl space-y-5 scrollbar-thin"
             >
               <div className="text-center space-y-1">
                 <div className="inline-flex p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">
@@ -1042,16 +1152,15 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => {
-                    dismissSessionSummary();
-                    loadNextQuestion('standard');
+                    restartCurrentSession();
                   }}
-                  className="py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all"
+                  className="py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98]"
                 >
                   {tPractice('practiceAgain')}
                 </button>
                 <button
                   onClick={dismissSessionSummary}
-                  className="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors"
+                  className="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors active:scale-[0.98]"
                 >
                   {tPractice('returnDashboard')}
                 </button>

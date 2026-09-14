@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Mentalis",
+    "appName": "Mentalab",
     "calculateMentally": "ਦਿਮਾਗ ਵਿੱਚ ਹਿਸਾਬ ਲਗਾਓ",
     "submit": "ਜਮ੍ਹਾਂ ਕਰੋ",
     "enter": "ਦਰਜ ਕਰੋ",
@@ -184,7 +184,7 @@
     "bestStreak": "सर्वश्रेष्ठ स्ट्रीक"
   },
   "onboarding": {
-    "welcomeTitle": "Mentalis ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ",
+    "welcomeTitle": "Mentalab ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ",
     "welcomeSubtitle": "ਮਾਨਸਿਕ ਗਣਿਤ ਸਿੱਖਣ ਲਈ ਆਪਣੀ ਮਨਪਸੰਦ ਭਾਸ਼ਾ ਚੁਣੋ",
     "continue": "ਅੱਗੇ ਵਧੋ",
     "defaultNotice": "ਮੂਲ ਰੂਪ ਵਿੱਚ ਹਿੰਦੀ ਚੁਣੀ ਗਈ ਹੈ। ਤੁਸੀਂ ਇਸਨੂੰ ਕਦੇ ਵੀ ਬਦਲ ਸਕਦੇ ਹੋ।"

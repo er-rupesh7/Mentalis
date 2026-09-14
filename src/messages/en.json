@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Mentalis",
+    "appName": "Mentalab",
     "calculateMentally": "Calculate Mentally",
     "submit": "Submit",
     "enter": "Enter",
@@ -221,7 +221,7 @@
     "mastered": "Mastered"
   },
   "onboarding": {
-    "welcomeTitle": "Welcome to Mentalis",
+    "welcomeTitle": "Welcome to Mentalab",
     "welcomeSubtitle": "Choose your preferred language for mental math training",
     "continue": "Continue",
     "defaultNotice": "Hindi is selected by default. You can change this at any time."
@@ -373,7 +373,7 @@
     "trainCategory": "Train Dimension"
   },
   "tutorial": {
-    "modalTitle": "Mentalis Pedagogy Lab",
+    "modalTitle": "Mentalab Pedagogy Lab",
     "modalSubtitle": "The neuroscience & cognitive mechanics of mental arithmetic automaticity",
     "step": "Step",
     "innerEcho": "Inner Auditory Echo:",

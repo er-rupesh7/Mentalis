@@ -183,4 +183,56 @@ describe('adaptive: Spaced Repetition Analysis & Question Scheduling', () => {
     // In speed mode, target time is reduced
     expect(q.targetTimeSeconds).toBeLessThanOrEqual(2.5);
   });
+
+  it('correctly generates addition/subtraction questions and NEVER falls back to multiplication facts when module is add_sub', () => {
+    const mockFactMemoryMap: Record<string, FactMemoryState> = {
+      'mul:7:8': {
+        factKey: 'mul:7:8',
+        factType: 'multiplication',
+        familyId: 'multiplication:7',
+        operandA: 7,
+        operandB: 8,
+        masteryState: 'learning',
+        learningPhase: 'guided',
+        totalAttempts: 5,
+        correctAttempts: 5,
+        consecutiveErrors: 0,
+        consecutiveCorrect: 5,
+        skipCount: 0,
+        firstSeen: Date.now() - 100000,
+        lastSeen: Date.now(),
+        lastCorrect: Date.now(),
+        lastIncorrect: null,
+        lastSkipped: null,
+        intervalDays: 1,
+        easeFactor: 2.5,
+        stabilityScore: 50,
+        nextReviewTimestamp: Date.now(),
+        forgettingRisk: 0.2,
+        medianLatencyMs: 1400,
+        recentLatencyMs: 1400,
+        errorHistory: [],
+        usedHintOrStrategyCount: 0,
+        recentAccuracy: 100,
+        isDirectMemory: true,
+        correctAnswer: 56,
+      } as unknown as FactMemoryState,
+    };
+
+    // When module is add_sub, it should NEVER generate 7 x 8!
+    for (let level = 1; level <= 6; level++) {
+      const q = getAdaptiveQuestion({
+        module: 'add_sub',
+        activeAddSubLevel: level,
+        activeTable: 7,
+        activeSquareTrack: 'near_50',
+        factMemoryMap: mockFactMemoryMap,
+        mode: 'standard',
+      });
+
+      expect(['+', '-']).toContain(q.operator);
+      expect(q.operator).not.toBe('×');
+      expect(q.prompt).not.toContain('7 × 8');
+    }
+  });
 });

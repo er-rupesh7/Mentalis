@@ -467,43 +467,54 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
         return generateQuestionFromFact(`exam:${skill}` as any);
       }
     }
+
+    // Safety fallback for custom drill: if pools was somehow empty, respect any selected tables
+    if (cfg.selectedTables && cfg.selectedTables.length > 0) {
+      const t = cfg.selectedTables[Math.floor(Math.random() * cfg.selectedTables.length)];
+      return generateTableModeQuestion(t, randomInt(1, 12), tableMode);
+    }
+    return generateTableModeQuestion(13, randomInt(1, 12), tableMode);
   }
 
   const analysis = analyzeProgress(progressMap);
 
-  // If factMemoryMap provided, look for target fact
+  // If factMemoryMap provided, look for target facts matching the active module
   if (factMemoryMap && Object.keys(factMemoryMap).length > 0) {
     const keys = Object.keys(factMemoryMap);
-    const matchedKey =
-      keys.find((k) => {
-        if (module === 'tables_bootcamp' || module === 'multiplication') {
-          return k.startsWith(`mul:${activeTable}:`) || k.startsWith('mul:');
-        }
-        if (module === 'exam_quant') return k.startsWith('exam:');
-        if (module === 'fractions_percentages') return k.startsWith('frac:');
-        if (module === 'squares_cubes') return k.startsWith('square:') || k.startsWith('cube:');
-        if (module === 'add_sub') return k.startsWith('add_sub:') || k.startsWith('comp:');
-        return false;
-      }) || keys[0];
+    const candidateKeys = keys.filter((k) => {
+      if (module === 'tables_bootcamp' || module === 'multiplication') {
+        return activeTable ? k.startsWith(`mul:${activeTable}:`) : k.startsWith('mul:');
+      }
+      if (module === 'exam_quant') return k.startsWith('exam:');
+      if (module === 'fractions_percentages') return k.startsWith('frac:');
+      if (module === 'squares_cubes') return k.startsWith('square:') || k.startsWith('cube:');
+      if (module === 'add_sub') return k.startsWith('add_sub:') || k.startsWith('comp:');
+      return false;
+    });
 
-    // If it's a tables_bootcamp fact and tableMode is specified, generate with that mode
-    if (module === 'tables_bootcamp' && matchedKey.startsWith('mul:')) {
-      const parts = matchedKey.split(':');
-      const tbl = parseInt(parts[1], 10) || activeTable || 13;
-      const m = parseInt(parts[2], 10) || Math.floor(Math.random() * 12) + 1;
-      const q = generateTableModeQuestion(tbl, m, tableMode);
+    if (candidateKeys.length > 0) {
+      // Pick a random candidate among matching module facts to prevent back-to-back duplicate questions
+      const matchedKey = candidateKeys[Math.floor(Math.random() * candidateKeys.length)];
+
+      // If it's a tables_bootcamp fact and tableMode is specified, generate with that mode
+      if (module === 'tables_bootcamp' && matchedKey.startsWith('mul:')) {
+        const parts = matchedKey.split(':');
+        const tbl = parseInt(parts[1], 10) || activeTable || 13;
+        const m = parseInt(parts[2], 10) || Math.floor(Math.random() * 12) + 1;
+        const q = generateTableModeQuestion(tbl, m, tableMode);
+        if (mode === 'speed') {
+          q.targetTimeSeconds = Math.min(q.targetTimeSeconds || 3, 2.0);
+        }
+        return q;
+      }
+
+      const q = generateQuestionFromFact(matchedKey as any);
+      q.factKey = matchedKey;
       if (mode === 'speed') {
         q.targetTimeSeconds = Math.min(q.targetTimeSeconds || 3, 2.0);
       }
       return q;
     }
-
-    const q = generateQuestionFromFact(matchedKey as any);
-    q.factKey = matchedKey;
-    if (mode === 'speed') {
-      q.targetTimeSeconds = Math.min(q.targetTimeSeconds || 3, 2.0);
-    }
-    return q;
   }
 
   // If in targeted refresh mode and decayed skills exist for this module, target that skill

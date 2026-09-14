@@ -24,6 +24,8 @@ import {
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
 import { LanguageSelector } from './LanguageSelector';
+import { UserProfileMenu } from './auth/UserProfileMenu';
+import { NotificationBell } from './notifications/NotificationBell';
 
 interface NavigationProps {
   onOpenTutorial: () => void;
@@ -85,11 +87,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           }}
           className="flex items-center gap-2.5 text-left group shrink-0"
         >
-          <div className="p-1.5 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-500 text-white shadow-md shadow-violet-600/30 group-hover:scale-105 transition-transform">
-            <Brain className="w-5 h-5" />
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 via-indigo-500 to-cyan-400 p-[1.5px] shadow-md shadow-violet-600/30 group-hover:scale-105 transition-transform flex items-center justify-center">
+            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+              <Brain className="w-4 h-4 text-violet-300" />
+            </div>
           </div>
-          <span className="font-extrabold text-base tracking-tight text-white">
-            {tCommon('appName')}
+          <span className="font-black text-lg tracking-tight text-white flex items-center">
+            menta<span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-cyan-400">lab</span>
           </span>
         </button>
 
@@ -322,6 +326,12 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </button>
 
+          {/* In-Web Notifications Bell */}
+          <NotificationBell />
+
+          {/* User Cloud Profile & Sync Menu */}
+          <UserProfileMenu />
+
           {/* Settings Modal Button */}
           <button
             onClick={() => setIsSettingsModalOpen(true)}
@@ -345,6 +355,14 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
       {/* Mobile Navigation Dropdown */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-4 py-3 space-y-3">
+          {/* Mobile Profile & Cloud Sync */}
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
+            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+              Account & Sync
+            </span>
+            <UserProfileMenu />
+          </div>
+
           {/* Mobile Language Section */}
           <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
             <div className="flex items-center justify-between">

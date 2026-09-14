@@ -92,6 +92,11 @@ import {
 import { getDrillById } from '../catalog';
 import { consultLocalAdaptiveCoach } from '../localCoachEngine';
 import { MICRO_SESSION_PRESETS } from '../curriculumEngine';
+import { syncEngine, SyncStatus } from '../storage/supabaseSyncEngine';
+import { signOutUser, getCurrentUser, getCurrentSession, onAuthStateChange } from '../../lib/supabase/client';
+import { calculatePointsEarned, getLevelFromXP, getLevelProgress, MAX_LEVEL } from '../levelEngine';
+import { presenceEngine } from '../social/presenceEngine';
+import { socialEngine } from '../social/socialEngine';
 
 export function resolveActiveDimension(
   module: ModuleId,
@@ -357,6 +362,29 @@ interface QuizState {
   hasCompletedLanguageOnboarding: boolean;
   isSettingsModalOpen: boolean;
 
+  // Auth & Cloud Sync
+  currentUser: {
+    id: string;
+    email?: string;
+    displayName?: string;
+    avatarUrl?: string;
+  } | null;
+  isAuthModalOpen: boolean;
+  syncStatus: SyncStatus;
+  syncError: string | null;
+
+  // Gamification & 1000-Level Progression
+  xp: number;
+  level: number;
+  avatarType: 'google' | 'badge' | 'mastery';
+  selectedBadgeLevel: number;
+  selectedMasteryBadgeId: string | null;
+  username: string | null;
+  recentPointsEarned: number | null;
+  newLevelUnlocked: number | null;
+  isBadgePickerOpen: boolean;
+  isChatDrawerOpen: boolean;
+
   // Learner Profile & AI Coaching
   learnerProfile: LearnerProfile;
   activeAssessment: AssessmentSession | null;
@@ -388,6 +416,7 @@ interface QuizState {
 
   // Actions - Drill Practice
   startSession: (config?: Partial<SessionDrillConfig>) => void;
+  restartCurrentSession: () => void;
   pauseSession: () => void;
   resumeSession: () => void;
   endSession: () => void;
@@ -454,6 +483,21 @@ interface QuizState {
     isCorrect: boolean,
     latencyMs: number
   ) => Promise<TechniqueMasteryState>;
+
+  // Actions - Auth & Cloud Sync
+  setAuthModalOpen: (open: boolean) => void;
+  setAuthUser: (user: any) => void;
+  setSyncStatus: (status: SyncStatus, error?: string) => void;
+  initializeAuthAndSync: () => Promise<void>;
+  signOut: () => Promise<void>;
+  triggerSync: () => void;
+
+  // Actions - Gamification & Social
+  setAvatarPreference: (type: 'google' | 'badge' | 'mastery', badgeLevel?: number, masteryBadgeId?: string) => Promise<void>;
+  updateUsername: (username: string) => Promise<{ success: boolean; error?: string }>;
+  setIsBadgePickerOpen: (open: boolean) => void;
+  setIsChatDrawerOpen: (open: boolean) => void;
+  dismissLevelUpCelebration: () => void;
 }
 
 const initialOverallStats: OverallStats = {
@@ -551,6 +595,24 @@ export const useQuizStore = create<QuizState>()(
       hasCompletedLanguageOnboarding: false,
       isSettingsModalOpen: false,
 
+      // Auth & Cloud Sync
+      currentUser: null,
+      isAuthModalOpen: false,
+      syncStatus: 'idle' as SyncStatus,
+      syncError: null,
+
+      // Gamification & 1000-Level Progression
+      xp: 0,
+      level: 1,
+      avatarType: 'google',
+      selectedBadgeLevel: 1,
+      selectedMasteryBadgeId: null,
+      username: null,
+      recentPointsEarned: null,
+      newLevelUnlocked: null,
+      isBadgePickerOpen: false,
+      isChatDrawerOpen: false,
+
       // AI & Cognitive Profile State
       learnerProfile: createDefaultLearnerProfile(),
       activeAssessment: null,
@@ -592,12 +654,12 @@ export const useQuizStore = create<QuizState>()(
 
       setAddSubLevel: (level: number) => {
         set({ activeAddSubLevel: level, activeModule: 'add_sub', viewMode: 'practice' });
-        get().loadNextQuestion();
+        get().startSession({ goalCount: 10, mode: 'standard' });
       },
 
       setActiveTable: (table: number) => {
         set({ activeTable: table, activeModule: 'multiplication', viewMode: 'practice' });
-        get().loadNextQuestion();
+        get().startSession({ goalCount: 10, mode: 'standard' });
       },
 
       setBootcampTable: (table: number) => {
@@ -662,7 +724,7 @@ export const useQuizStore = create<QuizState>()(
 
       setActiveSquareTrack: (track: SquareCubeSubTrack) => {
         set({ activeSquareTrack: track, activeModule: 'squares_cubes', viewMode: 'practice' });
-        get().loadNextQuestion();
+        get().startSession({ goalCount: 10, mode: 'standard' });
       },
 
       setActiveTableChartTab: (tab: TableChartTab) => {
@@ -675,6 +737,9 @@ export const useQuizStore = create<QuizState>()(
           customDrillConfig: config,
           targetMasteryTable: config.targetMasteryTable || null,
           tableMasteryAlert: null,
+          isPlanActive: false,
+          activeRepairCard: null,
+          delayedReviewQueue: [],
           viewMode: 'practice',
           sessionConfig: {
             mode: 'standard',
@@ -799,6 +864,9 @@ export const useQuizStore = create<QuizState>()(
           sessionResponseTimes: [],
           sessionSummary: null,
           isPaused: false,
+          isPlanActive: false,
+          activeRepairCard: null,
+          delayedReviewQueue: [],
         });
         get().loadNextQuestion();
       },
@@ -853,12 +921,50 @@ export const useQuizStore = create<QuizState>()(
         set({ sessionSummary: summary });
       },
 
+      restartCurrentSession: () => {
+        const state = get();
+        get().startSession({
+          goalCount: state.sessionConfig.goalCount || 10,
+          timeLimitSeconds: state.sessionConfig.timeLimitSeconds,
+          mode: state.sessionConfig.mode,
+        });
+      },
+
       dismissSessionSummary: () => {
         set({ sessionSummary: null, viewMode: 'dashboard' });
       },
 
       loadNextQuestion: (forceMode?: 'standard' | 'targeted_refresh' | 'weak_spots') => {
         const state = get();
+
+        // If in custom drill, NEVER allow plan blocks or other modules to intercept
+        if (state.activeModule === 'custom_drill') {
+          const q = getAdaptiveQuestion({
+            module: 'custom_drill',
+            activeAddSubLevel: state.activeAddSubLevel,
+            activeTable: state.activeTable,
+            activeSquareTrack: state.activeSquareTrack,
+            progressMap: state.progressMap,
+            mode: forceMode || state.sessionConfig.mode,
+            tableMode: state.currentTableMode,
+            customDrillConfig: state.customDrillConfig || undefined,
+            targetMasteryTable: state.targetMasteryTable || undefined,
+            factMemoryMap: state.factMemoryMap,
+          });
+
+          set({
+            currentQuestion: q,
+            inputBuffer: '',
+            questionStartTime: Date.now(),
+            isEvaluating: false,
+            lastResult: null,
+            lastAnswerSubmitted: null,
+            lastCorrectAnswer: null,
+            showStrategy: state.learningMode === 'learn',
+            isPaused: false,
+          });
+          return;
+        }
 
         // If practicing an active training plan block, load from the block
         if (state.isPlanActive && state.activeTrainingPlan) {
@@ -1121,6 +1227,7 @@ export const useQuizStore = create<QuizState>()(
       submitAnswer: (overrideAnswer?: number) => {
         const state = get();
         if (state.isEvaluating || !state.currentQuestion || state.isPaused) return;
+        if (!state.sessionConfig.isEndless && state.sessionAnswered >= state.sessionConfig.goalCount) return;
 
         const isNumOverride = typeof overrideAnswer === 'number' && !isNaN(overrideAnswer);
         const trimmed = state.inputBuffer.trim();
@@ -1373,6 +1480,26 @@ export const useQuizStore = create<QuizState>()(
           };
         }
 
+        // 1000-Level XP Calculation
+        const pointsEarned = calculatePointsEarned({
+          isCorrect,
+          responseTimeMs,
+          module: state.activeModule,
+          streak: newStreak,
+          table: activeTableNum,
+          level: state.activeAddSubLevel,
+        });
+
+        const prevXP = state.xp || 0;
+        const nextXP = prevXP + pointsEarned.totalXP;
+        const prevLevel = state.level || 1;
+        const nextLevel = getLevelFromXP(nextXP);
+        const leveledUp = nextLevel > prevLevel;
+
+        if (leveledUp) {
+          soundEngine.playStreak(10);
+        }
+
         // Mark pending AI sync if practiced during cooldown or offline
         get().markPendingAISync();
         const nextBatchCount = (state.batchAnswerCount || 0) + 1;
@@ -1387,6 +1514,10 @@ export const useQuizStore = create<QuizState>()(
           sessionResponseTimes: nextTimes,
           streak: newStreak,
           bestStreak: newBestStreak,
+          xp: nextXP,
+          level: nextLevel,
+          recentPointsEarned: pointsEarned.totalXP,
+          newLevelUnlocked: leveledUp ? nextLevel : state.newLevelUnlocked,
           showStrategy: !isCorrect || state.learningMode === 'learn',
           progressMap: {
             ...state.progressMap,
@@ -1411,6 +1542,11 @@ export const useQuizStore = create<QuizState>()(
           },
           activeTrainingPlan: updatedPlan,
         });
+
+        const { currentUser } = get();
+        if (currentUser) {
+          syncEngine.debouncedSync(currentUser.id, get());
+        }
 
         // If in plan mode and current block is done, advance block
         if (state.isPlanActive && updatedPlan) {
@@ -1894,6 +2030,162 @@ export const useQuizStore = create<QuizState>()(
       dismissAICoachInsight: () => {
         set({ aiCoachInsight: null });
       },
+
+      setAuthModalOpen: (open: boolean) => set({ isAuthModalOpen: open }),
+
+      setAuthUser: (user: any) => {
+        syncEngine.setUserId(user ? user.id : null);
+        set({ currentUser: user });
+      },
+
+      setSyncStatus: (status: SyncStatus, error?: string) => {
+        set({ syncStatus: status, syncError: error || null });
+      },
+
+      initializeAuthAndSync: async () => {
+        syncEngine.subscribe((status, error) => {
+          set({ syncStatus: status, syncError: error || null });
+        });
+
+        const syncUser = async (user: any) => {
+          if (!user) return;
+          const rawName = user.user_metadata?.full_name || user.user_metadata?.name || '';
+          const cleanName = (rawName && rawName.toLowerCase() !== 'unknown' && rawName.trim().length > 0)
+            ? rawName
+            : (user.email?.split('@')[0] || 'Learner');
+
+          const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+
+          const authUser = {
+            id: user.id,
+            email: user.email,
+            displayName: cleanName,
+            avatarUrl,
+          };
+          get().setAuthUser(authUser);
+
+          const { hydratedState } = await syncEngine.initialSyncOnAuth(user.id, get(), {
+            displayName: cleanName,
+            avatarUrl,
+          });
+          if (hydratedState) {
+            set(hydratedState);
+          }
+
+          let currentState = get();
+
+          // 1. Retro-credit XP if user has solved calculations but 0 XP
+          const totalCalcs = currentState.overallStats?.totalCalculations || 0;
+          if ((!currentState.xp || currentState.xp === 0) && totalCalcs > 0) {
+            const retroXP = totalCalcs * 25;
+            const newLevel = getLevelFromXP(retroXP);
+            set({ xp: retroXP, level: newLevel });
+            currentState = get();
+            get().triggerSync();
+          }
+
+          // 2. Ensure default username is assigned if missing
+          if (!currentState.username) {
+            const defUser = await socialEngine.generateDefaultUsername(cleanName, user.id);
+            if (defUser) {
+              set({ username: defUser });
+              currentState = get();
+              get().triggerSync();
+            }
+          }
+
+          // Realtime Presence Tracking
+          presenceEngine.trackUser({
+            id: user.id,
+            username: currentState.username,
+            displayName: cleanName,
+            avatarUrl,
+            avatarType: currentState.avatarType,
+            level: currentState.level,
+          });
+        };
+
+        try {
+          const session = await getCurrentSession();
+          if (session?.user) {
+            await syncUser(session.user);
+          } else {
+            const user = await getCurrentUser();
+            if (user) {
+              await syncUser(user);
+            }
+          }
+        } catch (err) {
+          console.error('[Mentalis] initializeAuthAndSync error:', err);
+        }
+
+        onAuthStateChange(async (event, session) => {
+          if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+            await syncUser(session.user);
+          } else if (event === 'SIGNED_OUT') {
+            presenceEngine.untrack();
+            get().setAuthUser(null);
+            set({ syncStatus: 'idle', syncError: null });
+          }
+        });
+      },
+
+      signOut: async () => {
+        presenceEngine.untrack();
+        await signOutUser();
+        get().setAuthUser(null);
+        set({ syncStatus: 'idle', syncError: null });
+      },
+
+      triggerSync: () => {
+        const { currentUser } = get();
+        if (currentUser) {
+          syncEngine.debouncedSync(currentUser.id, get(), 0);
+        }
+      },
+
+      setAvatarPreference: async (type: 'google' | 'badge' | 'mastery', badgeLevel?: number, masteryBadgeId?: string) => {
+        const lvl = badgeLevel || get().selectedBadgeLevel || 1;
+        const mId = masteryBadgeId !== undefined ? masteryBadgeId : (get().selectedMasteryBadgeId || 'sq_20');
+        set({ avatarType: type, selectedBadgeLevel: lvl, selectedMasteryBadgeId: mId });
+        const { currentUser, username, level } = get();
+        if (currentUser) {
+          await socialEngine.updateAvatarPreference(currentUser.id, type, lvl, mId);
+          presenceEngine.trackUser({
+            id: currentUser.id,
+            username,
+            displayName: currentUser.displayName,
+            avatarUrl: currentUser.avatarUrl,
+            avatarType: type,
+            level,
+          });
+          get().triggerSync();
+        }
+      },
+
+      updateUsername: async (newUsername: string) => {
+        const { currentUser, avatarType, level } = get();
+        if (!currentUser) return { success: false, error: 'Please log in to set a username.' };
+        const res = await socialEngine.updateUsername(currentUser.id, newUsername);
+        if (res.success) {
+          const clean = newUsername.trim().toLowerCase();
+          set({ username: clean });
+          presenceEngine.trackUser({
+            id: currentUser.id,
+            username: clean,
+            displayName: currentUser.displayName,
+            avatarUrl: currentUser.avatarUrl,
+            avatarType,
+            level,
+          });
+          get().triggerSync();
+        }
+        return res;
+      },
+
+      setIsBadgePickerOpen: (open: boolean) => set({ isBadgePickerOpen: open }),
+      setIsChatDrawerOpen: (open: boolean) => set({ isChatDrawerOpen: open }),
+      dismissLevelUpCelebration: () => set({ newLevelUnlocked: null }),
     }),
     {
       name: 'mentalis_storage_v8',
@@ -2094,6 +2386,13 @@ export const useQuizStore = create<QuizState>()(
         learnerProfile: state.learnerProfile,
         aiCoachingEnabled: state.aiCoachingEnabled,
         aiCoachState: state.aiCoachState,
+        currentUser: state.currentUser,
+        xp: state.xp,
+        level: state.level,
+        avatarType: state.avatarType,
+        selectedBadgeLevel: state.selectedBadgeLevel,
+        selectedMasteryBadgeId: state.selectedMasteryBadgeId,
+        username: state.username,
       }),
     }
   )

@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Mentalis - High-Performance Cognitive Math Training',
+  title: 'Mentalab - High-Performance Cognitive Math Training',
   description:
     'Master mental arithmetic through Left-to-Right Accumulation, Complements, 1–100 Table Matrix, and Anzan Flash Working Memory Expansion.',
   keywords: [
@@ -13,7 +13,17 @@ export const metadata: Metadata = {
     'Multiplication Tables 1 to 100',
     'Anzan Flash Calculation',
     'Working Memory',
+    'Mentalab',
   ],
+  icons: {
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png' },
+    ],
+  },
 };
 
 export const viewport: Viewport = {

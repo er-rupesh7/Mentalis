@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Mentalis",
+    "appName": "Mentalab",
     "calculateMentally": "دماغی حساب لگائیں",
     "submit": "جمع کریں",
     "enter": "درج کریں",
@@ -184,7 +184,7 @@
     "bestStreak": "सर्वश्रेष्ठ स्ट्रीक"
   },
   "onboarding": {
-    "welcomeTitle": "Mentalis میں خوش آمدید",
+    "welcomeTitle": "Mentalab میں خوش آمدید",
     "welcomeSubtitle": "ذہنی ریاضی سیکھنے کے لیے اپنی پسندیدہ زبان منتخب کریں",
     "continue": "آگے بڑھیں",
     "defaultNotice": "ہندی پہلے سے منتخب شدہ ہے۔ آپ اسے کسی بھی وقت تبدیل کر سکتے ہیں۔"

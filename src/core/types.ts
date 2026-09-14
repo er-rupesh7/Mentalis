@@ -182,6 +182,13 @@ export interface SessionSummary {
   };
 }
 
+export interface RatingTierDetails {
+  tier: string;
+  division: string;
+  badgeTitle: string;
+  color: string;
+}
+
 export interface UserRank {
   title: string;
   tier: 'apprentice' | 'practitioner' | 'navigator' | 'centurion' | 'grandmaster';
@@ -191,6 +198,11 @@ export interface UserRank {
   masteredTablesCount: number;
   masteredAddSubCount: number;
   masteredSquaresCount: number;
+  rating: number;
+  ratingTier: string;
+  ratingTierDetails?: RatingTierDetails;
+  percentile: string;
+  totalTimeSpentSeconds?: number;
 }
 
 export interface Badge {

@@ -396,7 +396,7 @@ export const MyLearningPlan: React.FC = () => {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+          <div className="flex sm:grid sm:grid-cols-5 gap-2.5 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0">
             {plan.blocks.map((block, idx) => {
               const isDone = block.status === 'completed';
               const isCurrent = idx === targetIndex && !isPlanCompleted;
@@ -404,7 +404,7 @@ export const MyLearningPlan: React.FC = () => {
                 <button
                   key={block.id}
                   onClick={() => startTrainingBlock(idx)}
-                  className={`p-3 rounded-xl border text-left transition-all flex flex-col justify-between space-y-1.5 ${
+                  className={`w-[160px] sm:w-auto shrink-0 snap-start p-3.5 sm:p-3 rounded-2xl sm:rounded-xl border text-left transition-all flex flex-col justify-between space-y-1.5 active:scale-95 ${
                     isDone
                       ? 'bg-emerald-950/20 border-emerald-500/30 text-slate-300'
                       : isCurrent
@@ -452,7 +452,7 @@ export const MyLearningPlan: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
             {displayWeakFacts.map((fact) => {
               const isSkipped = (fact.skipCount || 0) > 0;
               const hasErrors = fact.consecutiveErrors > 0;
@@ -460,24 +460,32 @@ export const MyLearningPlan: React.FC = () => {
                 <button
                   key={fact.factKey}
                   onClick={() => practiceFact(fact.factKey, 'learn')}
-                  className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-rose-500/30 hover:border-rose-400 transition-all text-left flex items-center gap-2.5 group"
+                  className="w-[175px] sm:w-auto shrink-0 snap-start p-3.5 sm:px-3 sm:py-2 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:bg-slate-800 border border-rose-500/30 hover:border-rose-400 active:scale-95 transition-all text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group shadow-lg shadow-rose-950/20"
                   title="Click to learn strategy and drill this fact"
                 >
-                  <span className="font-mono text-xs font-bold text-white group-hover:text-rose-300 transition-colors">
+                  <div className="flex items-center justify-between w-full sm:w-auto sm:gap-2">
+                    <span
+                      className={`text-[9px] font-mono px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
+                        isSkipped
+                          ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                          : hasErrors
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                      }`}
+                    >
+                      {isSkipped ? `Skipped ${fact.skipCount}x` : hasErrors ? `${fact.consecutiveErrors} ${tPlan('slips')}` : 'High decay'}
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-rose-400 sm:hidden" />
+                  </div>
+
+                  <span className="font-mono text-base sm:text-xs font-black text-white group-hover:text-rose-200 transition-colors tracking-tight">
                     {formatFactLabel(fact.factKey, fact.correctAnswer)}
                   </span>
-                  <span
-                    className={`text-[9px] font-mono px-1.5 py-0.5 rounded uppercase font-semibold ${
-                      isSkipped
-                        ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-                        : hasErrors
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                        : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                    }`}
-                  >
-                    {isSkipped ? `Skipped ${fact.skipCount}x` : hasErrors ? `${fact.consecutiveErrors} ${tPlan('slips')}` : 'High decay'}
-                  </span>
-                  <ChevronRight className="w-3 h-3 text-slate-500 group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
+
+                  <div className="flex items-center justify-between text-[10px] text-rose-400/90 font-medium sm:hidden pt-1 border-t border-slate-800/60 w-full">
+                    <span>Learn Trick</span>
+                    <span className="font-mono">↵</span>
+                  </div>
                 </button>
               );
             })}
@@ -506,21 +514,29 @@ export const MyLearningPlan: React.FC = () => {
               All practiced facts are safely retained! Complete practice blocks to queue reviews.
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
               {dueFacts.map((fact) => (
                 <button
                   key={fact.factKey}
                   onClick={() => practiceFact(fact.factKey, 'recall')}
-                  className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-amber-500/30 hover:border-amber-400 transition-all text-left flex items-center gap-2.5 group"
+                  className="w-[175px] sm:w-auto shrink-0 snap-start p-3.5 sm:px-3 sm:py-2 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:bg-slate-800 border border-amber-500/30 hover:border-amber-400 active:scale-95 transition-all text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group shadow-lg shadow-amber-950/20"
                   title="Click to drill active recall"
                 >
-                  <span className="font-mono text-xs font-bold text-white group-hover:text-amber-300 transition-colors">
+                  <div className="flex items-center justify-between w-full sm:w-auto sm:gap-2">
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold uppercase tracking-wider">
+                      {Math.round(fact.forgettingRisk * 100)}% {tPlan('risk')}
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 sm:hidden" />
+                  </div>
+
+                  <span className="font-mono text-base sm:text-xs font-black text-white group-hover:text-amber-200 transition-colors tracking-tight">
                     {formatFactLabel(fact.factKey, fact.correctAnswer)}
                   </span>
-                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                    {Math.round(fact.forgettingRisk * 100)}% {tPlan('risk')}
-                  </span>
-                  <ChevronRight className="w-3 h-3 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
+
+                  <div className="flex items-center justify-between text-[10px] text-amber-400/90 font-medium sm:hidden pt-1 border-t border-slate-800/60 w-full">
+                    <span>Spaced Review</span>
+                    <span className="font-mono">↵</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -552,21 +568,29 @@ export const MyLearningPlan: React.FC = () => {
               No significant hesitation bottlenecks detected yet.
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
               {speedBottlenecks.map((fact) => (
                 <button
                   key={fact.factKey}
                   onClick={() => practiceFact(fact.factKey, 'learn')}
-                  className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-purple-500/30 hover:border-purple-400 transition-all text-left flex items-center gap-2.5 group"
+                  className="w-[175px] sm:w-auto shrink-0 snap-start p-3.5 sm:px-3 sm:py-2 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:bg-slate-800 border border-purple-500/30 hover:border-purple-400 active:scale-95 transition-all text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group shadow-lg shadow-purple-950/20"
                   title="Click to learn mental shortcut to speed up recall"
                 >
-                  <span className="font-mono text-xs font-bold text-white group-hover:text-purple-300 transition-colors">
+                  <div className="flex items-center justify-between w-full sm:w-auto sm:gap-2">
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+                      {(fact.medianLatencyMs / 1000).toFixed(1)}s delay
+                    </span>
+                    <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-purple-400 sm:hidden" />
+                  </div>
+
+                  <span className="font-mono text-base sm:text-xs font-black text-white group-hover:text-purple-200 transition-colors tracking-tight">
                     {formatFactLabel(fact.factKey, fact.correctAnswer)}
                   </span>
-                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                    {(fact.medianLatencyMs / 1000).toFixed(1)}s
-                  </span>
-                  <ChevronRight className="w-3 h-3 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all" />
+
+                  <div className="flex items-center justify-between text-[10px] text-purple-400/90 font-medium sm:hidden pt-1 border-t border-slate-800/60 w-full">
+                    <span>Speed Up</span>
+                    <span className="font-mono">↵</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -595,19 +619,24 @@ export const MyLearningPlan: React.FC = () => {
               Complete practice rounds to convert weak facts into permanent mastered memory!
             </div>
           ) : (
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
               {masteredFacts.map((fact) => (
                 <div
                   key={fact.factKey}
-                  className="px-3 py-2 rounded-xl bg-slate-950 border border-emerald-500/30 text-left flex items-center gap-2"
+                  className="w-[175px] sm:w-auto shrink-0 snap-start p-3.5 sm:px-3 sm:py-2 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/30 text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-lg shadow-emerald-950/20"
                 >
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                  <span className="font-mono text-xs font-bold text-slate-200">
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/40 px-1.5 py-0.5 rounded-full font-bold uppercase">
+                      Mastered
+                    </span>
+                  </div>
+                  <span className="font-mono text-base sm:text-xs font-black text-slate-200">
                     {formatFactLabel(fact.factKey, fact.correctAnswer)}
                   </span>
                   {fact.medianLatencyMs > 0 && (
-                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/40 px-1 py-0.5 rounded">
-                      {(fact.medianLatencyMs / 1000).toFixed(1)}s
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/40 px-1.5 py-0.5 rounded-full self-start sm:self-auto">
+                      {(fact.medianLatencyMs / 1000).toFixed(1)}s recall
                     </span>
                   )}
                 </div>
@@ -640,13 +669,13 @@ export const MyLearningPlan: React.FC = () => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 md:mx-0 md:px-0">
           {suggestedTricks.map(({ strategy, applicableFacts, exampleFactKey }) => {
             const locStrat = getLocalizedStrategy(strategy.id, locale, strategy.name, strategy.mentalScript);
             return (
               <div
                 key={strategy.id}
-                className="p-4 rounded-xl bg-slate-950/80 border border-slate-800 hover:border-violet-500/50 transition-all flex flex-col justify-between space-y-3 group"
+                className="w-[280px] md:w-auto shrink-0 snap-start p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-violet-500/50 transition-all flex flex-col justify-between space-y-3 group"
               >
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
@@ -670,7 +699,7 @@ export const MyLearningPlan: React.FC = () => {
 
                 <button
                   onClick={() => practiceFact(exampleFactKey, 'learn')}
-                  className="w-full py-2 rounded-lg bg-violet-600/20 hover:bg-violet-600 text-violet-300 hover:text-white border border-violet-500/30 hover:border-transparent text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                  className="w-full py-2.5 rounded-xl bg-violet-600/20 hover:bg-violet-600 active:scale-95 text-violet-300 hover:text-white border border-violet-500/30 hover:border-transparent text-xs font-bold transition-all flex items-center justify-center gap-1.5"
                 >
                   <BookOpen className="w-3.5 h-3.5" />
                   <span>{tPlan('practiceShortcut')}</span>
@@ -683,3 +712,4 @@ export const MyLearningPlan: React.FC = () => {
     </section>
   );
 };
+

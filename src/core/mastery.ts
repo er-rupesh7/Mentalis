@@ -4,7 +4,7 @@
  * median response times, calendar-day daily streaks, and dynamic rank/badges.
  */
 
-import { MasteryStatus, UserProgressItem, OverallStats, UserRank, Badge, AnzanStats } from './types';
+import { MasteryStatus, UserProgressItem, OverallStats, UserRank, RatingTierDetails, Badge, AnzanStats } from './types';
 
 export const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -136,29 +136,127 @@ export function updateDailyStreak(
   }
 }
 
+export interface FormattedTimeSpent {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  formatted: string;
+}
+
 /**
- * Computes dynamic user rank derived from verified mastered tracks and tables.
+ * Formats total invested time into human-readable hours, minutes, and seconds.
+ */
+export function formatInvestedTime(totalSeconds: number): FormattedTimeSpent {
+  const safeSeconds = Math.max(0, Math.round(totalSeconds || 0));
+  const hours = Math.floor(safeSeconds / 3600);
+  const minutes = Math.floor((safeSeconds % 3600) / 60);
+  const seconds = safeSeconds % 60;
+
+  let formatted = '';
+  if (hours > 0) {
+    formatted = `${hours}h ${minutes}m ${seconds}s`;
+  } else if (minutes > 0) {
+    formatted = `${minutes}m ${seconds}s`;
+  } else {
+    formatted = `${seconds}s`;
+  }
+
+  return { hours, minutes, seconds, formatted };
+}
+
+export type { UserRank, RatingTierDetails } from './types';
+
+export function getRatingTierDetails(rating: number): RatingTierDetails {
+  if (rating >= 3300) {
+    return { tier: 'Apex Conqueror', division: 'I', badgeTitle: 'Apex Sovereign', color: '#ec4899' };
+  } else if (rating >= 2800) {
+    return { tier: 'Crown Grandmaster', division: 'II', badgeTitle: 'Grandmaster', color: '#a855f7' };
+  } else if (rating >= 2400) {
+    return { tier: 'Diamond Mentalist', division: 'III', badgeTitle: 'Virtuoso', color: '#06b6d4' };
+  } else if (rating >= 2000) {
+    return { tier: 'Platinum Calculationist', division: 'IV', badgeTitle: 'Calculationist', color: '#38bdf8' };
+  } else if (rating >= 1600) {
+    return { tier: 'Gold Tactician', division: 'V', badgeTitle: 'Tactician', color: '#eab308' };
+  } else if (rating >= 1300) {
+    return { tier: 'Silver Challenger', division: 'VI', badgeTitle: 'Challenger', color: '#94a3b8' };
+  }
+  return { tier: 'Bronze Novice', division: 'VII', badgeTitle: 'Novice', color: '#cd7f32' };
+}
+
+/**
+ * Computes dynamic user rank derived from verified mastered tracks, speed, and time.
  */
 export function calculateUserRank(
-  progressMap: Record<string, UserProgressItem>,
-  overallStats: OverallStats
+  progressMapOrCalcs: Record<string, any> | number,
+  overallStatsOrCorrect?: any,
+  bestStreak?: number,
+  totalTimeSpentSeconds?: number
 ): UserRank {
   let masteredTablesCount = 0;
   let masteredAddSubCount = 0;
   let masteredSquaresCount = 0;
+  let totalCalcs = 0;
+  let totalCorrect = 0;
+  let timeSpent = 0;
+  let dailyStreak = 1;
 
-  Object.values(progressMap).forEach((item) => {
-    if (item.masteryStatus === 'mastered') {
-      if (item.module === 'multiplication') masteredTablesCount++;
-      if (item.module === 'add_sub') masteredAddSubCount++;
-      if (item.module === 'squares_cubes') masteredSquaresCount++;
-    }
-  });
+  if (typeof progressMapOrCalcs === 'number') {
+    totalCalcs = progressMapOrCalcs;
+    totalCorrect = Number(overallStatsOrCorrect) || 0;
+    timeSpent = Number(totalTimeSpentSeconds) || 0;
+    dailyStreak = Number(bestStreak) || 1;
+  } else {
+    const progressMap = progressMapOrCalcs || {};
+    const overallStats = overallStatsOrCorrect || {};
+    Object.values(progressMap).forEach((item: any) => {
+      if (item?.masteryStatus === 'mastered') {
+        if (item.module === 'multiplication') masteredTablesCount++;
+        if (item.module === 'add_sub') masteredAddSubCount++;
+        if (item.module === 'squares_cubes') masteredSquaresCount++;
+      }
+    });
+    totalCalcs = overallStats.totalCalculations || overallStats.totalQuestions || 0;
+    totalCorrect = overallStats.totalCorrect || 0;
+    timeSpent = overallStats.totalTimeSpentSeconds || 0;
+    dailyStreak = overallStats.dailyActiveStreak || 1;
+  }
 
   const totalMastered = masteredTablesCount + masteredAddSubCount + masteredSquaresCount;
+  const cpm = calculateCPM(totalCorrect, timeSpent);
+  const accuracy = totalCalcs > 0 ? (totalCorrect / totalCalcs) * 100 : 0;
+
+  // Competitive E-Sports Rating Score (Base 1000)
+  const rating = Math.round(
+    1000 +
+    (cpm * 8) +
+    (accuracy * 5) +
+    Math.min(1200, totalCalcs * 0.5) +
+    (totalMastered * 20) +
+    Math.min(300, dailyStreak * 15)
+  );
+
+  const tierDetails = getRatingTierDetails(rating);
+  const ratingTier = tierDetails.tier;
+
+  let percentile = 'Top 80%';
+  if (rating >= 3300) percentile = 'Top 0.5%';
+  else if (rating >= 2800) percentile = 'Top 2%';
+  else if (rating >= 2400) percentile = 'Top 5%';
+  else if (rating >= 2000) percentile = 'Top 12%';
+  else if (rating >= 1600) percentile = 'Top 25%';
+  else if (rating >= 1300) percentile = 'Top 45%';
+
+  const baseRankData = {
+    rating,
+    ratingTier,
+    ratingTierDetails: tierDetails,
+    percentile,
+    totalTimeSpentSeconds: timeSpent,
+  };
 
   if (masteredTablesCount >= 90 && masteredAddSubCount >= 6) {
     return {
+      ...baseRankData,
       title: 'Mental Arithmetic Grandmaster',
       tier: 'grandmaster',
       tierLevel: 5,
@@ -173,6 +271,7 @@ export function calculateUserRank(
   if (masteredTablesCount >= 45 || totalMastered >= 50) {
     const progress = Math.min(99, Math.round(((masteredTablesCount - 45) / 45) * 100));
     return {
+      ...baseRankData,
       title: 'Grade 50 Centurion Master',
       tier: 'centurion',
       tierLevel: 4,
@@ -187,6 +286,7 @@ export function calculateUserRank(
   if (masteredTablesCount >= 19 || totalMastered >= 20) {
     const progress = Math.min(99, Math.round(((masteredTablesCount - 19) / 26) * 100));
     return {
+      ...baseRankData,
       title: 'Grade 20 Advanced Master',
       tier: 'navigator',
       tierLevel: 3,
@@ -201,6 +301,7 @@ export function calculateUserRank(
   if (masteredTablesCount >= 11 || totalMastered >= 10) {
     const progress = Math.min(99, Math.round(((masteredTablesCount - 11) / 8) * 100));
     return {
+      ...baseRankData,
       title: 'Grade 12 Anchor Master',
       tier: 'practitioner',
       tierLevel: 2,
@@ -212,9 +313,10 @@ export function calculateUserRank(
     };
   }
 
-  if (totalMastered >= 3 || overallStats.totalCalculations >= 20) {
+  if (totalMastered >= 3 || totalCalcs >= 20) {
     const progress = Math.min(99, Math.round((totalMastered / 10) * 100));
     return {
+      ...baseRankData,
       title: 'Decade Explorer',
       tier: 'apprentice',
       tierLevel: 1,
@@ -227,10 +329,11 @@ export function calculateUserRank(
   }
 
   return {
+    ...baseRankData,
     title: 'Initiate Decadist',
     tier: 'apprentice',
     tierLevel: 0,
-    progressPercent: Math.min(99, Math.round((overallStats.totalCalculations / 20) * 100)),
+    progressPercent: Math.min(99, Math.round((totalCalcs / 20) * 100)),
     nextRankTitle: 'Decade Explorer',
     masteredTablesCount,
     masteredAddSubCount,
@@ -255,7 +358,7 @@ export function getBadges(
     {
       id: 'first_calc',
       name: 'First Spark',
-      description: 'Solved your very first mental calculation in Mentalis.',
+      description: 'Solved your very first mental calculation in Mentalab.',
       category: 'mastery',
       unlocked: overallStats.totalCalculations >= 1,
     },

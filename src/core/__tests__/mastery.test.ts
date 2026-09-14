@@ -5,6 +5,8 @@ import {
   updateDailyStreak,
   calculateUserRank,
   calculateCPM,
+  formatInvestedTime,
+  getRatingTierDetails,
   SEVEN_DAYS_MS,
 } from '../mastery';
 import { UserProgressItem, OverallStats } from '../types';
@@ -150,6 +152,15 @@ describe('mastery: Metrics, Decay, Streaks & Ranks', () => {
       const rank = calculateUserRank(progress, stats);
       expect(rank.title).toBe('Grade 12 Anchor Master');
       expect(rank.masteredTablesCount).toBe(11);
+      expect(rank.rating).toBeGreaterThan(1000);
+      expect(rank.ratingTier).toBeDefined();
+    });
+
+    it('supports direct numeric calculation overload for public profiles', () => {
+      const rank = calculateUserRank(300, 290, 50, 600);
+      expect(rank.rating).toBeGreaterThan(1200);
+      expect(rank.ratingTierDetails).toBeDefined();
+      expect(rank.ratingTierDetails?.tier).toBe(rank.ratingTier);
     });
   });
 
@@ -160,6 +171,18 @@ describe('mastery: Metrics, Decay, Streaks & Ranks', () => {
       // 15 correct answers in 45 seconds = (15 / 0.75) = 20.0 CPM
       expect(calculateCPM(15, 45)).toBe(20.0);
       expect(calculateCPM(0, 50)).toBe(0);
+    });
+  });
+
+  describe('formatInvestedTime', () => {
+    it('formats seconds, minutes, and hours accurately', () => {
+      expect(formatInvestedTime(0).formatted).toBe('0s');
+      expect(formatInvestedTime(45).formatted).toBe('45s');
+      expect(formatInvestedTime(125).formatted).toBe('2m 5s');
+      expect(formatInvestedTime(3665).formatted).toBe('1h 1m 5s');
+      expect(formatInvestedTime(7322).hours).toBe(2);
+      expect(formatInvestedTime(7322).minutes).toBe(2);
+      expect(formatInvestedTime(7322).seconds).toBe(2);
     });
   });
 });
