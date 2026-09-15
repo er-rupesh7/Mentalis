@@ -27,10 +27,13 @@ import {
   Target,
   AlertTriangle,
   Brain,
+  GraduationCap,
+  ShieldCheck,
+  SkipForward,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ADD_SUB_LEVELS } from '../core/calcEngine';
-import { LearningMode } from '../core/types';
+import { LearningMode, WorkoutMode } from '../core/types';
 import { useTranslations } from 'next-intl';
 
 interface PracticeScreenProps {
@@ -72,6 +75,9 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     advanceToNextTable,
     dismissTableMasteryAlert,
     learningMode,
+    workoutMode,
+    setWorkoutMode,
+    recentPointsEarned,
     activeRepairCard,
     setLearningMode,
     dismissRepairCard,
@@ -97,6 +103,12 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
   } = useQuizStore();
 
   const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+  const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
+
+  // Always ensure answer reveal state resets on new question
+  useEffect(() => {
+    setIsAnswerRevealed(false);
+  }, [currentQuestion?.id]);
 
   useEffect(() => {
     if (!sessionConfig.timeLimitSeconds) {
@@ -192,8 +204,10 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
           loadNextQuestion();
         }
       } else if (e.key.toLowerCase() === 'h') {
-        e.preventDefault();
-        toggleStrategy();
+        if (workoutMode === 'practice') {
+          e.preventDefault();
+          toggleStrategy();
+        }
       } else if (e.key.toLowerCase() === 's') {
         e.preventDefault();
         if (!isEvaluating) {
@@ -210,6 +224,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
       isEvaluating,
       lastResult,
       showStrategy,
+      workoutMode,
       currentQuestion,
       selectMultipleChoiceOption,
       appendDigit,
@@ -365,45 +380,105 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
       )}
 
-      {/* 5 Focused Learning Modes Bar — compact horizontal pill scroller on mobile */}
-      <div className="flex w-full max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 py-2 items-center justify-between gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/60 bg-slate-950/60 shrink-0">
-        <div className="flex items-center gap-1.5">
-          {(
-            [
-              { id: 'learn', label: 'Learn', icon: BookOpen, desc: 'Strategy Breakdown + Guided Practice' },
-              { id: 'recall', label: 'Recall', icon: Target, desc: 'Pure Retrieval Practice' },
-              { id: 'speed', label: 'Speed', icon: Zap, desc: 'Speed Fluency (<2s Goal)' },
-              { id: 'repair', label: 'Repair', icon: RotateCcw, desc: 'Target Confusions & Slips' },
-              { id: 'review', label: 'Review', icon: Clock, desc: 'Spaced Retrieval Due Facts' },
-            ] as const
-          ).map((m) => {
-            const Icon = m.icon;
-            const isActive = learningMode === m.id;
-            return (
-              <button
-                key={m.id}
-                onClick={() => setLearningMode(m.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all shrink-0 ${
-                  isActive
-                    ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
-                    : 'bg-slate-900/90 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
-                }`}
-                title={m.desc}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{m.label}</span>
-              </button>
-            );
-          })}
+      {/* Workout Mode Switcher Bar: Exercise (Exam) vs Practice (Study) */}
+      <div className="flex w-full max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 py-1.5 items-center justify-between gap-2 border-b border-slate-800/80 bg-slate-950/90 shrink-0">
+        <div className="inline-flex p-0.5 rounded-xl bg-slate-900/90 border border-slate-800 shadow-sm">
+          <button
+            onClick={() => setWorkoutMode('exercise')}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              workoutMode === 'exercise'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+            title="Exercise Mode: Strict exam conditions with no hints or answer reveals. Awards full 100% normal XP."
+          >
+            <GraduationCap className="w-3.5 h-3.5" />
+            <span>Exercise Mode</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                workoutMode === 'exercise' ? 'bg-black/25 text-emerald-200' : 'bg-slate-800 text-slate-400'
+              }`}
+            >
+              100% XP
+            </span>
+          </button>
+          <button
+            onClick={() => setWorkoutMode('practice')}
+            className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+              workoutMode === 'practice'
+                ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-violet-600/30'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+            title="Practice Mode: Study mode with optional hints and strategy breakdown. Awards 1/20th XP."
+          >
+            <Lightbulb className="w-3.5 h-3.5" />
+            <span>Practice Mode</span>
+            <span
+              className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                workoutMode === 'practice' ? 'bg-black/25 text-violet-200' : 'bg-slate-800 text-slate-400'
+              }`}
+            >
+              1/20 XP
+            </span>
+          </button>
         </div>
 
-        {learningMode === 'speed' && (
-          <div className="flex items-center gap-1 text-[11px] font-mono text-amber-400 font-bold shrink-0 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
-            <Zap className="w-3 h-3" />
-            <span>Target: &lt;{currentQuestion.targetTimeSeconds}s</span>
+        {workoutMode === 'exercise' ? (
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-emerald-400 font-semibold px-2 sm:px-2.5 py-1 rounded-lg bg-emerald-950/40 border border-emerald-800/40 shrink-0">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+            <span className="hidden sm:inline">Exam Conditions</span>
+            <span>• Zero Hints</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-violet-300 font-semibold px-2 sm:px-2.5 py-1 rounded-lg bg-violet-950/40 border border-violet-800/40 shrink-0">
+            <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="hidden sm:inline">Study Mode</span>
+            <span>• Hints On-Demand</span>
           </div>
         )}
       </div>
+
+      {/* When in Practice Mode: 5 Focused Learning Modes Bar */}
+      {workoutMode === 'practice' && (
+        <div className="flex w-full max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 py-1.5 items-center justify-between gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/60 bg-slate-950/60 shrink-0">
+          <div className="flex items-center gap-1.5">
+            {(
+              [
+                { id: 'learn', label: 'Learn', icon: BookOpen, desc: 'Strategy Breakdown + Guided Practice' },
+                { id: 'recall', label: 'Recall', icon: Target, desc: 'Pure Retrieval Practice' },
+                { id: 'speed', label: 'Speed', icon: Zap, desc: 'Speed Fluency (<2s Goal)' },
+                { id: 'repair', label: 'Repair', icon: RotateCcw, desc: 'Target Confusions & Slips' },
+                { id: 'review', label: 'Review', icon: Clock, desc: 'Spaced Retrieval Due Facts' },
+              ] as const
+            ).map((m) => {
+              const Icon = m.icon;
+              const isActive = learningMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setLearningMode(m.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+                    isActive
+                      ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
+                      : 'bg-slate-900/90 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800/80'
+                  }`}
+                  title={m.desc}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{m.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {learningMode === 'speed' && (
+            <div className="flex items-center gap-1 text-[11px] font-mono text-amber-400 font-bold shrink-0 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
+              <Zap className="w-3 h-3" />
+              <span>Target: &lt;{currentQuestion.targetTimeSeconds}s</span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Session Progress Bar & Questions Left HUD (Desktop only - mobile has top strip) */}
       {(!sessionConfig.isEndless || secondsRemaining !== null) && (
@@ -580,8 +655,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
 
           {/* 1. UPPER ZONE: Centered Arithmetic Question & Input */}
           <div className="flex-1 w-full flex flex-col items-center justify-center min-h-0 py-1">
-            {/* Anchor Fact Landmark - Compact on mobile */}
-            {currentQuestion.anchorFactPrompt && !activeRepairCard && (
+            {/* Anchor Fact Landmark - Shown only in Practice Mode */}
+            {workoutMode === 'practice' && currentQuestion.anchorFactPrompt && !activeRepairCard && (
               <div className="w-full mb-1.5 p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-amber-950/60 to-orange-950/40 border border-amber-500/40 text-amber-200 text-xs shadow-md flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <div className="truncate">
@@ -591,8 +666,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               </div>
             )}
 
-            {/* Guided Learn Mode Preview Banner */}
-            {learningMode === 'learn' && !activeRepairCard && (
+            {/* Guided Learn Mode Preview Banner - Shown only in Practice Mode */}
+            {workoutMode === 'practice' && learningMode === 'learn' && !activeRepairCard && (
               <div className="w-full mb-1.5 p-2 sm:p-2.5 rounded-xl bg-violet-950/40 border border-violet-500/30 text-xs text-violet-200 flex items-center gap-2">
                 <BookOpen className="w-3.5 h-3.5 text-violet-400 shrink-0" />
                 <span className="text-xs truncate">Guided: Study strategy, then solve.</span>
@@ -623,32 +698,46 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                   : 'border-slate-800 shadow-slate-950/60'
               }`}
             >
-              {/* Strategy / Tip Helper Bar */}
-              <div className="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1.5 sm:mb-2.5">
-                <div className="flex items-center gap-1.5 max-w-[200px] sm:max-w-[240px] truncate">
-                  <span className="flex items-center gap-1 text-violet-400 font-medium truncate text-xs">
-                    <Zap className="w-3.5 h-3.5 shrink-0" />
-                    {currentQuestion.strategyTitle}
-                  </span>
-                  {currentQuestion.tableMode && (
-                    <span className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[10px] font-mono font-bold uppercase shrink-0 border border-violet-500/30 hidden sm:inline">
-                      {currentQuestion.tableMode.replace(/_/g, ' ')}
+              {/* Header / Strategy / Helper Bar */}
+              {workoutMode === 'exercise' ? (
+                <div className="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1.5 sm:mb-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex items-center gap-1 text-emerald-400 font-semibold text-xs">
+                      <GraduationCap className="w-3.5 h-3.5 shrink-0" />
+                      Examination Question
                     </span>
-                  )}
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold border border-emerald-500/20">
+                    No Hints Allowed • 100% XP
+                  </span>
                 </div>
-                <button
-                  onClick={() => toggleStrategy()}
-                  className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-xs transition-all shrink-0 ${
-                    showStrategy
-                      ? 'bg-violet-600 text-white font-semibold shadow-md shadow-violet-600/30'
-                      : 'bg-slate-800/90 hover:bg-slate-700 text-slate-300'
-                  }`}
-                  aria-label="Toggle Strategy Guide"
-                >
-                  <Lightbulb className={`w-3.5 h-3.5 ${showStrategy ? 'text-amber-300' : 'text-amber-400'}`} />
-                  <span>Strategy</span>
-                </button>
-              </div>
+              ) : (
+                <div className="w-full flex items-center justify-between text-[11px] font-mono text-slate-400 mb-1.5 sm:mb-2.5">
+                  <div className="flex items-center gap-1.5 max-w-[200px] sm:max-w-[240px] truncate">
+                    <span className="flex items-center gap-1 text-violet-400 font-medium truncate text-xs">
+                      <Zap className="w-3.5 h-3.5 shrink-0" />
+                      {currentQuestion.strategyTitle}
+                    </span>
+                    {currentQuestion.tableMode && (
+                      <span className="px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300 text-[10px] font-mono font-bold uppercase shrink-0 border border-violet-500/30 hidden sm:inline">
+                        {currentQuestion.tableMode.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => toggleStrategy()}
+                    className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg text-xs transition-all shrink-0 ${
+                      showStrategy
+                        ? 'bg-violet-600 text-white font-semibold shadow-md shadow-violet-600/30'
+                        : 'bg-slate-800/90 hover:bg-slate-700 text-slate-300'
+                    }`}
+                    aria-label="Toggle Strategy Guide"
+                  >
+                    <Lightbulb className={`w-3.5 h-3.5 ${showStrategy ? 'text-amber-300' : 'text-amber-400'}`} />
+                    <span>Strategy</span>
+                  </button>
+                </div>
+              )}
 
               {/* Prompt Display */}
               <div className="my-1.5 sm:my-2.5">
@@ -676,8 +765,25 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 </div>
               )}
 
-              {/* Feedback Banners (Skipped or Incorrect) */}
+              {/* Feedback Banners (Correct with XP, Skipped or Incorrect) */}
               <AnimatePresence>
+                {lastResult === 'correct' && recentPointsEarned !== null && recentPointsEarned > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -4, scale: 0.95 }}
+                    className="mb-2 px-3 py-1 rounded-xl bg-emerald-950/80 border border-emerald-500/70 text-xs font-mono flex items-center gap-2 shadow-sm"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="text-emerald-300 font-bold">
+                      +{recentPointsEarned} XP
+                    </span>
+                    <span className="text-[10px] text-emerald-400/80 font-sans">
+                      {workoutMode === 'practice' ? '(1/20 XP Practice Mode)' : '(Full Exam XP)'}
+                    </span>
+                  </motion.div>
+                )}
+
                 {lastResult === 'skipped' && (
                   <motion.div
                     initial={{ opacity: 0, y: -4 }}
@@ -780,11 +886,15 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">S</kbd>
               <span>Skip</span>
             </span>
-            <span className="text-slate-600">•</span>
-            <span className="flex items-center gap-1">
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">H</kbd>
-              <span>Strategy</span>
-            </span>
+            {workoutMode === 'practice' && (
+              <>
+                <span className="text-slate-600">•</span>
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">H</kbd>
+                  <span>Strategy</span>
+                </span>
+              </>
+            )}
           </div>
 
           {/* 2. LOWER ZONE: Pinned Keypad & Ergonomic Controls (Never Pushed Off-Screen) */}
@@ -797,7 +907,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-colors disabled:opacity-40 font-medium"
                 title="Skip question (Shortcut: S)"
               >
-                <HelpCircle className="w-3 h-3 text-amber-400" />
+                <SkipForward className="w-3 h-3 text-amber-400" />
                 <span>Skip (S)</span>
               </button>
 
@@ -916,7 +1026,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
 
         {/* Desktop Side Panel: Step-by-Step Pedagogical Strategy Breakdown */}
         <AnimatePresence>
-          {showStrategy && (
+          {showStrategy && workoutMode === 'practice' && (
             <motion.aside
               initial={{ opacity: 0, x: 24, scale: 0.98 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -938,9 +1048,28 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-emerald-400 font-bold border border-slate-700">
-                      Answer: {currentQuestion.correctAnswer}
-                    </span>
+                    {isAnswerRevealed ? (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold animate-in fade-in">
+                        <span>Answer:</span>
+                        <span className="text-emerald-400 text-sm font-black">{currentQuestion.correctAnswer}</span>
+                        <button
+                          onClick={() => setIsAnswerRevealed(false)}
+                          className="ml-1 p-0.5 text-slate-400 hover:text-white rounded transition-colors"
+                          title="Hide answer"
+                        >
+                          <EyeOff className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setIsAnswerRevealed(true)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 border border-slate-700 text-xs font-mono font-semibold transition-all group"
+                        title="Answer is hidden by default. Click to reveal."
+                      >
+                        <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                        <span>Reveal Answer</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleStrategy(false)}
                       className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
@@ -965,9 +1094,20 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                     >
                       <div className="flex items-center justify-between font-mono">
                         <span className="text-slate-300 font-semibold">{step.title}</span>
-                        <span className="text-emerald-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                          {step.intermediateValue}
-                        </span>
+                        {String(step.intermediateValue) === String(currentQuestion.correctAnswer) && !isAnswerRevealed ? (
+                          <button
+                            onClick={() => setIsAnswerRevealed(true)}
+                            className="text-[10px] text-amber-400 font-mono bg-slate-950 px-2 py-0.5 rounded border border-amber-500/30 hover:bg-amber-950/40 transition-colors flex items-center gap-1"
+                            title="Tap to reveal final answer"
+                          >
+                            <Eye className="w-2.5 h-2.5" />
+                            <span>Tap to reveal</span>
+                          </button>
+                        ) : (
+                          <span className="text-emerald-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            {step.intermediateValue}
+                          </span>
+                        )}
                       </div>
                       <div className="text-violet-300 font-medium font-sans flex items-center gap-1.5">
                         <span>🔊 Auditory Echo:</span>
@@ -995,7 +1135,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
 
       {/* Mobile Slide-Up Bottom Sheet: Step-by-Step Pedagogical Strategy Breakdown */}
       <AnimatePresence>
-        {showStrategy && (
+        {showStrategy && workoutMode === 'practice' && (
           <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
             <motion.div
               initial={{ opacity: 0 }}
@@ -1026,9 +1166,28 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-800 text-emerald-400 font-bold border border-slate-700">
-                      Answer: {currentQuestion.correctAnswer}
-                    </span>
+                    {isAnswerRevealed ? (
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 font-mono text-xs font-bold animate-in fade-in">
+                        <span>Answer:</span>
+                        <span className="text-emerald-400 text-sm font-black">{currentQuestion.correctAnswer}</span>
+                        <button
+                          onClick={() => setIsAnswerRevealed(false)}
+                          className="ml-1 p-0.5 text-slate-400 hover:text-white rounded transition-colors"
+                          title="Hide answer"
+                        >
+                          <EyeOff className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setIsAnswerRevealed(true)}
+                        className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 border border-slate-700 text-xs font-mono font-semibold transition-all group"
+                        title="Answer is hidden by default. Click to reveal."
+                      >
+                        <Eye className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                        <span>Reveal Answer</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => toggleStrategy(false)}
                       className="text-xs px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
@@ -1053,9 +1212,20 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                     >
                       <div className="flex items-center justify-between font-mono">
                         <span className="text-slate-300 font-semibold">{step.title}</span>
-                        <span className="text-emerald-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
-                          {step.intermediateValue}
-                        </span>
+                        {String(step.intermediateValue) === String(currentQuestion.correctAnswer) && !isAnswerRevealed ? (
+                          <button
+                            onClick={() => setIsAnswerRevealed(true)}
+                            className="text-[10px] text-amber-400 font-mono bg-slate-950 px-2 py-0.5 rounded border border-amber-500/30 hover:bg-amber-950/40 transition-colors flex items-center gap-1"
+                            title="Tap to reveal final answer"
+                          >
+                            <Eye className="w-2.5 h-2.5" />
+                            <span>Tap to reveal</span>
+                          </button>
+                        ) : (
+                          <span className="text-emerald-400 font-bold bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            {step.intermediateValue}
+                          </span>
+                        )}
                       </div>
                       <div className="text-violet-300 font-medium font-sans flex items-center gap-1.5">
                         <span>🔊 Auditory Echo:</span>

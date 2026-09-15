@@ -86,4 +86,60 @@ describe('QuizStore Assessment & Learning Workflow', () => {
     expect(state.currentQuestion?.operandA).toBe(17);
     expect(state.currentQuestion?.operandB).toBe(8);
   });
+
+  it('defaults to exercise mode with hints suppressed on load and on toggle', () => {
+    const store = useQuizStore.getState();
+    store.startSession({ workoutMode: 'exercise' });
+
+    let state = useQuizStore.getState();
+    expect(state.workoutMode).toBe('exercise');
+    expect(state.showStrategy).toBe(false);
+
+    // In exercise mode, toggleStrategy should not reveal hints
+    store.toggleStrategy();
+    state = useQuizStore.getState();
+    expect(state.showStrategy).toBe(false);
+
+    // Advance question - hints remain hidden
+    store.loadNextQuestion();
+    state = useQuizStore.getState();
+    expect(state.showStrategy).toBe(false);
+  });
+
+  it('allows hints in practice mode and awards 1/20th XP compared to full XP in exercise mode', () => {
+    const store = useQuizStore.getState();
+
+    // 1. Exercise Mode: awards 100% normal XP
+    useQuizStore.setState({ xp: 0, workoutMode: 'exercise' });
+    store.startSession({ workoutMode: 'exercise' });
+    let state = useQuizStore.getState();
+    const correctVal = state.currentQuestion!.correctAnswer;
+
+    store.submitAnswer(correctVal);
+    state = useQuizStore.getState();
+    const fullXP = state.recentPointsEarned!;
+    expect(fullXP).toBeGreaterThan(0);
+    expect(state.xp).toBe(fullXP);
+
+    // 2. Practice Mode: awards 1/20th XP
+    useQuizStore.setState({ xp: 0, workoutMode: 'practice', isEvaluating: false });
+    store.loadNextQuestion();
+    state = useQuizStore.getState();
+    expect(state.workoutMode).toBe('practice');
+    expect(state.showStrategy).toBe(false); // Default hidden on load!
+
+    // In practice mode, toggleStrategy enables hints
+    store.toggleStrategy();
+    state = useQuizStore.getState();
+    expect(state.showStrategy).toBe(true);
+
+    // Answer correctly in practice mode
+    const practiceCorrectVal = state.currentQuestion!.correctAnswer;
+    store.submitAnswer(practiceCorrectVal);
+    state = useQuizStore.getState();
+
+    const practiceXP = state.recentPointsEarned!;
+    expect(practiceXP).toBe(Math.max(1, Math.round(fullXP / 20)));
+    expect(state.xp).toBe(practiceXP);
+  });
 });

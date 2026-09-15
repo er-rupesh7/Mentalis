@@ -81,6 +81,7 @@ export interface Question {
 }
 
 export type LearningMode = 'learn' | 'recall' | 'speed' | 'repair' | 'review';
+export type WorkoutMode = 'exercise' | 'practice';
 
 export interface LevelDefinition {
   id: string;
@@ -162,6 +163,7 @@ export interface SessionDrillConfig {
   isEndless: boolean;
   mode: 'standard' | 'targeted_refresh' | 'weak_spots';
   timeLimitSeconds?: number;
+  workoutMode?: WorkoutMode;
 }
 
 export interface SessionSummary {

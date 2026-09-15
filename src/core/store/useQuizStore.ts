@@ -22,6 +22,7 @@ import {
   SessionDrillConfig,
   SessionSummary,
   LearningMode,
+  WorkoutMode,
   TableTrainingMode,
   ExamSubSkill,
   ExamTransferScores,
@@ -334,6 +335,7 @@ interface QuizState {
   // Fact-Level Memory & Spaced Retrieval
   factMemoryMap: Record<string, FactMemoryState>;
   learningMode: LearningMode;
+  workoutMode: WorkoutMode;
   activeRepairCard: RepairCard | null;
   delayedReviewQueue: { factKey: FactKey; dueAtCount: number }[];
   recentAskedKeys: FactKey[];
@@ -445,6 +447,7 @@ interface QuizState {
 
   // Actions - Learning Mode & Fact Training
   setLearningMode: (mode: LearningMode) => void;
+  setWorkoutMode: (mode: WorkoutMode) => void;
   dismissRepairCard: () => void;
   practiceFact: (factKey: FactKey, mode?: LearningMode) => void;
 
@@ -523,6 +526,7 @@ const initialSessionConfig: SessionDrillConfig = {
   goalCount: 10,
   isEndless: false,
   mode: 'standard',
+  workoutMode: 'exercise',
 };
 
 export const useQuizStore = create<QuizState>()(
@@ -563,6 +567,7 @@ export const useQuizStore = create<QuizState>()(
       // Fact-Level Memory & Spaced Retrieval State
       factMemoryMap: {},
       learningMode: 'recall',
+      workoutMode: 'exercise',
       activeRepairCard: null,
       delayedReviewQueue: [],
       recentAskedKeys: [],
@@ -860,6 +865,7 @@ export const useQuizStore = create<QuizState>()(
         const newConfig = { ...get().sessionConfig, ...config };
         set({
           sessionConfig: newConfig,
+          workoutMode: config?.workoutMode || get().workoutMode || 'exercise',
           sessionAnswered: 0,
           sessionCorrect: 0,
           sessionStartTime: Date.now(),
@@ -869,6 +875,7 @@ export const useQuizStore = create<QuizState>()(
           isPlanActive: false,
           activeRepairCard: null,
           delayedReviewQueue: [],
+          showStrategy: false,
         });
         get().loadNextQuestion();
       },
@@ -962,7 +969,7 @@ export const useQuizStore = create<QuizState>()(
             lastResult: null,
             lastAnswerSubmitted: null,
             lastCorrectAnswer: null,
-            showStrategy: state.learningMode === 'learn',
+            showStrategy: false,
             isPaused: false,
           });
           return;
@@ -981,7 +988,7 @@ export const useQuizStore = create<QuizState>()(
               lastResult: null,
               lastAnswerSubmitted: null,
               lastCorrectAnswer: null,
-              showStrategy: state.learningMode === 'learn',
+              showStrategy: false,
               isPaused: false,
             });
             return;
@@ -1007,7 +1014,7 @@ export const useQuizStore = create<QuizState>()(
             lastResult: null,
             lastAnswerSubmitted: null,
             lastCorrectAnswer: null,
-            showStrategy: state.currentTableMode === 'decomposition' || state.currentTableMode === 'related_fact',
+            showStrategy: false,
             isPaused: false,
           });
           return;
@@ -1094,7 +1101,7 @@ export const useQuizStore = create<QuizState>()(
             lastResult: null,
             lastAnswerSubmitted: null,
             lastCorrectAnswer: null,
-            showStrategy: state.learningMode === 'learn',
+            showStrategy: false,
             isPaused: false,
             delayedReviewQueue: updatedDelayedQueue,
             recentAskedKeys: [...state.recentAskedKeys.slice(-12), selection.factKey],
@@ -1130,7 +1137,7 @@ export const useQuizStore = create<QuizState>()(
           lastResult: null,
           lastAnswerSubmitted: null,
           lastCorrectAnswer: null,
-          showStrategy: state.learningMode === 'learn',
+          showStrategy: false,
           isPaused: false,
         });
       },
@@ -1219,7 +1226,7 @@ export const useQuizStore = create<QuizState>()(
           lastResult: 'skipped',
           lastAnswerSubmitted: null,
           lastCorrectAnswer: state.currentQuestion.correctAnswer,
-          showStrategy: true,
+          showStrategy: false,
           streak: 0,
           factMemoryMap: updatedFactMemoryMap,
           delayedReviewQueue,
@@ -1492,8 +1499,17 @@ export const useQuizStore = create<QuizState>()(
           level: state.activeAddSubLevel,
         });
 
+        // XP Calculation:
+        // Exercise Mode = 100% normal XP (examination conditions)
+        // Practice Mode = 1/20th of normal XP (study mode with hints accessible)
+        const effectiveXP = !isCorrect
+          ? 0
+          : state.workoutMode === 'practice'
+          ? Math.max(1, Math.round(pointsEarned.totalXP / 20))
+          : pointsEarned.totalXP;
+
         const prevXP = state.xp || 0;
-        const nextXP = prevXP + pointsEarned.totalXP;
+        const nextXP = prevXP + effectiveXP;
         const prevLevel = state.level || 1;
         const nextLevel = getLevelFromXP(nextXP);
         const leveledUp = nextLevel > prevLevel;
@@ -1522,9 +1538,9 @@ export const useQuizStore = create<QuizState>()(
           bestStreak: newBestStreak,
           xp: nextXP,
           level: nextLevel,
-          recentPointsEarned: pointsEarned.totalXP,
+          recentPointsEarned: effectiveXP,
           newLevelUnlocked: leveledUp ? nextLevel : state.newLevelUnlocked,
-          showStrategy: !isCorrect || state.learningMode === 'learn',
+          showStrategy: false,
           progressMap: {
             ...state.progressMap,
             [progressKey]: updatedItem,
@@ -1583,6 +1599,12 @@ export const useQuizStore = create<QuizState>()(
       },
 
       toggleStrategy: (force?: boolean) => {
+        const state = get();
+        // In Exercise Mode (examination), hints and strategy guides are strictly disabled
+        if (state.workoutMode === 'exercise') {
+          set({ showStrategy: false });
+          return;
+        }
         set((s) => ({ showStrategy: force !== undefined ? force : !s.showStrategy }));
       },
 
@@ -1611,6 +1633,13 @@ export const useQuizStore = create<QuizState>()(
       setLearningMode: (mode: LearningMode) => {
         set({ learningMode: mode });
         get().loadNextQuestion();
+      },
+
+      setWorkoutMode: (mode: WorkoutMode) => {
+        set({
+          workoutMode: mode,
+          showStrategy: mode === 'exercise' ? false : get().showStrategy,
+        });
       },
 
       dismissRepairCard: () => {
@@ -2327,6 +2356,7 @@ export const useQuizStore = create<QuizState>()(
           progressMap: old.progressMap || {},
           factMemoryMap: migratedFactMemory,
           learningMode: old.learningMode || 'recall',
+          workoutMode: (old as any).workoutMode || 'exercise',
           activeRepairCard: null,
           delayedReviewQueue: [],
           recentAskedKeys: [],
@@ -2382,6 +2412,7 @@ export const useQuizStore = create<QuizState>()(
         dailyActivityMap: state.dailyActivityMap,
         factMemoryMap: state.factMemoryMap,
         learningMode: state.learningMode,
+        workoutMode: state.workoutMode,
         techniqueMasteryMap: state.techniqueMasteryMap,
         customDrillConfig: state.customDrillConfig,
         overallStats: state.overallStats,
