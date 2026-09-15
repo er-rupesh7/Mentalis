@@ -231,7 +231,7 @@ export const TableHeatmap: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-12">
+    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-nav sm:pb-12">
       {/* Header */}
       <div className="w-full max-w-5xl mx-auto px-4 py-4 flex items-center justify-between border-b border-slate-800">
         <button

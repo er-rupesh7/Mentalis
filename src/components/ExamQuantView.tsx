@@ -159,7 +159,7 @@ export const ExamQuantView: React.FC = () => {
   );
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-16">
+    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-nav sm:pb-16">
       {/* Hero Header */}
       <div className="border-b border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 px-4 py-8">
         <div className="max-w-6xl mx-auto space-y-6">

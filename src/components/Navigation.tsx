@@ -15,8 +15,6 @@ import {
   Sparkles,
   ChevronDown,
   Table,
-  Menu,
-  X,
   Target,
   Sliders,
   Settings,
@@ -48,7 +46,6 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
   } = useQuizStore();
 
   const [isTableDropdownOpen, setIsTableDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -73,17 +70,15 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
   const handleSelectTableTab = (tabId: TableChartTab) => {
     setActiveTableChartTab(tabId);
     setIsTableDropdownOpen(false);
-    setIsMobileMenuOpen(false);
   };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 h-12 sm:h-14 flex items-center justify-between gap-2 sm:gap-4">
         {/* Brand Logo - Never shrinks, always visible */}
         <button
           onClick={() => {
             setViewMode('dashboard');
-            setIsMobileMenuOpen(false);
           }}
           className="flex items-center gap-2.5 text-left group shrink-0"
         >
@@ -289,24 +284,24 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
 
         {/* Right HUD Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Polished Language Selector (Desktop) */}
+          {/* Polished Language Selector (Desktop only) */}
           <div className="hidden sm:block">
             <LanguageSelector variant="dropdown" />
           </div>
 
-          {/* Theory / Tutorial Pill */}
+          {/* Theory / Tutorial Pill (Desktop only) */}
           <button
             onClick={onOpenTutorial}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors"
+            className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 transition-colors"
             title={tNav('theory')}
           >
             <BookOpen className="w-3.5 h-3.5 text-violet-400" />
             <span className="hidden lg:inline">{tNav('theory')}</span>
           </button>
 
-          {/* Active Streak */}
+          {/* Active Streak — visible on all sizes */}
           <div
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
               streak > 0
                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                 : 'bg-slate-900 text-slate-500 border border-slate-800'
@@ -314,13 +309,13 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             title={`${tCommon('streak')}: ${streak}`}
           >
             <Flame className={`w-3.5 h-3.5 ${streak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
-            <span>{streak}</span>
+            <span className="text-[11px]">{streak}</span>
           </div>
 
-          {/* Audio Toggle */}
+          {/* Audio Toggle (Desktop only) */}
           <button
             onClick={toggleSound}
-            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
+            className="hidden sm:flex p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
             title={soundEnabled ? 'Mute' : 'Unmute'}
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
@@ -332,7 +327,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           {/* User Cloud Profile & Sync Menu */}
           <UserProfileMenu />
 
-          {/* Settings Modal Button */}
+          {/* Settings Modal Button (Desktop only) */}
           <button
             onClick={() => setIsSettingsModalOpen(true)}
             className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors hidden sm:flex items-center justify-center"
@@ -340,234 +335,9 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           >
             <Settings className="w-4 h-4" />
           </button>
-
-          {/* Mobile Hamburger Menu Toggle */}
-          <button
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
-            className="md:hidden p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
-            title="Toggle Navigation Menu"
-          >
-            {isMobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-          </button>
         </div>
       </div>
 
-      {/* Mobile Navigation Dropdown */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800/90 bg-slate-950/95 backdrop-blur-xl px-4 py-3 space-y-3">
-          {/* Mobile Profile & Cloud Sync */}
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-900/90 border border-slate-800">
-            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-              Account & Sync
-            </span>
-            <UserProfileMenu />
-          </div>
-
-          {/* Mobile Language Section */}
-          <div className="p-3 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                {tCommon('language')} / Language
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSettingsModalOpen(true);
-                  setIsMobileMenuOpen(false);
-                }}
-                className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 font-semibold"
-              >
-                <Settings className="w-3.5 h-3.5" />
-                <span>{tCommon('settings')}</span>
-              </button>
-            </div>
-            <LanguageSelector
-              variant="inline"
-              onLanguageSelected={() => setIsMobileMenuOpen(false)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2 text-xs font-medium">
-            <button
-              onClick={() => {
-                setViewMode('dashboard');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'dashboard'
-                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
-                  : 'bg-slate-900 text-slate-300 border-slate-800'
-              }`}
-            >
-              <LayoutDashboard className="w-4 h-4 shrink-0" />
-              <span>{tNav('dashboard')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('bootcamp_11_20');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'bootcamp_11_20'
-                  ? 'bg-amber-600 text-white border-amber-500 font-semibold'
-                  : 'bg-slate-900 text-amber-400 border-slate-800'
-              }`}
-            >
-              <Flame className="w-4 h-4 shrink-0" />
-              <span>{tNav('bootcamp')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('exam_quant');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'exam_quant'
-                  ? 'bg-emerald-600 text-white border-emerald-500 font-semibold'
-                  : 'bg-slate-900 text-emerald-400 border-slate-800'
-              }`}
-            >
-              <Target className="w-4 h-4 shrink-0" />
-              <span>{tNav('examQuant')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('techniques');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'techniques'
-                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
-                  : 'bg-slate-900 text-violet-300 border-slate-800'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 shrink-0" />
-              <span>{tNav('techniques')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setIsCustomDrillModalOpen(true);
-                setIsMobileMenuOpen(false);
-              }}
-              className="flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] bg-violet-950/40 text-violet-300 border-violet-800/60 font-semibold"
-            >
-              <Sliders className="w-4 h-4 shrink-0" />
-              <span>{tNav('customWorkout')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('practice');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'practice'
-                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
-                  : 'bg-slate-900 text-slate-300 border-slate-800'
-              }`}
-            >
-              <Calculator className="w-4 h-4 shrink-0" />
-              <span>{tNav('practice')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('anzan');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'anzan'
-                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
-                  : 'bg-slate-900 text-slate-300 border-slate-800'
-              }`}
-            >
-              <Zap className="w-4 h-4 shrink-0" />
-              <span>{tNav('anzan')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('heatmap');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'heatmap'
-                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
-                  : 'bg-slate-900 text-slate-300 border-slate-800'
-              }`}
-            >
-              <Grid className="w-4 h-4 shrink-0" />
-              <span>{tNav('tables')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('memory_map');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'memory_map'
-                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
-                  : 'bg-slate-900 text-slate-300 border-slate-800'
-              }`}
-            >
-              <Brain className="w-4 h-4 shrink-0" />
-              <span>{tNav('memoryMap')}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setViewMode('profile');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`flex items-center gap-2 p-2.5 rounded-xl border min-h-[44px] ${
-                viewMode === 'profile'
-                  ? 'bg-violet-600 text-white border-violet-500 font-semibold'
-                  : 'bg-slate-900 text-slate-300 border-slate-800'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 shrink-0 text-violet-400" />
-              <span>{tNav('skillProfile')}</span>
-            </button>
-          </div>
-
-          {/* Table Chart Mobile Sub-menu */}
-          <div className="p-2.5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1.5">
-            <div className="flex items-center justify-between text-xs font-bold text-white px-1">
-              <span className="flex items-center gap-1.5">
-                <Table className="w-4 h-4 text-violet-400" />
-                {tNav('tableChart')}
-              </span>
-              <span className="text-[10px] text-violet-400 uppercase font-mono">5 Tables</span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-1 pt-1">
-              {tableSubOptions.map((opt) => {
-                const isSubActive =
-                  viewMode === 'table_chart' && activeTableChartTab === opt.id;
-                return (
-                  <button
-                    key={opt.id}
-                    onClick={() => handleSelectTableTab(opt.id)}
-                    className={`flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-colors min-h-[44px] ${
-                      isSubActive
-                        ? 'bg-violet-600 text-white font-semibold'
-                        : 'bg-slate-950/60 text-slate-300 hover:bg-slate-800'
-                    }`}
-                  >
-                    <span>{opt.label}</span>
-                    <span className="text-[10px] text-slate-400">{opt.sub}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
     </header>
   );
 };

@@ -365,8 +365,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
       )}
 
-      {/* 5 Focused Learning Modes Bar (Hidden on mobile to protect vertical viewport) */}
-      <div className="hidden sm:flex w-full max-w-5xl xl:max-w-6xl mx-auto px-4 py-2 items-center justify-between gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/60 bg-slate-950/60 shrink-0">
+      {/* 5 Focused Learning Modes Bar — compact horizontal pill scroller on mobile */}
+      <div className="flex w-full max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 py-2 items-center justify-between gap-1.5 overflow-x-auto scrollbar-none border-b border-slate-800/60 bg-slate-950/60 shrink-0">
         <div className="flex items-center gap-1.5">
           {(
             [
@@ -709,7 +709,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
 
               {/* Input Buffer / Options Answer Box */}
               {currentQuestion.options && currentQuestion.options.length > 0 ? (
-                <div className="w-full max-w-[240px] sm:max-w-xs h-11 sm:h-13 rounded-xl sm:rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
+                <div className="w-full max-w-[240px] sm:max-w-xs h-14 sm:h-13 rounded-xl sm:rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
                   <span
                     className={`text-xl sm:text-2xl font-mono font-bold tracking-wider ${
                       lastResult === 'correct'
@@ -732,7 +732,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                   )}
                 </div>
               ) : (
-                <div className="w-full max-w-[240px] sm:max-w-xs h-11 sm:h-13 rounded-xl sm:rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
+                <div className="w-full max-w-[240px] sm:max-w-xs h-14 sm:h-13 rounded-xl sm:rounded-2xl bg-slate-950/90 border border-slate-700 flex items-center justify-center px-4 relative overflow-hidden shadow-inner">
                   <span
                     className={`text-2xl sm:text-3xl font-mono font-bold tracking-widest ${
                       lastResult === 'correct'
@@ -830,7 +830,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                       key={idx}
                       onClick={() => selectMultipleChoiceOption(opt)}
                       disabled={isEvaluating}
-                      className="h-11 sm:h-13 p-3 rounded-xl sm:rounded-2xl bg-slate-900/90 hover:bg-violet-900/30 hover:border-violet-500/80 active:bg-violet-600 active:scale-95 border border-slate-800 text-lg sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-md flex items-center justify-between group disabled:opacity-50 touch-manipulation select-none"
+                      className="h-14 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/90 hover:bg-violet-900/30 hover:border-violet-500/80 active:bg-violet-600 active:scale-95 border border-slate-800 text-lg sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-md flex items-center justify-between group disabled:opacity-50 touch-manipulation select-none"
                     >
                       <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-slate-800 group-hover:bg-violet-600 text-slate-300 group-hover:text-white flex items-center justify-center text-xs font-bold border border-slate-700 transition-colors">
                         {idx + 1}
@@ -844,7 +844,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') && (
                   <button
                     onClick={() => loadNextQuestion()}
-                    className="w-full h-11 sm:h-12 rounded-xl sm:rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-sm sm:text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2"
+                    className="w-full h-14 sm:h-12 rounded-xl sm:rounded-2xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-sm sm:text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2"
                   >
                     <span>Next Question (↵ or Space)</span>
                     <ArrowRight className="w-4 h-4" />
@@ -858,7 +858,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                     key={num}
                     onClick={() => appendDigit(num.toString())}
                     disabled={isEvaluating}
-                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/95 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-sm active:shadow-none flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                    className="h-14 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/95 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-sm active:shadow-none flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
                   >
                     {num}
                   </button>
@@ -869,7 +869,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                   <button
                     onClick={toggleNegative}
                     disabled={isEvaluating}
-                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 font-mono font-bold text-base sm:text-lg transition-all flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                    className="h-14 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 font-mono font-bold text-base sm:text-lg transition-all flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
                     title="Toggle negative (-)"
                   >
                     ±
@@ -877,7 +877,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                   <button
                     onClick={backspace}
                     disabled={isEvaluating}
-                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 hover:text-white transition-all flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                    className="h-14 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/80 hover:bg-slate-800 active:bg-slate-700 border border-slate-800 text-slate-300 hover:text-white transition-all flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
                     title="Backspace"
                   >
                     <Delete className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -887,7 +887,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 <button
                   onClick={() => appendDigit('0')}
                   disabled={isEvaluating}
-                  className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/95 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-sm active:shadow-none flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
+                  className="h-14 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-slate-900/95 hover:bg-slate-800 active:bg-violet-600 active:scale-95 border border-slate-800 text-xl sm:text-2xl font-bold font-mono text-slate-100 transition-all shadow-sm active:shadow-none flex items-center justify-center disabled:opacity-50 touch-manipulation select-none"
                 >
                   0
                 </button>
@@ -896,7 +896,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                 {isEvaluating && (lastResult === 'incorrect' || lastResult === 'skipped') ? (
                   <button
                     onClick={() => loadNextQuestion()}
-                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 active:scale-95 text-white font-bold text-sm sm:text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-1 touch-manipulation select-none"
+                    className="h-14 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-violet-600 hover:bg-violet-500 active:bg-violet-700 active:scale-95 text-white font-bold text-sm sm:text-base transition-all shadow-lg shadow-violet-600/30 flex items-center justify-center gap-1 touch-manipulation select-none"
                   >
                     <span>Next ↵</span>
                   </button>
@@ -904,7 +904,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                   <button
                     onClick={() => submitAnswer()}
                     disabled={isEvaluating || !inputBuffer || inputBuffer === '-'}
-                    className="h-11 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 active:scale-95 disabled:bg-slate-900 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold text-sm sm:text-base font-mono transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center touch-manipulation select-none"
+                    className="h-14 sm:h-12 lg:h-13 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 active:scale-95 disabled:bg-slate-900 disabled:text-slate-600 disabled:border-slate-800 text-white font-bold text-sm sm:text-base font-mono transition-all shadow-lg shadow-emerald-600/20 flex items-center justify-center touch-manipulation select-none"
                   >
                     Enter ↵
                   </button>

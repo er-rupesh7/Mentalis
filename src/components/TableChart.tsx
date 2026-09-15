@@ -200,7 +200,7 @@ export const TableChart: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-950 text-slate-100 min-h-screen">
+    <div className="flex-1 flex flex-col bg-slate-950 text-slate-100 min-h-screen pb-nav sm:pb-8">
       {/* Top Header */}
       <div className="w-full max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80">
         <div className="flex items-center gap-3">

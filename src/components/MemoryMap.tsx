@@ -162,7 +162,7 @@ export const MemoryMap: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 select-none">
+    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 pb-nav sm:pb-6 select-none">
       <div className="max-w-6xl mx-auto w-full space-y-6">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">

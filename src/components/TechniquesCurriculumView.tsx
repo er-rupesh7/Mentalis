@@ -321,7 +321,7 @@ export const TechniquesCurriculumView: React.FC = () => {
 
   return (
     <div
-      className={`flex-1 flex flex-col max-w-6xl mx-auto px-4 py-6 w-full ${
+      className={`flex-1 flex flex-col w-full md:max-w-6xl md:mx-auto px-4 py-4 sm:py-6 pb-nav sm:pb-8 ${
         screenShake ? 'animate-shake' : ''
       }`}
     >

@@ -84,7 +84,7 @@ export const SkillProfileView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 space-y-8 text-slate-100">
+    <div className="flex-1 w-full md:max-w-5xl md:mx-auto px-4 py-4 sm:py-8 space-y-6 sm:space-y-8 text-slate-100 pb-nav sm:pb-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div className="space-y-1">

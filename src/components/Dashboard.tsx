@@ -166,26 +166,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-24 sm:pb-12">
-      {/* Top Banner / Hero */}
-      <div className="border-b border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 px-4 py-8">
+    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-nav sm:pb-12">
+      {/* Top Banner / Hero — Compact on mobile, expanded on desktop */}
+      <div className="border-b border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto space-y-6">
+          {/* Hero row: branding + desktop-only CTA buttons */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <div className="p-2 rounded-xl bg-violet-600/20 text-violet-400 border border-violet-500/30">
-                  <Brain className="w-6 h-6" />
+                  <Brain className="w-5 h-5 sm:w-6 sm:h-6" />
                 </div>
-                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                  {tCommon('appName')} <span className="text-violet-400 font-serif italic text-xl">{tDash('title')}</span>
+                <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight">
+                  {tCommon('appName')} <span className="text-violet-400 font-serif italic text-base sm:text-xl">{tDash('title')}</span>
                 </h1>
               </div>
-              <p className="text-xs sm:text-sm text-slate-400">
+              <p className="text-xs text-slate-400 hidden sm:block">
                 {tDash('subtitle')}
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            {/* Desktop-only CTAs — on mobile these live in the bottom tab bar */}
+            <div className="hidden sm:flex flex-wrap items-center gap-2">
               <button
                 onClick={() => setIsCustomDrillModalOpen(true)}
                 className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white border border-violet-400/30 text-xs font-bold transition-all shadow-md shadow-violet-600/30 min-h-[44px]"
@@ -210,10 +212,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
           </div>
 
-          {/* High-Impact Stat HUD */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* Stat HUD — horizontal scroll on mobile, 4-column grid on desktop */}
+          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-1 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-4">
             {/* Daily Streak */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
               <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
                 <Flame className="w-5 h-5" />
               </div>
@@ -226,7 +228,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
 
             {/* Calculations Done */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
               <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
                 <Zap className="w-5 h-5" />
               </div>
@@ -239,7 +241,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
 
             {/* Mental Speed Index CPM */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
               <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 <TrendingUp className="w-5 h-5" />
               </div>
@@ -252,7 +254,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
 
             {/* Genuine Derived Rank */}
-            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
               <div className="p-3 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
                 <Award className="w-5 h-5" />
               </div>
@@ -270,7 +272,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
         </div>
       </div>
 
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-6 space-y-8">
+      {/* Main content area — full-bleed on mobile, centered on desktop */}
+      <div className="flex-1 w-full md:max-w-4xl md:mx-auto px-4 py-4 sm:py-6 space-y-6 sm:space-y-8">
         {/* Prominent My Learning Plan Section */}
         <MyLearningPlan />
 
