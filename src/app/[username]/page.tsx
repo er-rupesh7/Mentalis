@@ -24,6 +24,7 @@ import {
   Crown,
   TrendingUp,
   ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import { socialEngine, PublicProfileView, FriendSummary } from '../../core/social/socialEngine';
 import { presenceEngine } from '../../core/social/presenceEngine';
@@ -32,9 +33,10 @@ import { UserAvatar } from '../../components/auth/UserAvatar';
 import { BadgeEmblem } from '../../components/badges/BadgeEmblem';
 import { MasteryBadgeEmblem } from '../../components/badges/MasteryBadgeEmblem';
 import { getLevelProgress } from '../../core/levelEngine';
-import { formatInvestedTime } from '../../core/mastery';
+import { formatInvestedTime, calculateUserRank } from '../../core/mastery';
 import { getEvaluatedMasteryBadges, getMasteryBadgeById } from '../../core/badges/masteryBadges';
 import { ActivityHeatmap } from '../../components/profile/ActivityHeatmap';
+import { AuthModal } from '../../components/auth/AuthModal';
 
 function formatPercentile(raw?: string | number | null): string {
   if (!raw) return 'Top 50%';
@@ -47,7 +49,7 @@ export default function PublicProfilePage() {
   const params = useParams();
   const username = Array.isArray(params?.username) ? params.username[0] : (params?.username as string);
 
-  const { currentUser, setAuthModalOpen, dailyActivityMap } = useQuizStore();
+  const { currentUser, setAuthModalOpen, dailyActivityMap, overallStats, progressMap } = useQuizStore();
 
   const [profileView, setProfileView] = useState<PublicProfileView | null>(null);
   const [friendsList, setFriendsList] = useState<FriendSummary[]>([]);
@@ -147,6 +149,65 @@ export default function PublicProfilePage() {
     setFollowedMap((prev) => ({ ...prev, [targetUserId]: isFollowing }));
   };
 
+  const isOwnProfile = Boolean(currentUser && profileView && currentUser.id === profileView.profile.id);
+
+  // If viewing own profile and remote stats are 0 or empty, fallback to local Zustand store stats
+  const stats = React.useMemo(() => {
+    const remoteStats = profileView?.stats;
+    if (!remoteStats) {
+      return {
+        totalQuestions: 0,
+        totalCorrect: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        overallCPM: 0,
+        overallAccuracy: 0,
+        totalTimeSpentSeconds: 0,
+        lastActiveDate: null,
+        progressMap: {},
+        dailyActivityMap: {},
+      };
+    }
+    if (isOwnProfile && (!remoteStats.totalQuestions || remoteStats.totalQuestions === 0) && (overallStats?.totalCalculations || 0) > 0) {
+      const totalQ = overallStats.totalCalculations || 0;
+      const totalC = overallStats.totalCorrect || 0;
+      const timeS = overallStats.totalTimeSpentSeconds || 0;
+      return {
+        totalQuestions: totalQ,
+        totalCorrect: totalC,
+        currentStreak: overallStats.currentStreak || 0,
+        longestStreak: overallStats.bestStreak || 0,
+        overallCPM: timeS > 0 ? Number(((totalC / timeS) * 60).toFixed(1)) : 0,
+        overallAccuracy: totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0,
+        totalTimeSpentSeconds: timeS,
+        lastActiveDate: overallStats.lastActiveDate || null,
+        progressMap: progressMap || {},
+        dailyActivityMap: dailyActivityMap || {},
+      };
+    }
+    return remoteStats;
+  }, [isOwnProfile, profileView?.stats, overallStats, progressMap, dailyActivityMap]);
+
+  const rankInfo = React.useMemo(() => {
+    const remoteRankInfo = profileView?.rankInfo;
+    if (isOwnProfile && (!profileView?.stats?.totalQuestions || profileView.stats.totalQuestions === 0) && (overallStats?.totalCalculations || 0) > 0) {
+      return calculateUserRank(
+        stats.totalQuestions,
+        stats.totalCorrect,
+        stats.longestStreak,
+        stats.totalTimeSpentSeconds
+      );
+    }
+    return remoteRankInfo || calculateUserRank(0, 0, 0, 0);
+  }, [isOwnProfile, profileView?.stats?.totalQuestions, profileView?.rankInfo, overallStats?.totalCalculations, stats]);
+
+  // If viewing own profile and remote had 0 calculations but local has data, trigger sync to update Supabase
+  useEffect(() => {
+    if (isOwnProfile && (!profileView?.stats?.totalQuestions || profileView.stats.totalQuestions === 0) && (overallStats?.totalCalculations || 0) > 0) {
+      useQuizStore.getState().triggerSync();
+    }
+  }, [isOwnProfile, profileView?.stats?.totalQuestions, overallStats?.totalCalculations]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 font-mono">
@@ -179,8 +240,7 @@ export default function PublicProfilePage() {
     );
   }
 
-  const { profile, stats, rankInfo, followersCount, followingCount, friendsCount, isFollowing, isFriend } = profileView;
-  const isOwnProfile = currentUser?.id === profile.id;
+  const { profile, followersCount, followingCount, friendsCount, isFollowing, isFriend } = profileView;
   const levelInfo = getLevelProgress(profile.xp);
 
   const timeSpent = stats.totalTimeSpentSeconds || 0;
@@ -307,27 +367,38 @@ export default function PublicProfilePage() {
             {/* Action Buttons */}
             {!isOwnProfile && (
               <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto">
-                <button
-                  onClick={handleToggleFollow}
-                  disabled={isFollowLoading}
-                  className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md ${
-                    isFollowing
-                      ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
-                      : 'bg-violet-600 hover:bg-violet-500 text-white shadow-violet-600/30'
-                  }`}
-                >
-                  {isFollowing ? (
-                    <>
-                      <UserCheck className="w-4 h-4 text-emerald-400" />
-                      <span>{isFriend ? 'Friends' : 'Following'}</span>
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-4 h-4" />
-                      <span>Follow</span>
-                    </>
-                  )}
-                </button>
+                {!currentUser ? (
+                  <button
+                    onClick={() => setAuthModalOpen(true)}
+                    className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all bg-slate-800/90 hover:bg-slate-800 text-slate-300 border border-slate-700/80 hover:border-violet-500/60 shadow-sm cursor-pointer group"
+                    title="Sign in with Google to follow this mentalist"
+                  >
+                    <Lock className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                    <span>Follow</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={handleToggleFollow}
+                    disabled={isFollowLoading}
+                    className={`flex-1 md:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md ${
+                      isFollowing
+                        ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700'
+                        : 'bg-violet-600 hover:bg-violet-500 text-white shadow-violet-600/30'
+                    }`}
+                  >
+                    {isFollowing ? (
+                      <>
+                        <UserCheck className="w-4 h-4 text-emerald-400" />
+                        <span>{isFriend ? 'Friends' : 'Following'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-4 h-4" />
+                        <span>Follow</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
             )}
           </div>

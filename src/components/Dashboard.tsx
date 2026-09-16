@@ -28,6 +28,7 @@ import {
   Copy,
   Check,
   X,
+  MessageCircle,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ADD_SUB_LEVELS } from '../core/calcEngine';
@@ -77,6 +78,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
     importBrainMatrixJSON,
     techniqueMasteryMap,
     setIsCustomDrillModalOpen,
+    currentUser,
+    setIsChatDrawerOpen,
+    setAuthModalOpen,
   } = useQuizStore();
 
   const [isCoachDrawerOpen, setIsCoachDrawerOpen] = useState(false);
@@ -184,6 +188,28 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               <p className="text-xs text-slate-400 hidden sm:block">
                 {tDash('subtitle')}
               </p>
+            </div>
+
+            {/* Mobile-only Quick Chat / 1v1 Duel Bar */}
+            <div className="flex sm:hidden items-center gap-2">
+              <button
+                onClick={() => {
+                  if (!currentUser) setAuthModalOpen(true);
+                  else setIsChatDrawerOpen(true);
+                }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-xs font-semibold text-slate-200 hover:border-emerald-500/60 shadow-sm transition-all active:scale-95"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-400">
+                    <MessageCircle className="w-3.5 h-3.5" />
+                  </div>
+                  <span>Friends & 1v1 Math Duels</span>
+                </div>
+                <span className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-400 font-bold bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Chat
+                </span>
+              </button>
             </div>
 
             {/* Desktop-only CTAs — on mobile these live in the bottom tab bar */}

@@ -88,4 +88,29 @@ describe('Supabase Offline Sync & Auth Architecture', () => {
     expect(useQuizStore.getState().currentUser).toBeNull();
     expect(useQuizStore.getState().syncStatus).toBe('idle');
   });
+
+  it('handles deleteAccount action cleanly, resetting state and clearing currentUser', async () => {
+    useQuizStore.getState().setAuthUser({
+      id: 'usr_to_delete',
+      email: 'delete_me@example.com',
+    });
+    useQuizStore.setState({
+      avatarType: 'badge',
+      selectedBadgeLevel: 5,
+    });
+    expect(useQuizStore.getState().currentUser).not.toBeNull();
+
+    const res = await useQuizStore.getState().deleteAccount();
+    expect(res).toBeDefined();
+    expect(useQuizStore.getState().currentUser).toBeNull();
+    expect(useQuizStore.getState().avatarType).toBe('google');
+    expect(useQuizStore.getState().selectedBadgeLevel).toBe(1);
+    expect(useQuizStore.getState().syncStatus).toBe('idle');
+  });
+
+  it('subscribeToProfileChanges returns a cleanup unsubscribe function', () => {
+    const unsub = syncEngine.subscribeToProfileChanges('user_123', () => {});
+    expect(typeof unsub).toBe('function');
+    expect(() => unsub()).not.toThrow();
+  });
 });

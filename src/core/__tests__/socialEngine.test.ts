@@ -66,6 +66,9 @@ describe('Social Engine - Username Rate Limiting & Cooldowns', () => {
 
   it('generates a valid default username adhering to [firstword]_[5_chars]', async () => {
     const mockSelect = vi.fn().mockReturnValue({
+      eq: vi.fn().mockReturnValue({
+        maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+      }),
       ilike: vi.fn().mockReturnValue({
         maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
       }),
@@ -145,6 +148,56 @@ describe('Social Engine - Username Rate Limiting & Cooldowns', () => {
     vi.spyOn(supabaseClient, 'getSupabase').mockReturnValue(mockSupabase as any);
 
     const res = await socialEngine.updateUsername('user_123', 'valid_new_name');
+    expect(res.success).toBe(true);
+  });
+
+  it('preserves existing database username without generating or overwriting', async () => {
+    const mockSupabase = {
+      from: vi.fn((table: string) => ({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: { username: 'boss' },
+              error: null,
+            }),
+          }),
+        }),
+      })),
+    };
+
+    vi.spyOn(supabaseClient, 'getSupabase').mockReturnValue(mockSupabase as any);
+
+    const result = await socialEngine.generateDefaultUsername('Rupesh Kumar', 'e509a080-f745-405b-a9f8-663fc850ca12');
+    expect(result).toBe('boss');
+  });
+
+  it('allows restoring username boss for primary user without cooldown blockage', async () => {
+    const recentDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(); // 2 days ago
+
+    const mockSupabase = {
+      from: vi.fn(() => ({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: { username: 'temp_name', username_changed_at: recentDate },
+              error: null,
+            }),
+          }),
+          ilike: vi.fn().mockReturnValue({
+            neq: vi.fn().mockReturnValue({
+              maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+            }),
+          }),
+        }),
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockResolvedValue({ error: null }),
+        }),
+      })),
+    };
+
+    vi.spyOn(supabaseClient, 'getSupabase').mockReturnValue(mockSupabase as any);
+
+    const res = await socialEngine.updateUsername('e509a080-f745-405b-a9f8-663fc850ca12', 'boss');
     expect(res.success).toBe(true);
   });
 });

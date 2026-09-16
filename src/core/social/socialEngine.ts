@@ -52,12 +52,13 @@ export interface FriendSummary {
   username: string;
   displayName: string;
   avatarUrl: string | null;
-  avatarType: 'google' | 'badge' | 'mastery';
+  avatarType: 'google' | 'badge' | 'mastery' | 'deleted';
   selectedBadgeLevel: number;
   equippedMasteryBadgeId?: string | null;
   level: number;
   rating: number;
   lastSeenAt: string;
+  isDeleted?: boolean;
 }
 
 export interface AppNotification {
@@ -147,7 +148,18 @@ class SocialEngine {
     const isFollowedBy = Boolean(targetFollowRes.data);
     const isFriend = isFollowing && isFollowedBy;
 
-    const statsRow = statsRes.data;
+    let statsRow = statsRes.data;
+    if (!statsRow) {
+      try {
+        const { data: rpcStats } = await (supabase as any).rpc('get_public_user_stats', { target_user_id: userId });
+        if (rpcStats) {
+          statsRow = rpcStats;
+        }
+      } catch {
+        // ignore fallback errors
+      }
+    }
+
     const totalQuestions = statsRow?.total_questions_answered || 0;
     const totalCorrect = statsRow?.total_correct || 0;
     const longestStreak = statsRow?.longest_streak || 0;
@@ -269,54 +281,118 @@ class SocialEngine {
     const supabase = getSupabase();
     if (!supabase) return [];
 
+    const friendMap = new Map<string, FriendSummary>();
+
     // 1. Get who user follows
     const { data: myFollows } = await supabase
       .from('follows')
       .select('following_id')
       .eq('follower_id', userId);
 
-    if (!myFollows || myFollows.length === 0) return [];
+    if (myFollows && myFollows.length > 0) {
+      const followingIds = myFollows.map((f) => f.following_id);
 
-    const followingIds = myFollows.map((f) => f.following_id);
+      // 2. Filter for those who also follow user back
+      const { data: mutualFollows } = await supabase
+        .from('follows')
+        .select(`
+          follower_id,
+          profiles!follower_id (
+            id,
+            username,
+            display_name,
+            avatar_url,
+            avatar_type,
+            selected_badge_level,
+            equipped_badge_id,
+            level,
+            rating,
+            last_seen_at,
+            is_deleted
+          )
+        `)
+        .eq('following_id', userId)
+        .in('follower_id', followingIds);
 
-    // 2. Filter for those who also follow user back
-    const { data: mutualFollows } = await supabase
-      .from('follows')
-      .select(`
-        follower_id,
-        profiles!follower_id (
-          id,
-          username,
-          display_name,
-          avatar_url,
-          avatar_type,
-          selected_badge_level,
-          equipped_badge_id,
-          level,
-          rating,
-          last_seen_at
-        )
-      `)
-      .eq('following_id', userId)
-      .in('follower_id', followingIds);
+      if (mutualFollows) {
+        for (const item of mutualFollows) {
+          const p = item.profiles as any;
+          if (!p) continue;
+          const isDeleted = p.is_deleted === true || p.display_name === 'User is no longer available';
+          friendMap.set(p.id, {
+            userId: p.id,
+            username: isDeleted ? 'unavailable' : (p.username || 'user'),
+            displayName: isDeleted ? 'User is no longer available' : (p.display_name || p.username || 'Friend'),
+            avatarUrl: isDeleted ? null : p.avatar_url,
+            avatarType: isDeleted ? 'deleted' : (p.avatar_type || 'google'),
+            selectedBadgeLevel: p.selected_badge_level || 1,
+            equippedMasteryBadgeId: p.equipped_badge_id || null,
+            level: p.level || 1,
+            rating: p.rating || 1200,
+            lastSeenAt: p.last_seen_at || new Date().toISOString(),
+            isDeleted,
+          });
+        }
+      }
+    }
 
-    if (!mutualFollows) return [];
+    // 3. Also include existing chat partners so conversations with deleted or previous users remain accessible
+    try {
+      const { data: myConvs } = await supabase
+        .from('chat_participants')
+        .select('conversation_id')
+        .eq('user_id', userId);
 
-    return mutualFollows.map((item: any) => {
-      const p = item.profiles;
-      return {
-        userId: p.id,
-        username: p.username || 'user',
-        displayName: p.display_name || p.username || 'Friend',
-        avatarUrl: p.avatar_url,
-        avatarType: p.avatar_type || 'google',
-        selectedBadgeLevel: p.selected_badge_level || 1,
-        equippedMasteryBadgeId: p.equipped_badge_id || null,
-        level: p.level || 1,
-        rating: p.rating || 1200,
-        lastSeenAt: p.last_seen_at || new Date().toISOString(),
-      };
-    });
+      if (myConvs && myConvs.length > 0) {
+        const convIds = myConvs.map((c) => c.conversation_id);
+        const { data: partners } = await supabase
+          .from('chat_participants')
+          .select(`
+            conversation_id,
+            user_id,
+            profiles (
+              id,
+              username,
+              display_name,
+              avatar_url,
+              avatar_type,
+              selected_badge_level,
+              equipped_badge_id,
+              level,
+              rating,
+              last_seen_at,
+              is_deleted
+            )
+          `)
+          .in('conversation_id', convIds)
+          .neq('user_id', userId);
+
+        if (partners) {
+          for (const item of partners) {
+            const p = item.profiles as any;
+            if (!p || friendMap.has(p.id)) continue;
+            const isDeleted = p.is_deleted === true || p.display_name === 'User is no longer available';
+            friendMap.set(p.id, {
+              userId: p.id,
+              username: isDeleted ? 'unavailable' : (p.username || 'user'),
+              displayName: isDeleted ? 'User is no longer available' : (p.display_name || p.username || 'Friend'),
+              avatarUrl: isDeleted ? null : p.avatar_url,
+              avatarType: isDeleted ? 'deleted' : (p.avatar_type || 'google'),
+              selectedBadgeLevel: p.selected_badge_level || 1,
+              equippedMasteryBadgeId: p.equipped_badge_id || null,
+              level: p.level || 1,
+              rating: p.rating || 1200,
+              lastSeenAt: p.last_seen_at || new Date().toISOString(),
+              isDeleted,
+            });
+          }
+        }
+      }
+    } catch (chatErr) {
+      console.warn('[SocialEngine] Note loading chat partners in fetchFriends:', chatErr);
+    }
+
+    return Array.from(friendMap.values());
   }
 
   // Rate Limiting Map: userId -> { recentMinuteTimestamps, recentHourTimestamps }
@@ -433,10 +509,39 @@ class SocialEngine {
 
   /**
    * Automatically generate and assign a unique default username (e.g. rupesh_a8f2k)
+   * SAFE: Checks if user already has an assigned username in database first, and never overwrites it!
    */
   public async generateDefaultUsername(displayName: string, userId: string): Promise<string | null> {
     const supabase = getSupabase();
     if (!supabase) return null;
+
+    // 1. FIRST: Check if this user ALREADY has a valid username in the database
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (existingProfile?.username && existingProfile.username.trim().length > 0) {
+      return existingProfile.username.trim();
+    }
+
+    // 2. If this account is the primary boss account or associated with boss, assign 'boss'
+    if (userId === 'e509a080-f745-405b-a9f8-663fc850ca12') {
+      const { data: bossProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('username', 'boss')
+        .maybeSingle();
+
+      if (!bossProfile || bossProfile.id === userId) {
+        await supabase
+          .from('profiles')
+          .update({ username: 'boss', updated_at: new Date().toISOString() })
+          .eq('id', userId);
+        return 'boss';
+      }
+    }
 
     const rawWord = displayName.trim().split(/[\s_-]+/)[0].toLowerCase().replace(/[^a-z0-9]/g, '');
     const prefix = rawWord.length >= 2 ? rawWord.slice(0, 14) : 'user';
@@ -477,14 +582,22 @@ class SocialEngine {
       };
     }
 
-    // Check 30-day change limit
+    // Check current profile
     const { data: currentProf } = await supabase
       .from('profiles')
       .select('username, username_changed_at')
       .eq('id', userId)
       .maybeSingle();
 
-    if (currentProf?.username && currentProf?.username_changed_at) {
+    // If username is already the requested clean username, return success immediately
+    if (currentProf?.username && currentProf.username.toLowerCase() === clean) {
+      return { success: true };
+    }
+
+    // Allow primary account e509a080-f745-405b-a9f8-663fc850ca12 or restoring boss without cooldown blockage
+    const isRestoringBoss = clean === 'boss' && userId === 'e509a080-f745-405b-a9f8-663fc850ca12';
+
+    if (!isRestoringBoss && currentProf?.username && currentProf?.username_changed_at) {
       const lastChanged = new Date(currentProf.username_changed_at).getTime();
       const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
       const elapsed = Date.now() - lastChanged;
@@ -515,6 +628,36 @@ class SocialEngine {
       .update({
         username: clean,
         username_changed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', userId);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    return { success: true };
+  }
+
+  /**
+   * Update user's public display name (shown everywhere on platform)
+   */
+  public async updateDisplayName(userId: string, newDisplayName: string): Promise<{ success: boolean; error?: string }> {
+    const supabase = getSupabase();
+    if (!supabase) return { success: false, error: 'Database unconfigured' };
+
+    const clean = newDisplayName.trim().replace(/\s+/g, ' ');
+    if (clean.length < 1 || clean.length > 50) {
+      return {
+        success: false,
+        error: 'Display name must be between 1 and 50 characters.',
+      };
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        display_name: clean,
         updated_at: new Date().toISOString(),
       })
       .eq('id', userId);
@@ -778,14 +921,25 @@ class SocialEngine {
 
     if (!data) return [];
 
-    return data.map((msg) => ({
-      id: msg.id,
-      conversationId: msg.conversation_id,
-      senderId: msg.sender_id,
-      messageText: msg.message_text,
-      metadata: msg.metadata || {},
-      createdAt: msg.created_at,
-    }));
+    return data.map((msg) => {
+      const meta = (msg.metadata as any) || {};
+      const isHidden =
+        meta.is_hidden === true ||
+        meta.is_hidden === 'true' ||
+        msg.message_text === 'User is no longer available on the platform';
+
+      return {
+        id: msg.id,
+        conversationId: msg.conversation_id,
+        senderId: msg.sender_id,
+        messageText: isHidden ? 'User is no longer available on the platform' : msg.message_text,
+        metadata: {
+          ...meta,
+          ...(isHidden ? { is_hidden: true } : {}),
+        },
+        createdAt: msg.created_at,
+      };
+    });
   }
 
   /**

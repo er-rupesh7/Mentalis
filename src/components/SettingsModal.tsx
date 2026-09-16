@@ -20,6 +20,9 @@ import {
   Shield,
   ExternalLink,
   Sparkles,
+  Trash2,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { LanguageSelector } from './LanguageSelector';
@@ -38,6 +41,7 @@ export const SettingsModal: React.FC = () => {
     selectedBadgeLevel,
     level,
     setAvatarPreference,
+    updateDisplayName,
     updateUsername,
     setIsBadgePickerOpen,
     soundEnabled,
@@ -49,6 +53,7 @@ export const SettingsModal: React.FC = () => {
     exportBrainMatrixJSON,
     importBrainMatrixJSON,
     resetProgress,
+    deleteAccount,
   } = useQuizStore();
 
   const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
@@ -56,6 +61,59 @@ export const SettingsModal: React.FC = () => {
   const [importText, setImportText] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  // Account deletion state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteInputText, setDeleteInputText] = useState('');
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    setDeleteError(null);
+    try {
+      const res = await deleteAccount();
+      if (res.success) {
+        setShowDeleteConfirm(false);
+        setIsSettingsModalOpen(false);
+      } else {
+        setDeleteError(res.error || 'Failed to delete profile.');
+      }
+    } catch (err: any) {
+      setDeleteError(err?.message || 'Error occurred during deletion.');
+    } finally {
+      setIsDeletingAccount(false);
+    }
+  };
+
+  // Display name form state
+  const [inputDisplayName, setInputDisplayName] = useState(currentUser?.displayName || '');
+  const [displayNameSaving, setDisplayNameSaving] = useState(false);
+  const [displayNameMessage, setDisplayNameMessage] = useState<{ text: string; isError: boolean } | null>(null);
+
+  useEffect(() => {
+    if (currentUser?.displayName) {
+      setInputDisplayName(currentUser.displayName);
+    }
+  }, [currentUser?.displayName]);
+
+  const handleSaveDisplayName = async () => {
+    if (!currentUser) return;
+    const clean = inputDisplayName.trim().replace(/\s+/g, ' ');
+    if (clean.length < 1 || clean.length > 50) {
+      setDisplayNameMessage({ text: 'Display name must be between 1 and 50 characters.', isError: true });
+      return;
+    }
+    setDisplayNameSaving(true);
+    setDisplayNameMessage(null);
+    const res = await updateDisplayName(clean);
+    setDisplayNameSaving(false);
+    if (res.success) {
+      setDisplayNameMessage({ text: 'Display name updated successfully everywhere!', isError: false });
+    } else {
+      setDisplayNameMessage({ text: res.error || 'Failed to update display name.', isError: true });
+    }
+  };
 
   // Username form state
   const [inputUsername, setInputUsername] = useState(username || '');
@@ -199,15 +257,15 @@ export const SettingsModal: React.FC = () => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
-          className="w-full max-w-xl max-h-[90vh] rounded-3xl bg-slate-950 border border-slate-800 shadow-2xl flex flex-col overflow-hidden"
+          className="w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] sm:max-w-xl rounded-none sm:rounded-3xl bg-slate-950 border-0 sm:border sm:border-slate-800 shadow-2xl flex flex-col overflow-hidden"
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-5 border-b border-slate-800 shrink-0">
+          <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-800 shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-violet-600/20 text-violet-400 border border-violet-500/30">
                 <Sliders className="w-5 h-5" />
@@ -217,7 +275,7 @@ export const SettingsModal: React.FC = () => {
                   Settings & Profile
                 </h2>
                 <p className="text-xs text-slate-400">
-                  Manage username, badge avatar, language, audio, and data
+                  Manage display name, username, badge avatar, language, audio, and data
                 </p>
               </div>
             </div>
@@ -231,8 +289,8 @@ export const SettingsModal: React.FC = () => {
             </button>
           </div>
 
-          {/* Body */}
-          <div className="p-5 overflow-y-auto space-y-6 scrollbar-thin">
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 pb-24 sm:pb-8 space-y-6 custom-scrollbar">
             {/* Feedback Alert */}
             {backupFeedback && (
               <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/50 text-xs font-semibold text-emerald-300 text-center animate-in fade-in">
@@ -260,6 +318,53 @@ export const SettingsModal: React.FC = () => {
                       <span>/{username}</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
+                  )}
+                </div>
+
+                {/* Public Display Name Input */}
+                <div className="space-y-2 pb-3 border-b border-slate-800/80">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold text-slate-300">
+                      Public Display Name (Platform-wide)
+                    </label>
+                    <span className="text-[10px] text-slate-400">
+                      Shown on profile, leaderboards & chat
+                    </span>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={inputDisplayName}
+                      onChange={(e) => {
+                        setInputDisplayName(e.target.value);
+                        setDisplayNameMessage(null);
+                      }}
+                      placeholder="e.g. John Doe or Mentalist Champion"
+                      maxLength={50}
+                      className="flex-1 px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-violet-500"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={handleSaveDisplayName}
+                      disabled={displayNameSaving || !inputDisplayName.trim() || inputDisplayName.trim() === currentUser?.displayName}
+                      className="px-4 py-2 rounded-xl text-xs font-bold bg-violet-600 hover:bg-violet-500 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-all shadow-md shadow-violet-600/20 min-h-[38px]"
+                    >
+                      {displayNameSaving ? 'Saving...' : 'Save Name'}
+                    </button>
+                  </div>
+
+                  {displayNameMessage && (
+                    <div
+                      className={`text-[11px] font-medium p-2 rounded-xl border ${
+                        displayNameMessage.isError
+                          ? 'bg-rose-950/40 border-rose-800/60 text-rose-300'
+                          : 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
+                      }`}
+                    >
+                      {displayNameMessage.text}
+                    </div>
                   )}
                 </div>
 
@@ -656,6 +761,102 @@ export const SettingsModal: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {/* Danger Zone: Delete Profile & Account (For Authenticated Users) */}
+              {currentUser && (
+                <div className="pt-3 border-t border-rose-900/40 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-xs font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Delete Profile & Account</span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Permanently delete your profile and all learning data. Past chats will be hidden and marked unavailable.
+                      </p>
+                    </div>
+
+                    {!showDeleteConfirm && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDeleteConfirm(true);
+                          setDeleteInputText('');
+                          setDeleteError(null);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all whitespace-nowrap"
+                      >
+                        Delete Account
+                      </button>
+                    )}
+                  </div>
+
+                  {showDeleteConfirm && (
+                    <div className="p-4 rounded-2xl bg-rose-950/40 border border-rose-800/60 space-y-3 mt-2">
+                      <div className="flex items-start gap-2.5 text-rose-200">
+                        <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+                        <div className="text-xs space-y-1">
+                          <p className="font-bold text-rose-300">Permanent Account Deletion Warning</p>
+                          <p className="text-slate-300 leading-relaxed text-[11px]">
+                            This will permanently wipe all your mastered facts, Bayesian learner models, streak history, badges, and mutual friendships.
+                          </p>
+                          <p className="text-amber-300/90 leading-relaxed text-[11px]">
+                            If you participated in chat with other users, your messages will be hidden and marked as <span className="italic font-mono">&quot;User is no longer available on the platform&quot;</span>.
+                          </p>
+                        </div>
+                      </div>
+
+                      {deleteError && (
+                        <div className="p-2.5 rounded-xl bg-rose-500/20 border border-rose-500/40 text-rose-300 text-xs">
+                          {deleteError}
+                        </div>
+                      )}
+
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-semibold text-slate-400">
+                          Type <span className="font-mono text-rose-400 font-bold">DELETE</span> to confirm:
+                        </label>
+                        <input
+                          type="text"
+                          value={deleteInputText}
+                          onChange={(e) => setDeleteInputText(e.target.value)}
+                          placeholder="Type DELETE..."
+                          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-rose-900/60 text-xs font-mono text-white placeholder-slate-600 focus:outline-none focus:border-rose-500"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2 justify-end pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setShowDeleteConfirm(false)}
+                          disabled={isDeletingAccount}
+                          className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDeleteAccount}
+                          disabled={deleteInputText.trim() !== 'DELETE' || isDeletingAccount}
+                          className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        >
+                          {isDeletingAccount ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <span>Deleting Everything...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Permanently Delete My Profile</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </motion.div>

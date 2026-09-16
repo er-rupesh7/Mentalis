@@ -18,6 +18,7 @@ import {
   Target,
   Sliders,
   Settings,
+  MessageCircle,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { TableChartTab } from '../core/types';
@@ -43,6 +44,9 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
     setActiveTableChartTab,
     setIsCustomDrillModalOpen,
     setIsSettingsModalOpen,
+    currentUser,
+    setIsChatDrawerOpen,
+    setAuthModalOpen,
   } = useQuizStore();
 
   const [isTableDropdownOpen, setIsTableDropdownOpen] = useState(false);
@@ -319,6 +323,25 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             title={soundEnabled ? 'Mute' : 'Unmute'}
           >
             {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </button>
+
+          {/* Realtime Friends & 1v1 Math Chat Button */}
+          <button
+            onClick={() => {
+              if (!currentUser) {
+                setAuthModalOpen(true);
+              } else {
+                setIsChatDrawerOpen(true);
+              }
+            }}
+            className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-emerald-400 border border-slate-800 transition-colors flex items-center justify-center relative min-h-[36px] min-w-[36px]"
+            title="Friends & 1v1 Math Chat"
+            aria-label="Friends & 1v1 Math Chat"
+          >
+            <MessageCircle className="w-4 h-4 text-emerald-400" />
+            {currentUser && (
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-950 animate-pulse" />
+            )}
           </button>
 
           {/* In-Web Notifications Bell */}

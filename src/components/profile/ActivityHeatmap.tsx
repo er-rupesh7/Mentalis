@@ -132,9 +132,6 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
           <div>
             <h3 className="text-base font-extrabold text-white tracking-tight flex items-center gap-2">
               <span>30-Day Activity Matrix</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">
-                LeetCode Style
-              </span>
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
               Daily mental arithmetic practice, calculation streaks & speed sessions.

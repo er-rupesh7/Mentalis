@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { UserX } from 'lucide-react';
 import { BadgeEmblem } from '../badges/BadgeEmblem';
 import { MasteryBadgeEmblem } from '../badges/MasteryBadgeEmblem';
 
 export interface UserAvatarProps {
   displayName?: string | null;
   avatarUrl?: string | null;
-  avatarType?: 'google' | 'badge' | 'mastery' | null;
+  avatarType?: 'google' | 'badge' | 'mastery' | 'deleted' | null;
   selectedBadgeLevel?: number | null;
   selectedMasteryBadgeId?: string | null;
   level?: number | null;
@@ -46,10 +47,27 @@ export const UserAvatar: React.FC<UserAvatarProps> = ({
     setImageError(false);
   }, [avatarUrl]);
 
-  const rawName = displayName || email?.split('@')[0] || 'Learner';
-  const cleanName = (!rawName || rawName.trim().toLowerCase() === 'unknown')
-    ? (email?.split('@')[0] || 'Learner')
-    : rawName;
+  // 0. Deleted User Mode
+  if (avatarType === 'deleted') {
+    return (
+      <div className={`relative inline-flex shrink-0 items-center justify-center ${className}`}>
+        <div className={`${sizeConfig.box} rounded-full bg-slate-800 border border-slate-700/80 flex items-center justify-center text-slate-500`}>
+          <UserX className={size === 'xs' ? 'w-3 h-3' : size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4'} />
+        </div>
+      </div>
+    );
+  }
+
+  const emailPrefix = email?.split('@')[0];
+  const isEmailLike = (name?: string | null) =>
+    !name ||
+    name.toLowerCase() === 'unknown' ||
+    name.toLowerCase() === 'learner' ||
+    (emailPrefix && name.toLowerCase() === emailPrefix.toLowerCase());
+
+  const cleanName = !isEmailLike(displayName)
+    ? displayName!
+    : 'Mentalist';
   const initial = cleanName.charAt(0).toUpperCase() || 'M';
 
   // 1. Mastery Badge Avatar Mode

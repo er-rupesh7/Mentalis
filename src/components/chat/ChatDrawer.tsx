@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ArrowLeft,
   ExternalLink,
+  AlertCircle,
 } from 'lucide-react';
 import { useQuizStore } from '../../core/store/useQuizStore';
 import { socialEngine, FriendSummary, ChatMessageItem } from '../../core/social/socialEngine';
@@ -24,7 +25,13 @@ import { UserAvatar } from '../auth/UserAvatar';
 import { BadgeEmblem } from '../badges/BadgeEmblem';
 
 export const ChatDrawer: React.FC = () => {
-  const { currentUser, isChatDrawerOpen, setIsChatDrawerOpen } = useQuizStore();
+  const {
+    currentUser,
+    isChatDrawerOpen,
+    setIsChatDrawerOpen,
+    setAuthModalOpen,
+    viewMode,
+  } = useQuizStore();
   const isOpen = isChatDrawerOpen;
   const setIsOpen = setIsChatDrawerOpen;
 
@@ -114,6 +121,11 @@ export const ChatDrawer: React.FC = () => {
         },
         (payload) => {
           const newMsg = payload.new as any;
+          const isHidden =
+            newMsg.metadata?.is_hidden === true ||
+            newMsg.metadata?.is_hidden === 'true' ||
+            newMsg.message_text === 'User is no longer available on the platform';
+
           setMessages((prev) => {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             return [
@@ -122,8 +134,11 @@ export const ChatDrawer: React.FC = () => {
                 id: newMsg.id,
                 conversationId: newMsg.conversation_id,
                 senderId: newMsg.sender_id,
-                messageText: newMsg.message_text,
-                metadata: newMsg.metadata || {},
+                messageText: isHidden ? 'User is no longer available on the platform' : newMsg.message_text,
+                metadata: {
+                  ...(newMsg.metadata || {}),
+                  ...(isHidden ? { is_hidden: true } : {}),
+                },
                 createdAt: newMsg.created_at,
               },
             ];
@@ -179,24 +194,92 @@ export const ChatDrawer: React.FC = () => {
     }
   };
 
-  if (!currentUser) return null;
+  // Hide floating button during full-screen arithmetic drills (practice and anzan)
+  const isDrillMode = viewMode === 'practice' || viewMode === 'anzan';
+
+  if (!currentUser) {
+    return (
+      <>
+        {/* Floating Trigger Button for Mobile & Desktop — elevated above mobile navigation bar */}
+        {!isOpen && !isDrillMode && (
+          <button
+            onClick={() => setAuthModalOpen(true)}
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-gradient-to-tr from-violet-600 via-indigo-600 to-emerald-600 hover:from-violet-500 hover:to-emerald-500 text-white shadow-xl shadow-violet-600/30 border border-violet-400/30 hover:scale-105 active:scale-95 transition-all group min-h-[44px]"
+            title="Open Friends & 1v1 Chat"
+            aria-label="Open Friends and Chat"
+          >
+            <div className="relative flex items-center justify-center">
+              <MessageCircle className="w-5 h-5 group-hover:rotate-6 transition-transform text-white" />
+            </div>
+            <span className="text-xs font-bold font-sans tracking-wide">Chat</span>
+          </button>
+        )}
+
+        {/* Unauthenticated Drawer Screen */}
+        {isOpen && (
+          <div className="fixed inset-0 sm:inset-auto sm:right-0 sm:bottom-0 sm:top-14 sm:w-[480px] z-50 bg-slate-950/95 sm:border-l sm:border-slate-800 shadow-2xl flex flex-col backdrop-blur-2xl text-slate-200 animate-in slide-in-from-right duration-200">
+            <div className="p-3.5 border-b border-slate-800 bg-slate-900/60 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-violet-600/20 text-violet-400 border border-violet-500/30">
+                  <MessageCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Social & Chat</h3>
+                  <p className="text-[11px] text-slate-400 font-mono">Sign in required</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-4">
+              <div className="p-4 rounded-3xl bg-violet-600/20 text-violet-400 border border-violet-500/30 shadow-xl shadow-violet-600/20">
+                <MessageCircle className="w-10 h-10 text-violet-300" />
+              </div>
+              <div className="space-y-1.5 max-w-xs">
+                <h4 className="text-base font-bold text-white">Friends & 1v1 Math Duels</h4>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Sign in to connect with fellow mental math athletes, chat in real time, and challenge friends to live arithmetic showdowns!
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setAuthModalOpen(true);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-violet-600/30 transition-all active:scale-95"
+              >
+                Sign In to Chat
+              </button>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
-      {/* Floating Trigger Button in Bottom Right */}
-      {!isOpen && (
+      {/* Floating Trigger Button in Bottom Right — elevated above mobile bottom tab bar */}
+      {!isOpen && !isDrillMode && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 p-3 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-tr from-violet-600 to-indigo-500 hover:from-violet-500 hover:to-indigo-400 text-white shadow-xl shadow-violet-600/30 border border-violet-400/30 hover:scale-105 active:scale-95 transition-all group min-h-[44px] min-w-[44px]"
+          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-tr from-violet-600 via-indigo-600 to-emerald-600 hover:from-violet-500 hover:to-emerald-500 text-white shadow-xl shadow-violet-600/30 border border-violet-400/30 hover:scale-105 active:scale-95 transition-all group min-h-[44px]"
           title="Open Friends & 1v1 Chat"
+          aria-label="Open Friends and Chat"
         >
-          <div className="relative">
-            <MessageCircle className="w-5 h-5 group-hover:rotate-6 transition-transform" />
-            {friends.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-slate-900 animate-pulse" />
+          <div className="relative flex items-center justify-center">
+            <MessageCircle className="w-5 h-5 group-hover:rotate-6 transition-transform text-white" />
+            {(friends.length > 0 || onlineUserIds.size > 0) && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-slate-950 animate-pulse" />
             )}
           </div>
-          <span className="text-xs font-bold hidden sm:inline">Friends & Chat</span>
+          <span className="text-xs font-bold font-sans tracking-wide">
+            {friends.length > 0 ? `Chat (${friends.length})` : 'Chat'}
+          </span>
         </button>
       )}
 
@@ -224,7 +307,9 @@ export const ChatDrawer: React.FC = () => {
                 </h3>
                 <p className="text-[11px] text-slate-400 font-mono">
                   {activeFriend
-                    ? onlineUserIds.has(activeFriend.userId)
+                    ? (activeFriend.isDeleted || activeFriend.displayName === 'User is no longer available')
+                      ? 'Unavailable on platform'
+                      : onlineUserIds.has(activeFriend.userId)
                       ? '🟢 Online now'
                       : `@${activeFriend.username}`
                     : `${friends.length} Mutual Friends`}
@@ -233,7 +318,7 @@ export const ChatDrawer: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-1">
-              {activeFriend && (
+              {activeFriend && !activeFriend.isDeleted && activeFriend.displayName !== 'User is no longer available' && (
                 <a
                   href={`/${activeFriend.username}`}
                   target="_blank"
@@ -438,26 +523,45 @@ export const ChatDrawer: React.FC = () => {
                       selectedBadgeLevel={activeFriend.selectedBadgeLevel}
                       level={activeFriend.level}
                       size="xs"
-                      showOnlineDot={true}
+                      showOnlineDot={!activeFriend.isDeleted && activeFriend.displayName !== 'User is no longer available'}
                       isOnline={onlineUserIds.has(activeFriend.userId)}
                     />
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-white truncate">{activeFriend.displayName}</p>
                       <p className="text-[10px] text-slate-400 font-mono">
-                        Rating: {activeFriend.rating} ELO • Level {activeFriend.level}
+                        {activeFriend.isDeleted || activeFriend.displayName === 'User is no longer available' ? (
+                          <span className="text-rose-400 font-medium">User is no longer available</span>
+                        ) : (
+                          `Rating: ${activeFriend.rating} ELO • Level ${activeFriend.level}`
+                        )}
                       </p>
                     </div>
                   </div>
 
-                  <button
-                    onClick={handleInviteToDuel}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all min-h-[36px]"
-                    title="Send Math Duel Invitation"
-                  >
-                    <Swords className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Invite 1v1</span>
-                  </button>
+                  {!activeFriend.isDeleted && activeFriend.displayName !== 'User is no longer available' && (
+                    <button
+                      onClick={handleInviteToDuel}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-bold transition-all min-h-[36px]"
+                      title="Send Math Duel Invitation"
+                    >
+                      <Swords className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Invite 1v1</span>
+                    </button>
+                  )}
                 </div>
+
+                {/* User Unavailable Notice Banner */}
+                {(activeFriend.isDeleted || activeFriend.displayName === 'User is no longer available') && (
+                  <div className="m-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                    <div>
+                      <p className="font-semibold">User is no longer available on the platform</p>
+                      <p className="text-[11px] text-rose-300/80">
+                        This user has deleted their profile. Previous messages are hidden, and new messages cannot be sent.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Messages Feed */}
                 <div className="flex-1 p-3 overflow-y-auto space-y-2.5 scrollbar-thin">
@@ -479,6 +583,11 @@ export const ChatDrawer: React.FC = () => {
                         minute: '2-digit',
                       });
                       const isDuel = m.messageText.includes('⚔️ I challenge you');
+                      const isDeletedMsg =
+                        m.metadata?.is_hidden === true ||
+                        m.metadata?.is_hidden === 'true' ||
+                        m.messageText === 'User is no longer available on the platform' ||
+                        (!isMe && (activeFriend.isDeleted || activeFriend.displayName === 'User is no longer available'));
 
                       return (
                         <div
@@ -489,15 +598,17 @@ export const ChatDrawer: React.FC = () => {
                         >
                           <div
                             className={`p-3 rounded-2xl text-xs font-medium leading-relaxed break-words shadow-md ${
-                              isDuel
+                              isDeletedMsg
+                                ? 'bg-slate-900/60 border border-slate-800 text-slate-400 italic rounded-bl-none'
+                                : isDuel
                                 ? 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/50 text-amber-200'
                                 : isMe
                                 ? 'bg-violet-600 text-white rounded-br-none'
                                 : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-none'
                             }`}
                           >
-                            <p>{m.messageText}</p>
-                            {isDuel && !isMe && (
+                            <p>{isDeletedMsg ? 'User is no longer available on the platform' : m.messageText}</p>
+                            {isDuel && !isMe && !isDeletedMsg && (
                               <div className="mt-2 pt-2 border-t border-amber-500/30 flex gap-2">
                                 <button
                                   onClick={() => handleSendMessage('🔥 Duel Accepted! Let’s go!')}
@@ -519,33 +630,35 @@ export const ChatDrawer: React.FC = () => {
                 {/* Input & Quick Chips */}
                 <div className="p-2.5 border-t border-slate-800 bg-slate-950/90 shrink-0 space-y-2 pb-safe">
                   {/* Quick Action Chips */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
-                    <button
-                      onClick={handleInviteToDuel}
-                      className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold whitespace-nowrap min-h-[36px]"
-                    >
-                      <Swords className="w-3 h-3 text-amber-400" />
-                      <span>1v1 Duel</span>
-                    </button>
-                    <button
-                      onClick={() => handleSendMessage('🔥 GG! Amazing speed!')}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-medium border border-slate-800 whitespace-nowrap min-h-[36px]"
-                    >
-                      🔥 GG!
-                    </button>
-                    <button
-                      onClick={() => handleSendMessage('⚡ Lightning reflexes!')}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-medium border border-slate-800 whitespace-nowrap min-h-[36px]"
-                    >
-                      ⚡ Fast!
-                    </button>
-                    <button
-                      onClick={() => handleSendMessage('🧠 Big brain calculation!')}
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-medium border border-slate-800 whitespace-nowrap min-h-[36px]"
-                    >
-                      🧠 Big Brain!
-                    </button>
-                  </div>
+                  {!(activeFriend.isDeleted || activeFriend.displayName === 'User is no longer available') && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
+                      <button
+                        onClick={handleInviteToDuel}
+                        className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-bold whitespace-nowrap min-h-[36px]"
+                      >
+                        <Swords className="w-3 h-3 text-amber-400" />
+                        <span>1v1 Duel</span>
+                      </button>
+                      <button
+                        onClick={() => handleSendMessage('🔥 GG! Amazing speed!')}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-medium border border-slate-800 whitespace-nowrap min-h-[36px]"
+                      >
+                        🔥 GG!
+                      </button>
+                      <button
+                        onClick={() => handleSendMessage('⚡ Lightning reflexes!')}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-medium border border-slate-800 whitespace-nowrap min-h-[36px]"
+                      >
+                        ⚡ Fast!
+                      </button>
+                      <button
+                        onClick={() => handleSendMessage('🧠 Big brain calculation!')}
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 text-[11px] font-medium border border-slate-800 whitespace-nowrap min-h-[36px]"
+                      >
+                        🧠 Big Brain!
+                      </button>
+                    </div>
+                  )}
 
                   {/* Message Input Form */}
                   <form
@@ -558,15 +671,26 @@ export const ChatDrawer: React.FC = () => {
                     <input
                       type="text"
                       value={inputText}
+                      disabled={activeFriend.isDeleted || activeFriend.displayName === 'User is no longer available'}
                       onChange={(e) => setInputText(e.target.value)}
-                      placeholder={`Message @${activeFriend.username}...`}
-                      className="flex-1 bg-slate-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 min-h-[44px]"
+                      placeholder={
+                        activeFriend.isDeleted || activeFriend.displayName === 'User is no longer available'
+                          ? 'User is no longer available on the platform.'
+                          : `Message @${activeFriend.username}...`
+                      }
+                      className="flex-1 bg-slate-900 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-violet-500 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <button
                       type="submit"
-                      disabled={!inputText.trim()}
+                      disabled={
+                        !inputText.trim() ||
+                        activeFriend.isDeleted ||
+                        activeFriend.displayName === 'User is no longer available'
+                      }
                       className={`p-3 rounded-xl text-white transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
-                        inputText.trim()
+                        inputText.trim() &&
+                        !activeFriend.isDeleted &&
+                        activeFriend.displayName !== 'User is no longer available'
                           ? 'bg-violet-600 hover:bg-violet-500 shadow-md shadow-violet-600/30'
                           : 'bg-slate-800 text-slate-500 cursor-not-allowed'
                       }`}

@@ -7,6 +7,7 @@ import {
   Sliders,
   Sparkles,
   User,
+  LogIn,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useQuizStore } from '../core/store/useQuizStore';
@@ -19,6 +20,8 @@ export const MobileTabBar: React.FC = () => {
     setIsCustomDrillModalOpen,
     level,
     streak,
+    currentUser,
+    setAuthModalOpen,
   } = useQuizStore();
 
   // Hide during focused full-screen drill modes
@@ -126,25 +129,43 @@ export const MobileTabBar: React.FC = () => {
             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] rounded-full bg-amber-500 transition-all duration-300 ${isTricksActive ? 'w-6 opacity-100' : 'w-0 opacity-0'}`} />
           </button>
 
-          {/* PROFILE */}
+          {/* PROFILE / LOGIN */}
           <button
-            onClick={() => setViewMode('profile')}
+            onClick={() => {
+              if (!currentUser) {
+                setAuthModalOpen(true);
+              } else {
+                setViewMode('profile');
+              }
+            }}
             className="flex flex-col items-center justify-end gap-1 flex-1 pb-0.5 group relative active:scale-95 transition-transform duration-100"
-            aria-label="Profile"
+            aria-label={currentUser ? 'Profile' : 'Login'}
           >
             <div className="relative flex flex-col items-center">
-              <span className={`absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] px-1 text-[9px] font-black rounded-full flex items-center justify-center leading-none z-10 transition-colors ${isProfileActive ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
-                {level > 99 ? '99+' : level}
-              </span>
-              <User
-                className={`w-[22px] h-[22px] transition-colors duration-200 ${
-                  isProfileActive ? 'text-violet-400' : 'text-slate-500 group-hover:text-slate-300'
-                }`}
-                strokeWidth={isProfileActive ? 2.5 : 2}
-              />
+              {currentUser ? (
+                <>
+                  <span className={`absolute -top-1.5 -right-2.5 min-w-[18px] h-[18px] px-1 text-[9px] font-black rounded-full flex items-center justify-center leading-none z-10 transition-colors ${isProfileActive ? 'bg-violet-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                    {level > 99 ? '99+' : level}
+                  </span>
+                  <User
+                    className={`w-[22px] h-[22px] transition-colors duration-200 ${
+                      isProfileActive ? 'text-violet-400' : 'text-slate-500 group-hover:text-slate-300'
+                    }`}
+                    strokeWidth={isProfileActive ? 2.5 : 2}
+                  />
+                </>
+              ) : (
+                <>
+                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-violet-400 rounded-full animate-pulse" />
+                  <LogIn
+                    className="w-[22px] h-[22px] text-violet-400 transition-colors duration-200 group-hover:text-violet-300"
+                    strokeWidth={2.2}
+                  />
+                </>
+              )}
             </div>
-            <span className={`text-[10px] font-semibold leading-none tracking-tight transition-colors duration-200 ${isProfileActive ? 'text-violet-300' : 'text-slate-500'}`}>
-              Profile
+            <span className={`text-[10px] font-semibold leading-none tracking-tight transition-colors duration-200 ${isProfileActive || !currentUser ? 'text-violet-300' : 'text-slate-500'}`}>
+              {currentUser ? 'Profile' : 'Login'}
             </span>
             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] rounded-full bg-violet-500 transition-all duration-300 ${isProfileActive ? 'w-6 opacity-100' : 'w-0 opacity-0'}`} />
           </button>

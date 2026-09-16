@@ -94,10 +94,13 @@ import { getDrillById } from '../catalog';
 import { consultLocalAdaptiveCoach } from '../localCoachEngine';
 import { MICRO_SESSION_PRESETS } from '../curriculumEngine';
 import { syncEngine, SyncStatus } from '../storage/supabaseSyncEngine';
-import { signOutUser, getCurrentUser, getCurrentSession, onAuthStateChange } from '../../lib/supabase/client';
+import { signOutUser, getCurrentUser, getCurrentSession, onAuthStateChange, getSupabase } from '../../lib/supabase/client';
 import { calculatePointsEarned, getLevelFromXP, getLevelProgress, MAX_LEVEL } from '../levelEngine';
 import { presenceEngine } from '../social/presenceEngine';
 import { socialEngine } from '../social/socialEngine';
+import { getEvaluatedMasteryBadges } from '../badges/masteryBadges';
+
+let profileRealtimeUnsub: (() => void) | null = null;
 
 export function resolveActiveDimension(
   module: ModuleId,
@@ -494,10 +497,12 @@ interface QuizState {
   setSyncStatus: (status: SyncStatus, error?: string) => void;
   initializeAuthAndSync: () => Promise<void>;
   signOut: () => Promise<void>;
+  deleteAccount: () => Promise<{ success: boolean; error?: string }>;
   triggerSync: () => void;
 
   // Actions - Gamification & Social
   setAvatarPreference: (type: 'google' | 'badge' | 'mastery', badgeLevel?: number, masteryBadgeId?: string) => Promise<void>;
+  updateDisplayName: (displayName: string) => Promise<{ success: boolean; error?: string }>;
   updateUsername: (username: string) => Promise<{ success: boolean; error?: string }>;
   setIsBadgePickerOpen: (open: boolean) => void;
   setIsChatDrawerOpen: (open: boolean) => void;
@@ -2084,29 +2089,74 @@ export const useQuizStore = create<QuizState>()(
           set({ syncStatus: status, syncError: error || null });
         });
 
+        // Instant cross-tab sync receiver
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          try {
+            const avatarBc = new BroadcastChannel('mentalis_avatar_sync');
+            avatarBc.onmessage = (event) => {
+              if (event.data?.type === 'AVATAR_EQUIPPED') {
+                const cur = get();
+                const updates: any = {};
+                if (cur.avatarType !== event.data.avatarType) updates.avatarType = event.data.avatarType;
+                if (cur.selectedBadgeLevel !== event.data.selectedBadgeLevel) updates.selectedBadgeLevel = event.data.selectedBadgeLevel;
+                if (cur.selectedMasteryBadgeId !== event.data.selectedMasteryBadgeId) updates.selectedMasteryBadgeId = event.data.selectedMasteryBadgeId;
+                if (Object.keys(updates).length > 0) {
+                  set(updates);
+                }
+              }
+            };
+          } catch {
+            // ignore
+          }
+        }
+
         const syncUser = async (user: any) => {
           if (!user) return;
-          const rawName = user.user_metadata?.full_name || user.user_metadata?.name || '';
-          const cleanName = (rawName && rawName.toLowerCase() !== 'unknown' && rawName.trim().length > 0)
-            ? rawName
-            : (user.email?.split('@')[0] || 'Learner');
+          const googleFullName = user.user_metadata?.full_name
+            || user.user_metadata?.name
+            || (user.user_metadata?.given_name
+                ? `${user.user_metadata.given_name} ${user.user_metadata?.family_name || ''}`.trim()
+                : '');
+          const cleanGoogleName = (googleFullName && googleFullName.toLowerCase() !== 'unknown' && googleFullName.trim().length > 0)
+            ? googleFullName.trim()
+            : 'Mentalist';
+
+          const emailPrefix = user.email?.split('@')[0];
+          const isEmailLike = (name?: string) =>
+            !name ||
+            name.toLowerCase() === 'unknown' ||
+            name.toLowerCase() === 'learner' ||
+            (emailPrefix && name.toLowerCase() === emailPrefix.toLowerCase());
+
+          const prevDisplayName = get().currentUser?.displayName;
+          const initialDisplayName = (prevDisplayName && !isEmailLike(prevDisplayName))
+            ? prevDisplayName
+            : cleanGoogleName;
 
           const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
 
           const authUser = {
             id: user.id,
             email: user.email,
-            displayName: cleanName,
+            displayName: initialDisplayName,
             avatarUrl,
           };
           get().setAuthUser(authUser);
 
           const { hydratedState } = await syncEngine.initialSyncOnAuth(user.id, get(), {
-            displayName: cleanName,
+            displayName: initialDisplayName,
             avatarUrl,
           });
           if (hydratedState) {
             set(hydratedState);
+          }
+
+          // Ensure primary user or insanrupesh preserves username 'boss'
+          const curU = get().username;
+          if (user.email?.toLowerCase().includes('insanrupesh') || user.id === 'e509a080-f745-405b-a9f8-663fc850ca12') {
+            if (!curU || curU.toLowerCase() !== 'boss') {
+              set({ username: 'boss' });
+            }
           }
 
           let currentState = get();
@@ -2121,9 +2171,12 @@ export const useQuizStore = create<QuizState>()(
             get().triggerSync();
           }
 
-          // 2. Ensure default username is assigned if missing
+          // 2. Ensure default username is assigned if missing (safely checks DB first)
           if (!currentState.username) {
-            const defUser = await socialEngine.generateDefaultUsername(cleanName, user.id);
+            const defUser = await socialEngine.generateDefaultUsername(
+              currentState.currentUser?.displayName || cleanGoogleName,
+              user.id
+            );
             if (defUser) {
               set({ username: defUser });
               currentState = get();
@@ -2135,10 +2188,58 @@ export const useQuizStore = create<QuizState>()(
           presenceEngine.trackUser({
             id: user.id,
             username: currentState.username,
-            displayName: cleanName,
+            displayName: currentState.currentUser?.displayName || cleanGoogleName,
             avatarUrl,
             avatarType: currentState.avatarType,
             level: currentState.level,
+          });
+
+          // Clean up any previous profile realtime listener before re-subscribing
+          if (profileRealtimeUnsub) {
+            profileRealtimeUnsub();
+            profileRealtimeUnsub = null;
+          }
+
+          // Live database listener on public.profiles for dynamic cross-device sync
+          profileRealtimeUnsub = syncEngine.subscribeToProfileChanges(user.id, (updatedProfile) => {
+            if (!updatedProfile) return;
+            const current = get();
+            const newAvatarType = updatedProfile.avatar_type || 'google';
+            const newBadgeLevel = updatedProfile.selected_badge_level || 1;
+            const newMasteryId = newAvatarType === 'mastery' ? updatedProfile.equipped_badge_id : null;
+            const newLevel = updatedProfile.level || current.level;
+            const newXP = updatedProfile.xp ?? current.xp;
+            const newDisplayName = updatedProfile.display_name;
+            const newUsername = updatedProfile.username;
+
+            const updates: any = {};
+            if (current.avatarType !== newAvatarType) updates.avatarType = newAvatarType;
+            if (current.selectedBadgeLevel !== newBadgeLevel) updates.selectedBadgeLevel = newBadgeLevel;
+            if (current.selectedMasteryBadgeId !== newMasteryId) updates.selectedMasteryBadgeId = newMasteryId;
+            if (current.level !== newLevel) updates.level = newLevel;
+            if (current.xp !== newXP) updates.xp = newXP;
+            if (newUsername && current.username !== newUsername) updates.username = newUsername;
+            if (newDisplayName && current.currentUser && current.currentUser.displayName !== newDisplayName) {
+              updates.currentUser = {
+                ...current.currentUser,
+                displayName: newDisplayName,
+              };
+            }
+
+            if (Object.keys(updates).length > 0) {
+              set(updates);
+              const refreshed = get();
+              if (refreshed.currentUser) {
+                presenceEngine.trackUser({
+                  id: refreshed.currentUser.id,
+                  username: refreshed.username,
+                  displayName: refreshed.currentUser.displayName,
+                  avatarUrl: refreshed.currentUser.avatarUrl,
+                  avatarType: refreshed.avatarType,
+                  level: refreshed.level,
+                });
+              }
+            }
           });
         };
 
@@ -2147,9 +2248,19 @@ export const useQuizStore = create<QuizState>()(
           if (session?.user) {
             await syncUser(session.user);
           } else {
-            const user = await getCurrentUser();
-            if (user) {
-              await syncUser(user);
+            const supabase = getSupabase();
+            let refreshedSession: any = null;
+            if (supabase) {
+              const { data: refData } = await supabase.auth.refreshSession();
+              refreshedSession = refData?.session;
+            }
+            if (refreshedSession?.user) {
+              await syncUser(refreshedSession.user);
+            } else {
+              const user = await getCurrentUser();
+              if (user) {
+                await syncUser(user);
+              }
             }
           }
         } catch (err) {
@@ -2160,6 +2271,10 @@ export const useQuizStore = create<QuizState>()(
           if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
             await syncUser(session.user);
           } else if (event === 'SIGNED_OUT') {
+            if (profileRealtimeUnsub) {
+              profileRealtimeUnsub();
+              profileRealtimeUnsub = null;
+            }
             presenceEngine.untrack();
             get().setAuthUser(null);
             set({ syncStatus: 'idle', syncError: null });
@@ -2168,39 +2283,164 @@ export const useQuizStore = create<QuizState>()(
       },
 
       signOut: async () => {
+        if (profileRealtimeUnsub) {
+          profileRealtimeUnsub();
+          profileRealtimeUnsub = null;
+        }
         presenceEngine.untrack();
         await signOutUser();
         get().setAuthUser(null);
         set({ syncStatus: 'idle', syncError: null });
       },
 
-      triggerSync: () => {
+      deleteAccount: async () => {
         const { currentUser } = get();
-        if (currentUser) {
-          syncEngine.debouncedSync(currentUser.id, get(), 0);
+        if (!currentUser) return { success: false, error: 'Not logged in' };
+
+        if (profileRealtimeUnsub) {
+          profileRealtimeUnsub();
+          profileRealtimeUnsub = null;
         }
+
+        const res = await syncEngine.deleteUserAccount(currentUser.id);
+        if (!res.success) {
+          return res;
+        }
+
+        presenceEngine.untrack();
+        await signOutUser();
+        get().resetProgress();
+        set({
+          currentUser: null,
+          username: null,
+          avatarType: 'google',
+          selectedBadgeLevel: 1,
+          selectedMasteryBadgeId: null,
+          syncStatus: 'idle',
+          syncError: null,
+        });
+
+        if (typeof window !== 'undefined') {
+          window.localStorage.removeItem('mentalis_storage_v8');
+          window.localStorage.removeItem('mentalis_storage_v7');
+          window.localStorage.removeItem('mentalis_landing_login_prompted');
+        }
+
+        return { success: true };
+      },
+
+      triggerSync: async () => {
+        const { currentUser } = get();
+        if (!currentUser) return;
+
+        const supabase = getSupabase();
+        if (supabase) {
+          const { data } = await supabase.auth.getSession();
+          let session = data?.session;
+          if (!session || (session.expires_at && session.expires_at * 1000 < Date.now() + 60000)) {
+            const { data: refData } = await supabase.auth.refreshSession();
+            session = refData?.session;
+          }
+          if (!session) {
+            set({
+              syncStatus: 'error',
+              syncError: 'Please sign in to sync cloud progress',
+            });
+            get().setAuthModalOpen(true);
+            return;
+          }
+        }
+        syncEngine.debouncedSync(currentUser.id, get(), 0);
       },
 
       setAvatarPreference: async (type: 'google' | 'badge' | 'mastery', badgeLevel?: number, masteryBadgeId?: string) => {
-        const lvl = badgeLevel || get().selectedBadgeLevel || 1;
-        // Mutual exclusivity: mastery badge is cleared (null) when selecting level badge or google avatar
-        const mId = type === 'mastery'
-          ? (masteryBadgeId || get().selectedMasteryBadgeId || 'sq_20')
-          : null;
-        set({ avatarType: type, selectedBadgeLevel: lvl, selectedMasteryBadgeId: mId });
+        const currentLevel = get().level || 1;
+        let finalType = type;
+        let finalBadgeLevel = badgeLevel ?? get().selectedBadgeLevel ?? 1;
+        let finalMasteryId: string | null = null;
+
+        if (type === 'badge') {
+          // Strict lock enforcement: Can NEVER equip a badge level higher than current user level
+          if (finalBadgeLevel > currentLevel) {
+            console.warn(`[Store] Blocked attempt to equip locked badge level ${finalBadgeLevel} (user level: ${currentLevel})`);
+            return;
+          }
+        } else if (type === 'mastery') {
+          // Strict lock enforcement: Can NEVER equip a locked mastery badge
+          const targetId = masteryBadgeId || get().selectedMasteryBadgeId;
+          const evaluated = getEvaluatedMasteryBadges({
+            overallStats: get().overallStats,
+            progressMap: get().progressMap,
+            factMemoryMap: get().factMemoryMap || {},
+          });
+          const badgeObj = evaluated.find((b) => b.id === targetId);
+          if (!badgeObj || !badgeObj.isUnlocked) {
+            console.warn(`[Store] Blocked attempt to equip locked mastery badge: ${targetId}`);
+            return;
+          }
+          finalMasteryId = badgeObj.id;
+        }
+
+        set({
+          avatarType: finalType,
+          selectedBadgeLevel: finalBadgeLevel,
+          selectedMasteryBadgeId: finalMasteryId,
+        });
+
+        // Instant cross-tab sync on same machine
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          try {
+            const bc = new BroadcastChannel('mentalis_avatar_sync');
+            bc.postMessage({
+              type: 'AVATAR_EQUIPPED',
+              avatarType: finalType,
+              selectedBadgeLevel: finalBadgeLevel,
+              selectedMasteryBadgeId: finalMasteryId,
+            });
+            bc.close();
+          } catch {
+            // ignore
+          }
+        }
+
         const { currentUser, username, level } = get();
         if (currentUser) {
-          await socialEngine.updateAvatarPreference(currentUser.id, type, lvl, mId);
+          await socialEngine.updateAvatarPreference(currentUser.id, finalType, finalBadgeLevel, finalMasteryId);
           presenceEngine.trackUser({
             id: currentUser.id,
             username,
             displayName: currentUser.displayName,
             avatarUrl: currentUser.avatarUrl,
-            avatarType: type,
+            avatarType: finalType,
             level,
           });
           get().triggerSync();
         }
+      },
+
+      updateDisplayName: async (newDisplayName: string) => {
+        const { currentUser, username, avatarType, level } = get();
+        if (!currentUser) return { success: false, error: 'Please log in to update your display name.' };
+        const res = await socialEngine.updateDisplayName(currentUser.id, newDisplayName);
+        if (res.success) {
+          const clean = newDisplayName.trim().replace(/\s+/g, ' ');
+          set({
+            currentUser: {
+              ...currentUser,
+              displayName: clean,
+            },
+          });
+          presenceEngine.trackUser({
+            id: currentUser.id,
+            username,
+            displayName: clean,
+            avatarUrl: currentUser.avatarUrl,
+            avatarType,
+            level,
+          });
+          get().triggerSync();
+        }
+        return res;
       },
 
       updateUsername: async (newUsername: string) => {

@@ -41,6 +41,7 @@ export default function MentalisApp() {
     selectedMasteryBadgeId,
     avatarType,
     setAvatarPreference,
+    setAuthModalOpen,
   } = useQuizStore();
 
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -50,6 +51,24 @@ export default function MentalisApp() {
     setIsMounted(true);
     initializeAuthAndSync();
   }, [initializeAuthAndSync]);
+
+  // First-landing login prompt for unauthenticated users so progress is monitored and maintained across devices
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const timer = setTimeout(() => {
+      const state = useQuizStore.getState();
+      if (!state.currentUser && typeof window !== 'undefined') {
+        const hasPrompted = window.localStorage.getItem('mentalis_landing_login_prompted');
+        if (!hasPrompted) {
+          window.localStorage.setItem('mentalis_landing_login_prompted', 'true');
+          state.setAuthModalOpen(true);
+        }
+      }
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [isMounted]);
 
   // Update dynamic document lang and RTL direction whenever locale changes
   useEffect(() => {

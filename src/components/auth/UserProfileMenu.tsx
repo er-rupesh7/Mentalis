@@ -55,16 +55,16 @@ export const UserProfileMenu: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Not signed in: Render "Sign In" button
+  // Not signed in: Render Login button with icon and text visible on mobile and desktop
   if (!currentUser) {
     return (
       <button
         onClick={() => setAuthModalOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 hover:text-violet-200 border border-violet-500/30 transition-all shadow-sm group"
-        title="Sign in with Google to sync progress"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-violet-600/30 hover:bg-violet-600/40 text-violet-200 hover:text-white border border-violet-500/40 transition-all shadow-sm active:scale-95 group shrink-0"
+        title="Login to monitor and sync progress across devices"
       >
-        <LogIn className="w-3.5 h-3.5 text-violet-400 group-hover:translate-x-0.5 transition-transform" />
-        <span className="hidden sm:inline">Sign In</span>
+        <LogIn className="w-3.5 h-3.5 text-violet-300 group-hover:translate-x-0.5 transition-transform" />
+        <span className="inline font-bold">Login</span>
       </button>
     );
   }
@@ -85,6 +85,14 @@ export const UserProfileMenu: React.FC = () => {
     }
   };
 
+  const isAuthError = syncStatus === 'error' && (
+    syncError?.toLowerCase().includes('sign in') ||
+    syncError?.toLowerCase().includes('session') ||
+    syncError?.toLowerCase().includes('re-authenticate') ||
+    syncError?.toLowerCase().includes('security') ||
+    syncError?.toLowerCase().includes('violates')
+  );
+
   const getSyncLabel = () => {
     switch (syncStatus) {
       case 'syncing':
@@ -94,16 +102,23 @@ export const UserProfileMenu: React.FC = () => {
       case 'offline':
         return 'Offline (saved locally)';
       case 'error':
+        if (isAuthError) return 'Sign in to sync';
         return syncError || 'Sync failed';
       default:
         return 'Ready to sync';
     }
   };
 
-  const rawName = currentUser.displayName || currentUser.email?.split('@')[0] || 'Mentalist';
-  const displayName = (!rawName || rawName.trim().toLowerCase() === 'unknown')
-    ? (currentUser.email?.split('@')[0] || 'Learner')
-    : rawName;
+  const emailPrefix = currentUser.email?.split('@')[0];
+  const isEmailLike = (name?: string | null) =>
+    !name ||
+    name.toLowerCase() === 'unknown' ||
+    name.toLowerCase() === 'learner' ||
+    (emailPrefix && name.toLowerCase() === emailPrefix.toLowerCase());
+
+  const displayName = !isEmailLike(currentUser.displayName)
+    ? currentUser.displayName!
+    : 'Mentalist';
 
   const levelProgress = getLevelProgress(xp);
   const profileHref = username ? `/${username}` : `/${currentUser.id}`;
@@ -247,16 +262,23 @@ export const UserProfileMenu: React.FC = () => {
 
           {/* Sync Status & Force Sync */}
           <div className="px-3 py-2 rounded-xl bg-slate-800/40 border border-slate-800 text-xs mb-2 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-slate-300">
+            <div className="flex items-center gap-2 text-slate-300 min-w-0 pr-2">
               {getSyncIcon()}
-              <span className="text-[11px] truncate max-w-[140px]">{getSyncLabel()}</span>
+              <span className="text-[11px] truncate" title={syncError || getSyncLabel()}>{getSyncLabel()}</span>
             </div>
             <button
-              onClick={() => triggerSync()}
+              onClick={() => {
+                if (isAuthError) {
+                  setIsOpen(false);
+                  setAuthModalOpen(true);
+                } else {
+                  triggerSync();
+                }
+              }}
               className="text-[10px] font-bold text-violet-400 hover:text-violet-300 hover:underline shrink-0"
-              title="Force sync now"
+              title={isAuthError ? 'Sign in to sync your progress' : 'Force sync now'}
             >
-              Sync Now
+              {isAuthError ? 'Sign In' : 'Sync Now'}
             </button>
           </div>
 

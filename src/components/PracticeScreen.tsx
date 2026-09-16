@@ -366,9 +366,9 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
         </div>
       </div>
 
-      {/* Sleek 2px Progress Bar Strip */}
+      {/* Sleek Progress Bar Strip (Mobile only — desktop has the full HUD progress bar below) */}
       {sessionConfig.goalCount && (
-        <div className="w-full h-1 bg-slate-900 overflow-hidden shrink-0">
+        <div className="sm:hidden w-full h-1 bg-slate-900 overflow-hidden shrink-0">
           <motion.div
             className="h-full bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-400"
             initial={{ width: 0 }}
@@ -533,12 +533,12 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
 
       {/* Practice Workspace Container (Responsive Desktop Arena / Mobile Pinned Keypad) */}
       <div
-        className={`flex-1 w-full mx-auto min-h-0 relative flex flex-col lg:flex-row items-center lg:items-center justify-center px-3 sm:px-6 py-1.5 sm:py-3 gap-4 lg:gap-8 overflow-y-auto lg:overflow-hidden ${
+        className={`flex-1 w-full mx-auto min-h-0 relative flex flex-col lg:flex-row items-center lg:items-center justify-center px-3 sm:px-6 py-1.5 sm:py-3 gap-4 lg:gap-8 overflow-y-auto custom-scrollbar ${
           showStrategy ? 'max-w-5xl xl:max-w-6xl' : 'max-w-xl xl:max-w-2xl'
         }`}
       >
         {/* Primary Practice Column: Arithmetic Question & Keypad */}
-        <div className="flex-1 flex flex-col justify-between items-center w-full max-w-md mx-auto h-full min-h-0 relative">
+        <div className="flex-1 flex flex-col justify-between items-center w-full max-w-md mx-auto min-h-0 relative my-auto py-1">
           {/* Pause Overlay */}
           <AnimatePresence>
             {isPaused && (
