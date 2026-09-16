@@ -81,12 +81,12 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_public_user_stats(UUID) TO anon, authenticated;
 
--- 4. Ensure existing account associated with insanrupesh retains username 'boss'
+-- 4. Ensure existing account associated with insanrupesh retains username 'boss' and display name 'Mr. Boss'
 UPDATE public.profiles
 SET username = 'boss',
+    display_name = CASE WHEN display_name = 'Mentalist' OR display_name IS NULL THEN 'Mr. Boss' ELSE display_name END,
     updated_at = NOW()
-WHERE id = 'e509a080-f745-405b-a9f8-663fc850ca12'
-  AND (username IS NULL OR username != 'boss');
+WHERE id = 'e509a080-f745-405b-a9f8-663fc850ca12';
 
 -- 5. Security Definer RPC helper: sync_user_stats
 -- Fail-safe UPSERT helper for user statistics that verifies auth.uid()

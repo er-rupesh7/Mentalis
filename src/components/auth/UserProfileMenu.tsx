@@ -118,7 +118,9 @@ export const UserProfileMenu: React.FC = () => {
 
   const displayName = !isEmailLike(currentUser.displayName)
     ? currentUser.displayName!
-    : 'Mentalist';
+    : (username === 'boss' || currentUser.id === 'e509a080-f745-405b-a9f8-663fc850ca12')
+        ? 'Mr. Boss'
+        : 'Mentalist';
 
   const levelProgress = getLevelProgress(xp);
   const profileHref = username ? `/${username}` : `/${currentUser.id}`;

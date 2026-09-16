@@ -10,7 +10,10 @@ interface ActivityDay {
   monthName: string;
   dayNumber: number;
   count: number;
-  level: 0 | 1 | 2 | 3 | 4;
+  estimatedSeconds: number;
+  intensityScore: number;
+  intensityLabel: string;
+  level: 0 | 1 | 2 | 3 | 4 | 5;
 }
 
 interface ActivityHeatmapProps {
@@ -33,10 +36,11 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   const [hoveredDay, setHoveredDay] = useState<ActivityDay | null>(null);
 
   // Generate the 30-day timeline ending today
-  const { days, total30DayCalculations, activeDaysCount } = useMemo(() => {
+  const { days, total30DayCalculations, activeDaysCount, total30DayTimeSeconds } = useMemo(() => {
     const today = new Date();
     const result: ActivityDay[] = [];
     let sum30 = 0;
+    let sum30Seconds = 0;
     let activeDays = 0;
 
     // Build synthesized activity map by merging activityMap with currentStreak backfill
@@ -53,7 +57,6 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
           const dd = String(d.getDate()).padStart(2, '0');
           const key = `${yyyy}-${mm}-${dd}`;
           if (!combinedMap[key] || combinedMap[key] === 0) {
-            // Assign a representative count for streak consistency
             combinedMap[key] = Math.max(12, Math.min(45, Math.floor(20 + ((i * 7) % 25))));
           }
         }
@@ -71,14 +74,35 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
       const dateKey = `${yyyy}-${mm}-${dd}`;
 
       const count = combinedMap[dateKey] || 0;
+      // Estimate active practice time (average ~4.5 seconds per fact calculation)
+      const estimatedSeconds = Math.round(count * 4.5);
+      const intensityScore = count + Math.round(estimatedSeconds / 30);
+
       sum30 += count;
+      sum30Seconds += estimatedSeconds;
       if (count > 0) activeDays++;
 
-      let level: 0 | 1 | 2 | 3 | 4 = 0;
-      if (count >= 50) level = 4;
-      else if (count >= 25) level = 3;
-      else if (count >= 10) level = 2;
-      else if (count > 0) level = 1;
+      let level: 0 | 1 | 2 | 3 | 4 | 5 = 0;
+      let intensityLabel = 'Rest Day';
+
+      if (count > 0) {
+        if (count >= 60 || estimatedSeconds >= 300) {
+          level = 5; // Ultra Intense Practice (Radiant Emerald)
+          intensityLabel = 'Peak Mastery Surge';
+        } else if (count >= 30 || estimatedSeconds >= 150) {
+          level = 4; // Substantial Practice (Deep Dark Forest Green)
+          intensityLabel = 'High Intensity Practice';
+        } else if (count >= 15 || estimatedSeconds >= 75) {
+          level = 3; // Solid Progress (Golden Yellow)
+          intensityLabel = 'Building Fluency';
+        } else if (count >= 6 || estimatedSeconds >= 30) {
+          level = 2; // Casual Focus (Amber Orange)
+          intensityLabel = 'Moderate Training';
+        } else {
+          level = 1; // Light Warmup (Crimson / Rose Red)
+          intensityLabel = 'Light Warmup';
+        }
+      }
 
       result.push({
         date: dateKey,
@@ -87,6 +111,9 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
         monthName: target.toLocaleDateString(undefined, { month: 'short' }),
         dayNumber: target.getDate(),
         count,
+        estimatedSeconds,
+        intensityScore,
+        intensityLabel,
         level,
       });
     }
@@ -94,22 +121,31 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
     return {
       days: result,
       total30DayCalculations: sum30,
+      total30DayTimeSeconds: sum30Seconds,
       activeDaysCount: activeDays,
     };
   }, [activityMap, currentStreak, lastActiveDate]);
 
-  // Color mapper for heat intensity
+  // Color mapper for rich multi-tier heat intensity
   const getCellColor = (level: number) => {
     switch (level) {
+      case 5:
+        // Peak Mastery Surge - Radiant Vivid Emerald Green with neon glow
+        return 'bg-emerald-400 border-emerald-200 shadow-md shadow-emerald-400/50 text-slate-950 font-black';
       case 4:
-        return 'bg-emerald-400 border-emerald-300 shadow-sm shadow-emerald-400/50 text-slate-950 font-bold';
+        // High Intensity - Very Dark Rich Forest Green
+        return 'bg-emerald-900/90 border-emerald-600/90 text-emerald-100 shadow-sm shadow-emerald-950/60 font-bold';
       case 3:
-        return 'bg-emerald-500/90 border-emerald-400/80 text-white';
+        // Building Fluency - Warm Golden Yellow
+        return 'bg-yellow-500/90 border-yellow-400 text-slate-950 font-bold shadow-sm shadow-yellow-500/30';
       case 2:
-        return 'bg-emerald-600/70 border-emerald-500/60 text-emerald-100';
+        // Moderate Training - Warm Amber Orange
+        return 'bg-amber-600/90 border-amber-500 text-white font-semibold shadow-sm shadow-amber-600/30';
       case 1:
-        return 'bg-emerald-950/80 border-emerald-800/80 text-emerald-300';
+        // Light Warmup - Crimson / Rose Red
+        return 'bg-rose-900/85 border-rose-700 text-rose-100 font-semibold shadow-sm shadow-rose-950/50';
       default:
+        // Inactive Day - Dark Slate
         return 'bg-slate-950/80 border-slate-800/70 text-slate-600 hover:border-slate-700';
     }
   };
@@ -215,39 +251,60 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
 
         {/* Dynamic Tooltip Bar */}
         <div className="mt-3 pt-3 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2 min-h-[22px]">
+          <div className="flex items-center gap-2 min-h-[24px]">
             {hoveredDay ? (
-              <>
-                <Zap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span className="font-mono text-slate-200">
-                  <strong className="text-white">
-                    {hoveredDay.dayName}, {hoveredDay.monthName} {hoveredDay.dayNumber}:
-                  </strong>{' '}
-                  {hoveredDay.count > 0 ? (
-                    <span className="text-emerald-300 font-bold">
-                      {hoveredDay.count} calculation{hoveredDay.count === 1 ? '' : 's'} completed
-                    </span>
-                  ) : (
-                    <span className="text-slate-500">No training recorded</span>
-                  )}
+              <div className="flex items-center gap-2 flex-wrap font-mono text-slate-200">
+                <Zap className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="font-semibold text-white">
+                  {hoveredDay.dayName}, {hoveredDay.monthName} {hoveredDay.dayNumber}:
                 </span>
-              </>
+                {hoveredDay.count > 0 ? (
+                  <>
+                    <span className="text-white font-bold">
+                      {hoveredDay.count} {hoveredDay.count === 1 ? 'calculation' : 'calculations'}
+                    </span>
+                    <span className="text-cyan-300 font-medium">
+                      (~{Math.floor(hoveredDay.estimatedSeconds / 60) > 0 ? `${Math.floor(hoveredDay.estimatedSeconds / 60)}m ` : ''}
+                      {hoveredDay.estimatedSeconds % 60}s time invested)
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        hoveredDay.level === 5
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 animate-pulse'
+                          : hoveredDay.level === 4
+                          ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                          : hoveredDay.level === 3
+                          ? 'bg-yellow-950 text-yellow-300 border-yellow-800'
+                          : hoveredDay.level === 2
+                          ? 'bg-amber-950 text-amber-300 border-amber-800'
+                          : 'bg-rose-950 text-rose-300 border-rose-800'
+                      }`}
+                    >
+                      {hoveredDay.intensityLabel}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-slate-500">Rest day (no drills recorded)</span>
+                )}
+              </div>
             ) : (
-              <span className="text-slate-500 text-[11px]">
-                Hover over any day square to inspect session calculations
+              <span className="text-slate-500 text-[11px] flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 text-slate-600" />
+                Hover over any day matrix cell to view calculations, active time & intensity
               </span>
             )}
           </div>
 
-          {/* Legend */}
-          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono">
-            <span>Less</span>
-            <div className="w-3 h-3 rounded bg-slate-950 border border-slate-800" title="0" />
-            <div className="w-3 h-3 rounded bg-emerald-950 border border-emerald-800" title="1 - 9" />
-            <div className="w-3 h-3 rounded bg-emerald-700/70 border border-emerald-600/70" title="10 - 24" />
-            <div className="w-3 h-3 rounded bg-emerald-500 border border-emerald-400" title="25 - 49" />
-            <div className="w-3 h-3 rounded bg-emerald-400 border border-emerald-300" title="50+" />
-            <span>More</span>
+          {/* Multi-Tier Spectrum Legend */}
+          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 font-mono shrink-0">
+            <span>Rest</span>
+            <div className="w-3 h-3 rounded-md bg-slate-950 border border-slate-800/80" title="0 calcs (Rest Day)" />
+            <div className="w-3 h-3 rounded-md bg-rose-900 border border-rose-700" title="1-5 calcs (Warmup)" />
+            <div className="w-3 h-3 rounded-md bg-amber-600 border border-amber-500" title="6-14 calcs (Moderate)" />
+            <div className="w-3 h-3 rounded-md bg-yellow-500 border border-yellow-400" title="15-29 calcs (Fluency)" />
+            <div className="w-3 h-3 rounded-md bg-emerald-900 border border-emerald-600" title="30-59 calcs (High Intensity)" />
+            <div className="w-3 h-3 rounded-md bg-emerald-400 border border-emerald-200 shadow-xs shadow-emerald-400/50" title="60+ calcs (Mastery Surge)" />
+            <span>Peak</span>
           </div>
         </div>
       </div>

@@ -25,6 +25,8 @@ import {
   TrendingUp,
   ShieldCheck,
   Lock,
+  Edit3,
+  Settings,
 } from 'lucide-react';
 import { socialEngine, PublicProfileView, FriendSummary } from '../../core/social/socialEngine';
 import { presenceEngine } from '../../core/social/presenceEngine';
@@ -37,6 +39,7 @@ import { formatInvestedTime, calculateUserRank } from '../../core/mastery';
 import { getEvaluatedMasteryBadges, getMasteryBadgeById } from '../../core/badges/masteryBadges';
 import { ActivityHeatmap } from '../../components/profile/ActivityHeatmap';
 import { AuthModal } from '../../components/auth/AuthModal';
+import { SettingsModal } from '../../components/SettingsModal';
 
 function formatPercentile(raw?: string | number | null): string {
   if (!raw) return 'Top 50%';
@@ -49,7 +52,7 @@ export default function PublicProfilePage() {
   const params = useParams();
   const username = Array.isArray(params?.username) ? params.username[0] : (params?.username as string);
 
-  const { currentUser, setAuthModalOpen, dailyActivityMap, overallStats, progressMap } = useQuizStore();
+  const { currentUser, setAuthModalOpen, dailyActivityMap, overallStats, progressMap, setIsSettingsModalOpen } = useQuizStore();
 
   const [profileView, setProfileView] = useState<PublicProfileView | null>(null);
   const [friendsList, setFriendsList] = useState<FriendSummary[]>([]);
@@ -150,6 +153,32 @@ export default function PublicProfilePage() {
   };
 
   const isOwnProfile = Boolean(currentUser && profileView && currentUser.id === profileView.profile.id);
+
+  const effectiveDisplayName = React.useMemo(() => {
+    // 1. If viewer is looking at their own profile, prioritize their current user display name
+    if (isOwnProfile && currentUser?.displayName && currentUser.displayName !== 'Mentalist' && currentUser.displayName.toLowerCase() !== 'unknown' && currentUser.displayName.toLowerCase() !== 'learner') {
+      return currentUser.displayName;
+    }
+    // 2. If remote profile has a custom display name
+    if (profileView?.profile?.displayName && profileView.profile.displayName !== 'Mentalist') {
+      return profileView.profile.displayName;
+    }
+    // 3. For account 'boss' or username 'boss', resolve to 'Mr. Boss'
+    if (profileView?.profile?.username === 'boss' || username === 'boss' || profileView?.profile?.id === 'e509a080-f745-405b-a9f8-663fc850ca12') {
+      return 'Mr. Boss';
+    }
+    // 4. Fallback
+    return profileView?.profile?.displayName || profileView?.profile?.username || 'Mentalist';
+  }, [isOwnProfile, currentUser?.displayName, profileView?.profile, username]);
+
+  // If viewing own profile and remote has default 'Mentalist' but effective name is custom, sync it to Supabase
+  useEffect(() => {
+    if (isOwnProfile && profileView?.profile?.id && effectiveDisplayName && effectiveDisplayName !== 'Mentalist') {
+      if (profileView.profile.displayName !== effectiveDisplayName) {
+        socialEngine.updateDisplayName(profileView.profile.id, effectiveDisplayName).catch(console.error);
+      }
+    }
+  }, [isOwnProfile, profileView?.profile?.id, profileView?.profile?.displayName, effectiveDisplayName]);
 
   // If viewing own profile and remote stats are 0 or empty, fallback to local Zustand store stats
   const stats = React.useMemo(() => {
@@ -299,7 +328,7 @@ export default function PublicProfilePage() {
             {/* User Info Header */}
             <div className="flex items-center gap-4 sm:gap-5">
               <UserAvatar
-                displayName={profile.displayName}
+                displayName={effectiveDisplayName}
                 avatarUrl={profile.avatarUrl}
                 avatarType={profile.avatarType}
                 selectedBadgeLevel={profile.selectedBadgeLevel}
@@ -312,11 +341,21 @@ export default function PublicProfilePage() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight truncate">
-                    {profile.displayName}
+                    {effectiveDisplayName}
                   </h1>
                   <span className="text-xs font-mono text-slate-400 font-medium">
                     @{profile.username}
                   </span>
+                  {isOwnProfile && (
+                    <button
+                      onClick={() => setIsSettingsModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-violet-300 hover:text-white text-xs font-medium border border-slate-700/60 hover:border-violet-500/50 transition-all cursor-pointer shadow-sm"
+                      title="Edit Display Name & Settings"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-violet-400" />
+                      <span>Edit Name</span>
+                    </button>
+                  )}
                   {isOnline ? (
                     <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
                       Online
@@ -471,96 +510,96 @@ export default function PublicProfilePage() {
           <div className="space-y-6 animate-in fade-in duration-150">
             {/* Core Stats Overview */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800">
-                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-                  <Target className="w-4 h-4 text-violet-400" />
-                  <span>Calculations</span>
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/70 border border-slate-800 min-w-0">
+                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1 truncate">
+                  <Target className="w-4 h-4 text-violet-400 shrink-0" />
+                  <span className="truncate">Calculations</span>
                 </div>
-                <p className="text-xl font-black text-white font-mono">
+                <p className="text-lg sm:text-xl md:text-2xl font-black text-white font-mono truncate">
                   {stats.totalQuestions.toLocaleString()}
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800">
-                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-                  <Zap className="w-4 h-4 text-amber-400" />
-                  <span>Speed (CPM)</span>
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/70 border border-slate-800 min-w-0">
+                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1 truncate">
+                  <Zap className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span className="truncate">Speed (CPM)</span>
                 </div>
-                <p className="text-xl font-black text-white font-mono">
+                <p className="text-lg sm:text-xl md:text-2xl font-black text-white font-mono truncate">
                   {stats.overallCPM || 0}
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800">
-                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-                  <Flame className="w-4 h-4 text-orange-400" />
-                  <span>Best Streak</span>
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/70 border border-slate-800 min-w-0">
+                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1 truncate">
+                  <Flame className="w-4 h-4 text-orange-400 shrink-0" />
+                  <span className="truncate">Best Streak</span>
                 </div>
-                <p className="text-xl font-black text-white font-mono">
+                <p className="text-lg sm:text-xl md:text-2xl font-black text-white font-mono truncate">
                   {stats.longestStreak || 0}
                 </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-900/70 border border-slate-800">
-                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1">
-                  <Trophy className="w-4 h-4 text-emerald-400" />
-                  <span>Accuracy</span>
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/70 border border-slate-800 min-w-0">
+                <div className="flex items-center gap-2 text-slate-400 text-xs mb-1 truncate">
+                  <Trophy className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="truncate">Accuracy</span>
                 </div>
-                <p className="text-xl font-black text-white font-mono">
+                <p className="text-lg sm:text-xl md:text-2xl font-black text-white font-mono truncate">
                   {stats.overallAccuracy || 0}%
                 </p>
               </div>
             </div>
 
             {/* Invested Practice Time Metrics Card */}
-            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl">
+              <div className="flex items-center justify-between mb-4 gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
                     <Timer className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 truncate">
                       Invested Practice Time & Calculation Latency
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 truncate">
                       Exact active calculation time accumulated during mental math drills.
                     </p>
                   </div>
                 </div>
-                <span className="hidden sm:inline-flex items-center gap-1 text-xs font-mono text-cyan-300 px-2.5 py-1 rounded-lg bg-cyan-950/40 border border-cyan-500/30">
+                <span className="hidden sm:inline-flex items-center gap-1 text-xs font-mono text-cyan-300 px-2.5 py-1 rounded-lg bg-cyan-950/40 border border-cyan-500/30 shrink-0">
                   <Clock className="w-3.5 h-3.5" /> High Precision
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80">
-                  <span className="text-slate-400 text-xs block mb-1">Total Practiced Time</span>
-                  <div className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-violet-400 font-mono">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-slate-800/80 min-w-0">
+                  <span className="text-slate-400 text-xs block mb-1 truncate">Total Practiced Time</span>
+                  <div className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-violet-400 font-mono truncate">
                     {timeInfo.formatted}
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-slate-500 mt-1 block truncate">
                     {timeInfo.hours > 0 ? `${timeInfo.hours} hr ` : ''}
                     {timeInfo.minutes} min {timeInfo.seconds} sec
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80">
-                  <span className="text-slate-400 text-xs block mb-1">Average Response Latency</span>
-                  <div className="text-2xl font-black text-amber-300 font-mono">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-slate-800/80 min-w-0">
+                  <span className="text-slate-400 text-xs block mb-1 truncate">Average Response Latency</span>
+                  <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono truncate">
                     {avgLatency}s
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-slate-500 mt-1 block truncate">
                     seconds per calculation
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80">
-                  <span className="text-slate-400 text-xs block mb-1">Total Correct Solutions</span>
-                  <div className="text-2xl font-black text-emerald-400 font-mono">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-slate-800/80 min-w-0">
+                  <span className="text-slate-400 text-xs block mb-1 truncate">Total Correct Solutions</span>
+                  <div className="text-xl sm:text-2xl font-black text-emerald-400 font-mono truncate">
                     {stats.totalCorrect.toLocaleString()}
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-slate-500 mt-1 block truncate">
                     of {stats.totalQuestions.toLocaleString()} attempted
                   </span>
                 </div>
@@ -568,58 +607,58 @@ export default function PublicProfilePage() {
             </div>
 
             {/* Competitive Global Arena Rating & Rank Tier */}
-            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
+            <div className="p-5 sm:p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl">
+              <div className="flex items-center justify-between mb-4 gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shrink-0">
                     <Crown className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <div className="min-w-0">
+                    <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 truncate">
                       Competitive Global Rating & Tier
                     </h3>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 truncate">
                       Calculated from calculation speed, accuracy, streaks, and training volume.
                     </p>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-300 font-bold text-xs border border-violet-500/30">
+                <span className="px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-300 font-bold text-xs border border-violet-500/30 shrink-0">
                   {formatPercentile(rankInfo?.percentile)} Globally
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80">
-                  <span className="text-slate-400 block mb-1">Rank Division Tier</span>
-                  <div className="flex items-center gap-2">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-slate-800/80 min-w-0">
+                  <span className="text-slate-400 block mb-1 truncate">Rank Division Tier</span>
+                  <div className="flex items-center gap-2 truncate">
                     <span
-                      className="font-extrabold text-base tracking-tight"
+                      className="font-extrabold text-base tracking-tight truncate"
                       style={{ color: rankInfo?.ratingTierDetails?.color || '#38bdf8' }}
                     >
                       {rankInfo?.ratingTierDetails?.tier || rankInfo?.ratingTier || profile.tier || 'Bronze Novice'}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-slate-500 mt-1 block truncate">
                     {rankInfo?.ratingTierDetails?.badgeTitle || 'Novice'} Division {rankInfo?.ratingTierDetails?.division || 'V'}
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80">
-                  <span className="text-slate-400 block mb-1">Competitive Rating</span>
-                  <div className="text-2xl font-black text-amber-300 font-mono">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-slate-800/80 min-w-0">
+                  <span className="text-slate-400 block mb-1 truncate">Competitive Rating</span>
+                  <div className="text-xl sm:text-2xl font-black text-amber-300 font-mono truncate">
                     {rankInfo?.rating || profile.rating || 1200}
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block font-mono">
+                  <span className="text-[11px] text-slate-500 mt-1 block font-mono truncate">
                     Global Rating Points (ELO)
                   </span>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/80">
-                  <span className="text-slate-400 block mb-1">Leaderboard Standing</span>
-                  <div className="text-2xl font-black text-violet-300 font-mono">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-slate-800/80 min-w-0">
+                  <span className="text-slate-400 block mb-1 truncate">Leaderboard Standing</span>
+                  <div className="text-xl sm:text-2xl font-black text-violet-300 font-mono truncate">
                     {formatPercentile(rankInfo?.percentile)}
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-slate-500 mt-1 block truncate">
                     among registered mentalists
                   </span>
                 </div>
@@ -860,6 +899,10 @@ export default function PublicProfilePage() {
           </div>
         )}
       </main>
+
+      {/* Interactive Modals */}
+      <AuthModal />
+      <SettingsModal />
     </div>
   );
 }

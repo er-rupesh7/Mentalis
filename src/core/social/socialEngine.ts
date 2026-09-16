@@ -171,7 +171,9 @@ class SocialEngine {
       profile: {
         id: profileData.id,
         username: profileData.username || 'user',
-        displayName: profileData.display_name || profileData.username || 'Mentalist',
+        displayName: ((profileData.username === 'boss' || profileData.id === 'e509a080-f745-405b-a9f8-663fc850ca12') && (!profileData.display_name || profileData.display_name === 'Mentalist'))
+          ? 'Mr. Boss'
+          : (profileData.display_name || profileData.username || 'Mentalist'),
         avatarUrl: profileData.avatar_url,
         avatarType: (profileData.avatar_type as any) || 'google',
         selectedBadgeLevel: profileData.selected_badge_level || 1,

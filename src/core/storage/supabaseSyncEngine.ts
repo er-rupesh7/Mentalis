@@ -130,7 +130,9 @@ class SupabaseSyncEngine {
           ? userMeta.displayName
           : (localState.currentUser?.displayName && !isEmailLike(localState.currentUser.displayName))
               ? localState.currentUser.displayName
-              : 'Mentalist';
+              : (localState.username === 'boss' || userId === 'e509a080-f745-405b-a9f8-663fc850ca12')
+                  ? 'Mr. Boss'
+                  : 'Mentalist';
 
         const initialProfilePayload: any = {
           id: userId,
@@ -353,7 +355,9 @@ class SupabaseSyncEngine {
         ? state.currentUser.displayName
         : (userMeta?.displayName && !isEmailLike(userMeta.displayName))
             ? userMeta.displayName
-            : 'Mentalist';
+            : (state.username === 'boss' || activeUserId === 'e509a080-f745-405b-a9f8-663fc850ca12')
+                ? 'Mr. Boss'
+                : 'Mentalist';
 
       // 1. User Stats & Rank Calculation
       const totalCalcs = state.overallStats?.totalCalculations || state.overallStats?.totalQuestions || 0;

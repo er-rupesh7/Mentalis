@@ -238,58 +238,68 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
             </div>
           </div>
 
-          {/* Stat HUD — horizontal scroll on mobile, 4-column grid on desktop */}
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-1 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-4">
+          {/* Stat HUD — horizontal scroll on mobile, 2-col grid on tablet, 4-column grid on desktop */}
+          <div className="flex gap-2.5 sm:gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-1 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4">
             {/* Daily Streak */}
-            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
-              <div className="p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <div className="flex-none w-[170px] sm:w-auto snap-start p-3.5 sm:p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
                 <Flame className="w-5 h-5" />
               </div>
-              <div>
-                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('dailyStreak')}</div>
-                <div className="text-xl font-bold font-mono text-white flex items-baseline gap-1">
-                  {overallStats.dailyActiveStreak} <span className="text-xs font-normal text-amber-400">{tDash('days')}</span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] sm:text-[11px] font-mono uppercase text-slate-400 tracking-wider truncate" title={tDash('dailyStreak')}>
+                  {tDash('dailyStreak')}
+                </div>
+                <div className="text-lg sm:text-xl font-bold font-mono text-white flex items-baseline gap-1 flex-wrap sm:flex-nowrap">
+                  <span className="truncate">{overallStats.dailyActiveStreak}</span>
+                  <span className="text-[11px] sm:text-xs font-normal text-amber-400 shrink-0">{tDash('days')}</span>
                 </div>
               </div>
             </div>
 
             {/* Calculations Done */}
-            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
-              <div className="p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20">
+            <div className="flex-none w-[170px] sm:w-auto snap-start p-3.5 sm:p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-violet-500/10 text-violet-400 border border-violet-500/20 shrink-0">
                 <Zap className="w-5 h-5" />
               </div>
-              <div>
-                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('solvedOffline')}</div>
-                <div className="text-xl font-bold font-mono text-white">
-                  {overallStats.totalCalculations}
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] sm:text-[11px] font-mono uppercase text-slate-400 tracking-wider truncate" title={tDash('solvedOffline')}>
+                  {tDash('solvedOffline')}
+                </div>
+                <div className="text-lg sm:text-xl font-bold font-mono text-white truncate">
+                  {overallStats.totalCalculations.toLocaleString()}
                 </div>
               </div>
             </div>
 
             {/* Mental Speed Index CPM */}
-            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
-              <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <div className="flex-none w-[175px] sm:w-auto snap-start p-3.5 sm:p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                 <TrendingUp className="w-5 h-5" />
               </div>
-              <div>
-                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('throughputCpm')}</div>
-                <div className="text-xl font-bold font-mono text-emerald-400 flex items-baseline gap-1">
-                  {cpm} <span className="text-xs font-normal text-slate-500">{tDash('calcMin')}</span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] sm:text-[11px] font-mono uppercase text-slate-400 tracking-wider truncate" title={tDash('throughputCpm')}>
+                  {tDash('throughputCpm')}
+                </div>
+                <div className="text-lg sm:text-xl font-bold font-mono text-emerald-400 flex items-baseline gap-1 flex-wrap sm:flex-nowrap">
+                  <span className="truncate">{cpm}</span>
+                  <span className="text-[11px] sm:text-xs font-normal text-slate-500 shrink-0">{tDash('calcMin')}</span>
                 </div>
               </div>
             </div>
 
             {/* Genuine Derived Rank */}
-            <div className="flex-none w-36 sm:w-auto snap-start p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
-              <div className="p-3 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20">
+            <div className="flex-none w-[170px] sm:w-auto snap-start p-3.5 sm:p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center gap-3 shadow-lg">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-sky-500/10 text-sky-400 border border-sky-500/20 shrink-0">
                 <Award className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <div className="text-[10px] font-mono uppercase text-slate-400">{tDash('currentRank')}</div>
-                <div className="text-xs font-bold text-white truncate" title={userRank.title}>
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] sm:text-[11px] font-mono uppercase text-slate-400 tracking-wider truncate" title={tDash('currentRank')}>
+                  {tDash('currentRank')}
+                </div>
+                <div className="text-xs sm:text-sm font-bold text-white truncate" title={userRank.title}>
                   {userRank.title}
                 </div>
-                <div className="text-[10px] text-sky-400 font-mono">
+                <div className="text-[10px] text-sky-400 font-mono truncate">
                   {tDash('tier')} {userRank.tierLevel + 1}/6
                 </div>
               </div>
