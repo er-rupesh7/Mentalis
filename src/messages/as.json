@@ -21,7 +21,9 @@
     "score": "স্ক'ৰ",
     "loading": "ল'ড হৈ আছে...",
     "level": "স্তৰ",
-    "tier": "খাপ"
+    "tier": "খাপ",
+    "enabled": "সক্ষম",
+    "disabled": "অক্ষম"
   },
   "nav": {
     "dashboard": "ডেচব'ৰ্ড",
@@ -122,7 +124,24 @@
     "vedicBinomialShortcuts": "वैदिक व द्विपद शॉर्टकट",
     "anzanTeaser": "संज्ञानात्मक कार्यशील स्मृति इंजन (अंजन फ्लैश)",
     "startAnzan": "अंजन फ्लैश शुरू करें",
-    "achievementsBadges": "उपलब्धियां और बैज"
+    "achievementsBadges": "उपलब्धियां और बैज",
+    "apexQuantEngine": "এপেক্স স্পীড কোৱাণ্ট ইঞ্জিন",
+    "apexQuantEngineDesc": "শীৰ্ষ প্ৰতিযোগিতামূলক মানৰ বিৰুদ্ধে আপোনাৰ মানসিক গণিতৰ গতি মূল্যায়ন কৰে।",
+    "quickMock": "দ্ৰুত ১৫-প্ৰশ্নৰ মক",
+    "subSkillsHub": "১১ টা উপ-দক্ষতা হাব",
+    "openBootcamp1120": "বুটকেম্প ১১–২০ খোলক",
+    "readiness": "প্ৰস্তুতি",
+    "accuracy": "নিখুঁততা",
+    "foundation": "ভেটি",
+    "cognitiveAiEngine": "কগনিটিভ এআই মগজু আৰু প্ৰশিক্ষণ",
+    "currentMentalState": "বৰ্তমান মানসিক অৱস্থা",
+    "cognitiveCapacity": "মানসিক ক্ষমতা",
+    "activeFrontier": "সক্ৰিয় শিক্ষণ সীমা",
+    "nextTechniqueToMaster": "শিকিবলগীয়া পৰৱৰ্তী গুৰুত্বপূৰ্ণ কৌশল",
+    "whyAiSelectedThis": "এআইয়ে ইয়াক কিয় বাছি লৈছে",
+    "learnAndPracticeTechnique": "কৌশল শিকক আৰু অভ্যাস কৰক",
+    "launchFrontierTraining": "প্ৰশিক্ষণ আৰম্ভ কৰক",
+    "domainFrontiers": "৭-বিভাগীয় শিক্ষণ সীমা"
   },
   "practice": {
     "typeAnswer": "উত্তৰ লিখক...",
@@ -235,7 +254,25 @@
     "howItWorks": "यह कैसे काम करता है",
     "innerEcho": "आंतरिक ध्वनि",
     "dailyRoutine": "आज का 5-ब्लॉक दैनिक रूटीन",
-    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र"
+    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र",
+    "calibrationRecommended": "কেলিব্ৰেচনৰ পৰামৰ্শ দিয়া হৈছে",
+    "calibrateBaselineTitle": "আপোনাৰ গতি কেলিব্ৰেট কৰক",
+    "calibrateBaselineDesc": "আপোনাৰ গতিৰ সীমা আৰু ভুলৰ ধৰণ আৱিষ্কাৰ কৰিবলৈ ১০-২০ মিনিটৰ মূল্যায়ন সম্পূৰ্ণ কৰক।",
+    "startAssessment": "মূল্যায়ন আৰম্ভ কৰক",
+    "diagnosticPausedDesc": "সকলো গণিত ক্ষেত্ৰত আপোনাৰ গতি কেলিব্ৰেট কৰি থাকক।",
+    "pristineMemoryMapTitle": "স্মৃতি মানচিত্ৰ সম্পূৰ্ণ পৰিষ্কাৰ",
+    "pristineMemoryMapDesc": "কোনো ভুলৰ তথ্য এতিয়ালৈকে ৰেকৰ্ড হোৱা নাই! চৰ্টকাট চাবলৈ মূল্যায়ন আৰম্ভ কৰক।",
+    "starterTargets": "প্ৰাৰম্ভিক লক্ষ্য",
+    "exploreMemoryMap": "স্মৃতি মানচিত্ৰত সকলো চাওক",
+    "learnShortcut": "চৰ্টকাট শিকক",
+    "speedBottlenecks": "গতিৰ বাধা",
+    "speedBottlenecksSubtitle": "নিখুঁত কিন্তু অধিক সময় (>৩.৫ ছেকেণ্ড)",
+    "recentlyMastered": "শেহতীয়াকৈ আয়ত্ত কৰা তথ্য",
+    "recentlyMasteredSubtitle": "দ্ৰুত মনত পেলোৱা আৰু শক্তিশালী স্থিৰতা",
+    "noBottlenecksYet": "কোনো গতিৰ বাধা পোৱা হোৱা নাই।",
+    "noMasteredYet": "স্থায়ী স্মৃতিলৈ ৰূপান্তৰ কৰিবলৈ অভ্যাস সম্পূৰ্ণ কৰক!",
+    "allRetained": "সকলো তথ্য সুৰক্ষিতভাৱে মনত আছে!",
+    "noWeakFacts": "সকলো তথ্য উচ্চ স্থিতিশীলতাত আছে! কোনো দুৰ্বল তথ্য নাই।"
   },
   "customDrill": {
     "title": "कस्टम वर्कआउट बिल्डर",

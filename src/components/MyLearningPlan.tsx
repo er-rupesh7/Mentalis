@@ -44,6 +44,7 @@ export const MyLearningPlan: React.FC = () => {
     resumeAssessment,
     setViewMode,
     factMemoryMap,
+    overallStats,
     practiceFact,
     locale,
   } = useQuizStore();
@@ -51,6 +52,8 @@ export const MyLearningPlan: React.FC = () => {
   const plan = activeTrainingPlan;
   const baseline = learnerProfile.baselineReport;
   const now = Date.now();
+  const totalCalculations = overallStats?.totalCalculations || 0;
+  const hasRealPracticeData = totalCalculations > 0 && Object.keys(factMemoryMap).length > 0;
 
   // 1. Weak facts: skipped facts, error slips, high forgetting risk
   const weakFacts = useMemo(() => {
@@ -72,52 +75,8 @@ export const MyLearningPlan: React.FC = () => {
     return filtered.slice(0, 8);
   }, [factMemoryMap]);
 
-  // Fallback starter weak facts for brand new accounts
-  const displayWeakFacts = useMemo(() => {
-    if (weakFacts.length > 0) return weakFacts;
-    const defaults: FactKey[] = [
-      formatFactKey('multiplication', 17, 8),
-      formatFactKey('multiplication', 19, 7),
-      formatFactKey('square', 48),
-      formatFactKey('multiplication', 75, 12),
-      formatFactKey('square', 85),
-      formatFactKey('cube', 12),
-    ];
-    return defaults.map((key) => {
-      const parsed = parseFactKey(key);
-      return {
-        factKey: key,
-        factType: parsed.type,
-        familyId: `${parsed.type}:${parsed.operandA}`,
-        operandA: parsed.operandA,
-        operandB: parsed.operandB,
-        masteryState: 'weak' as const,
-        learningPhase: 'guided' as const,
-        totalAttempts: 0,
-        correctAttempts: 0,
-        consecutiveErrors: 0,
-        consecutiveCorrect: 0,
-        skipCount: 1,
-        firstSeen: now,
-        lastSeen: now,
-        lastCorrect: null,
-        lastIncorrect: null,
-        lastSkipped: now,
-        intervalDays: 0,
-        easeFactor: 2.5,
-        stabilityScore: 20,
-        nextReviewTimestamp: now,
-        forgettingRisk: 0.9,
-        medianLatencyMs: 0,
-        recentLatencyMs: 0,
-        errorHistory: [],
-        usedHintOrStrategyCount: 0,
-        recentAccuracy: 0,
-        isDirectMemory: false,
-        correctAnswer: getFactCorrectAnswer(key),
-      };
-    });
-  }, [weakFacts, now]);
+  // Only real weak facts from genuine user practice — never fake/synthetic starter facts
+  const displayWeakFacts = weakFacts;
 
   // 2. Facts due for spaced review
   const dueFacts = useMemo(() => {
@@ -310,14 +269,14 @@ export const MyLearningPlan: React.FC = () => {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-mono font-bold uppercase tracking-wider border border-indigo-500/30">
-                Calibration Recommended
+                {tPlan('calibrationRecommended')}
               </span>
             </div>
             <h3 className="text-sm font-bold text-white">
-              Calibrate Your Baseline (10–20 min Diagnostic)
+              {tPlan('calibrateBaselineTitle')}
             </h3>
             <p className="text-xs text-slate-300 max-w-xl">
-              Discover your true mental arithmetic level, speed bottlenecks, and weak facts across Addition/Subtraction, Tables 1–100, Squares, Cubes, and Anzan memory.
+              {tPlan('calibrateBaselineDesc')}
             </p>
           </div>
 
@@ -326,7 +285,7 @@ export const MyLearningPlan: React.FC = () => {
             className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2 shrink-0"
           >
             <Brain className="w-3.5 h-3.5" />
-            <span>Start Assessment</span>
+            <span>{tPlan('startAssessment')}</span>
           </button>
         </div>
       ) : (
@@ -433,6 +392,39 @@ export const MyLearningPlan: React.FC = () => {
         </div>
       )}
 
+      {/* Zero-State for brand new accounts: Pristine Cognitive Map Onboarding */}
+      {!hasRealPracticeData && (
+        <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-slate-900/90 via-violet-950/30 to-slate-900/90 border border-violet-500/30 shadow-xl space-y-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 rounded-2xl bg-violet-600/20 text-violet-400 border border-violet-500/30 shrink-0">
+                <Sparkles className="w-6 h-6 text-violet-400 animate-pulse" />
+              </div>
+              <div className="space-y-1 text-center sm:text-left">
+                <h3 className="text-base font-bold text-white flex items-center justify-center sm:justify-start gap-2">
+                  <span>{tPlan('pristineMemoryMapTitle')}</span>
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                    Zero Decay
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                  {tPlan('pristineMemoryMapDesc')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={startAssessment}
+                className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center gap-2"
+              >
+                <Brain className="w-4 h-4" />
+                <span>{tPlan('startAssessment')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Grid: Weak Facts vs Due for Review */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Most Important Weak Facts */}
@@ -448,48 +440,54 @@ export const MyLearningPlan: React.FC = () => {
               </div>
             </div>
             <span className="text-xs font-mono text-rose-400 font-semibold">
-              {weakFacts.length > 0 ? `${weakFacts.length} ${tPlan('active')}` : 'Starter Targets'}
+              {weakFacts.length > 0 ? `${weakFacts.length} ${tPlan('active')}` : tPlan('starterTargets')}
             </span>
           </div>
 
-          <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
-            {displayWeakFacts.map((fact) => {
-              const isSkipped = (fact.skipCount || 0) > 0;
-              const hasErrors = fact.consecutiveErrors > 0;
-              return (
-                <button
-                  key={fact.factKey}
-                  onClick={() => practiceFact(fact.factKey, 'learn')}
-                  className="w-[175px] sm:w-auto shrink-0 snap-start p-3.5 sm:px-3 sm:py-2 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:bg-slate-800 border border-rose-500/30 hover:border-rose-400 active:scale-95 transition-all text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group shadow-lg shadow-rose-950/20"
-                  title="Click to learn strategy and drill this fact"
-                >
-                  <div className="flex items-center justify-between w-full sm:w-auto sm:gap-2">
-                    <span
-                      className={`text-[9px] font-mono px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
-                        isSkipped
-                          ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-                          : hasErrors
-                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                          : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                      }`}
-                    >
-                      {isSkipped ? `Skipped ${fact.skipCount}x` : hasErrors ? `${fact.consecutiveErrors} ${tPlan('slips')}` : 'High decay'}
+          {displayWeakFacts.length === 0 ? (
+            <div className="py-5 text-center text-xs text-slate-500 font-mono">
+              {tPlan('noWeakFacts')}
+            </div>
+          ) : (
+            <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
+              {displayWeakFacts.map((fact) => {
+                const isSkipped = (fact.skipCount || 0) > 0;
+                const hasErrors = fact.consecutiveErrors > 0;
+                return (
+                  <button
+                    key={fact.factKey}
+                    onClick={() => practiceFact(fact.factKey, 'learn')}
+                    className="w-[175px] sm:w-auto shrink-0 snap-start p-3.5 sm:px-3 sm:py-2 rounded-2xl bg-gradient-to-b from-slate-900 to-slate-950 hover:bg-slate-800 border border-rose-500/30 hover:border-rose-400 active:scale-95 transition-all text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group shadow-lg shadow-rose-950/20"
+                    title="Click to learn strategy and drill this fact"
+                  >
+                    <div className="flex items-center justify-between w-full sm:w-auto sm:gap-2">
+                      <span
+                        className={`text-[9px] font-mono px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
+                          isSkipped
+                            ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+                            : hasErrors
+                            ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        }`}
+                      >
+                        {isSkipped ? `Skipped ${fact.skipCount}x` : hasErrors ? `${fact.consecutiveErrors} ${tPlan('slips')}` : 'High decay'}
+                      </span>
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-rose-400 sm:hidden" />
+                    </div>
+
+                    <span className="font-mono text-base sm:text-xs font-black text-white group-hover:text-rose-200 transition-colors tracking-tight">
+                      {formatFactLabel(fact.factKey, fact.correctAnswer)}
                     </span>
-                    <ChevronRight className="w-3.5 h-3.5 text-slate-500 group-hover:text-rose-400 sm:hidden" />
-                  </div>
 
-                  <span className="font-mono text-base sm:text-xs font-black text-white group-hover:text-rose-200 transition-colors tracking-tight">
-                    {formatFactLabel(fact.factKey, fact.correctAnswer)}
-                  </span>
-
-                  <div className="flex items-center justify-between text-[10px] text-rose-400/90 font-medium sm:hidden pt-1 border-t border-slate-800/60 w-full">
-                    <span>Learn Trick</span>
-                    <span className="font-mono">↵</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                    <div className="flex items-center justify-between text-[10px] text-rose-400/90 font-medium sm:hidden pt-1 border-t border-slate-800/60 w-full">
+                      <span>{tPlan('learnShortcut')}</span>
+                      <span className="font-mono">↵</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Facts Due for Spaced Review */}
@@ -511,7 +509,7 @@ export const MyLearningPlan: React.FC = () => {
 
           {dueFacts.length === 0 ? (
             <div className="py-4 text-center text-xs text-slate-500 font-mono">
-              All practiced facts are safely retained! Complete practice blocks to queue reviews.
+              {tPlan('allRetained')}
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
@@ -554,8 +552,8 @@ export const MyLearningPlan: React.FC = () => {
                 <Zap className="w-4 h-4" />
               </span>
               <div>
-                <h3 className="text-sm font-bold text-white">Speed Bottlenecks</h3>
-                <p className="text-[11px] text-slate-400">High accuracy but prolonged hesitation (&gt;3.5s)</p>
+                <h3 className="text-sm font-bold text-white">{tPlan('speedBottlenecks')}</h3>
+                <p className="text-[11px] text-slate-400">{tPlan('speedBottlenecksSubtitle')}</p>
               </div>
             </div>
             <span className="text-xs font-mono text-purple-400 font-semibold">
@@ -565,7 +563,7 @@ export const MyLearningPlan: React.FC = () => {
 
           {speedBottlenecks.length === 0 ? (
             <div className="py-4 text-center text-xs text-slate-500 font-mono">
-              No significant hesitation bottlenecks detected yet.
+              {tPlan('noBottlenecksYet')}
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
@@ -605,8 +603,8 @@ export const MyLearningPlan: React.FC = () => {
                 <CheckCircle2 className="w-4 h-4" />
               </span>
               <div>
-                <h3 className="text-sm font-bold text-white">Recently Mastered Facts</h3>
-                <p className="text-[11px] text-slate-400">Fast direct recall and rock-solid stability</p>
+                <h3 className="text-sm font-bold text-white">{tPlan('recentlyMastered')}</h3>
+                <p className="text-[11px] text-slate-400">{tPlan('recentlyMasteredSubtitle')}</p>
               </div>
             </div>
             <span className="text-xs font-mono text-emerald-400 font-semibold">
@@ -616,7 +614,7 @@ export const MyLearningPlan: React.FC = () => {
 
           {masteredFacts.length === 0 ? (
             <div className="py-4 text-center text-xs text-slate-500 font-mono">
-              Complete practice rounds to convert weak facts into permanent mastered memory!
+              {tPlan('noMasteredYet')}
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2 pt-1 -mx-5 px-5 sm:mx-0 sm:px-0 sm:flex-wrap sm:overflow-visible">
@@ -650,21 +648,19 @@ export const MyLearningPlan: React.FC = () => {
       <div className="p-5 rounded-2xl bg-gradient-to-r from-violet-950/30 via-slate-900 to-indigo-950/30 border border-violet-800/40 shadow-xl space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-violet-600/20 text-violet-300 border border-violet-500/30">
+            <span className="p-1.5 rounded-lg bg-violet-500/10 text-violet-400 border border-violet-500/20">
               <BookOpen className="w-4 h-4" />
             </span>
             <div>
               <h3 className="text-sm font-bold text-white">{tPlan('targetedTricks')}</h3>
-              <p className="text-[11px] text-slate-400">
-                {tPlan('targetedTricksSubtitle')}
-              </p>
+              <p className="text-[11px] text-slate-400">{tPlan('targetedTricksSubtitle')}</p>
             </div>
           </div>
           <button
             onClick={() => setViewMode('memory_map')}
-            className="text-xs font-semibold text-violet-300 hover:text-white flex items-center gap-1 transition-colors"
+            className="text-xs font-bold text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors"
           >
-            <span>Explore All in Memory Map</span>
+            <span>{tPlan('exploreMemoryMap')}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>

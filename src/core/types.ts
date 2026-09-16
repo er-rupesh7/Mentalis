@@ -13,7 +13,7 @@ export type ModuleId =
   | 'fractions_percentages'
   | 'custom_drill';
 
-export type Operator = '+' | '-' | '×' | '÷' | '^2' | '^3' | '%' | '≈' | ':';
+export type Operator = '+' | '-' | '×' | '÷' | '^2' | '^3' | '²' | '³' | '∛' | '√' | '%' | '≈' | ':';
 
 export type TableTrainingMode =
   | 'recognition'      // Mode A: Multiple choice with smart distractors

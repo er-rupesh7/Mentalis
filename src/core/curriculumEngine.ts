@@ -168,12 +168,12 @@ export const MICRO_SESSION_PRESETS: MicroSessionPreset[] = [
   },
   {
     id: 'quant_warmup_20m',
-    name: '20-Min RRB Quant Warm-Up',
+    name: '20-Min Apex Quant Warm-Up',
     durationMinutes: 20,
-    description: 'Comprehensive 5-block preliminary exam simulation covering all 10 quant calculation sub-skills.',
+    description: 'Comprehensive 5-block calculation session covering all 10 speed arithmetic sub-skills.',
     targetModule: 'exam_quant',
     examSubSkill: 'quant_simplification',
-    focusHint: 'Full exam readiness warm-up: 3m warmup, 5m weak table, 4m arithmetic, 5m exam quant, 3m review.',
+    focusHint: 'Full velocity readiness warm-up: 3m warmup, 5m weak table, 4m arithmetic, 5m speed quant, 3m review.',
   },
 ];
 

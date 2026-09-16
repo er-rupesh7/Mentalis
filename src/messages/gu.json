@@ -21,7 +21,9 @@
     "score": "સ્કોર",
     "loading": "લોડ થઈ રહ્યું છે...",
     "level": "સ્તર",
-    "tier": "ટાયર"
+    "tier": "ટાયર",
+    "enabled": "સક્ષમ",
+    "disabled": "અક્ષમ"
   },
   "nav": {
     "dashboard": "ડેશબોર્ડ",
@@ -122,7 +124,24 @@
     "vedicBinomialShortcuts": "વૈદિક અને દ્વિપદી શૉર્ટકટ્સ",
     "anzanTeaser": "જ્ઞાનાત્મક કાર્યકારી સ્મૃતિ એન્જિન (અંઝાન ફ્લેશ)",
     "startAnzan": "અંઝાન ફ્લેશ શરૂ કરો",
-    "achievementsBadges": "સિદ્ધિઓ અને બેજ"
+    "achievementsBadges": "સિદ્ધિઓ અને બેજ",
+    "apexQuantEngine": "એપેક્સ સ્પીડ ક્વોન્ટ એન્જિન",
+    "apexQuantEngineDesc": "ઉચ્ચ સ્પર્ધાત્મક માપદંડો સામે તમારી વાસ્તવિક અંકગણિત ક્ષમતાનું મૂલ્યાંકન કરે છે.",
+    "quickMock": "ઝડપી ૧૫-પ્રશ્ન મોક",
+    "subSkillsHub": "૧૧ પેટા-કૌશલ્ય હબ",
+    "openBootcamp1120": "બુટકૅમ્પ ૧૧-૨૦ ખોલો",
+    "readiness": "તૈયારી",
+    "accuracy": "ચોકસાઈ",
+    "foundation": "પાયો",
+    "cognitiveAiEngine": "કોગ્નિટિવ એઆઈ બ્રેઈન અને ટ્રેનિંગ",
+    "currentMentalState": "વર્તમાન માનસિક સ્થિતિ",
+    "cognitiveCapacity": "માનસિક ક્ષમતા",
+    "activeFrontier": "સક્રિય જ્ઞાનાત્મક સીમા",
+    "nextTechniqueToMaster": "શીખવા માટે આગામી મહત્વપૂર્ણ ટેકનિક",
+    "whyAiSelectedThis": "એઆઈએ આ કેમ પસંદ કર્યું",
+    "learnAndPracticeTechnique": "ટેકનિક શીખો અને પ્રેક્ટિસ કરો",
+    "launchFrontierTraining": "કેલિબ્રેટેડ તાલીમ શરૂ કરો",
+    "domainFrontiers": "૭-ક્ષેત્રીય જ્ઞાનાત્મક સીમાઓ"
   },
   "practice": {
     "typeAnswer": "જવાબ લખો...",
@@ -235,7 +254,25 @@
     "howItWorks": "આ કેવી રીતે કાર્ય કરે છે",
     "innerEcho": "આંતરિક પડઘો",
     "dailyRoutine": "આજનો 5-બ્લૉક દૈનિક કાર્યક્રમ",
-    "dailyRoutineSubtitle": "જ્ઞાનાત્મક ઓટોમેટીસિટી અને સ્મૃતિ સ્થિરતા માટે દૈનિક ચક્ર"
+    "dailyRoutineSubtitle": "જ્ઞાનાત્મક ઓટોમેટીસિટી અને સ્મૃતિ સ્થિરતા માટે દૈનિક ચક્ર",
+    "calibrationRecommended": "કેલિબ્રેશન સૂચવેલ છે",
+    "calibrateBaselineTitle": "તમારી બેઝલાઇન સ્પીડ કેલિબ્રેટ કરો",
+    "calibrateBaselineDesc": "તમારી ચોક્કસ ગતિ મર્યાદાઓ અને ભૂલો શોધવા માટે ૧૦-૨૦ મિનિટનું અનુકૂલનક્ષમ મૂલ્યાંકન પૂર્ણ કરો.",
+    "startAssessment": "મૂલ્યાંકન શરૂ કરો",
+    "diagnosticPausedDesc": "બધા અંકગણિત ક્ષેત્રોમાં તમારી ગતિ અને પ્રશ્નોનું કેલિબ્રેશન ચાલુ રાખો.",
+    "pristineMemoryMapTitle": "મેમરી મેપ સંપૂર્ણપણે સ્વચ્છ છે",
+    "pristineMemoryMapDesc": "હજુ સુધી તમારી કોઈ ભૂલ કે ધીમી ગતિનો રેકોર્ડ નથી! તમારા સ્પીડ અવરોધો જોવા માટે બેઝલાઇન નિદાન પૂર્ણ કરો અથવા પ્રેક્ટિસ શરૂ કરો.",
+    "starterTargets": "પ્રારંભિક લક્ષ્યો",
+    "exploreMemoryMap": "મેમરી મેપમાં બધું જુઓ",
+    "learnShortcut": "શોર્ટકટ શીખો",
+    "speedBottlenecks": "સ્પીડ અવરોધો",
+    "speedBottlenecksSubtitle": "ઉચ્ચ ચોકસાઈ પરંતુ લાંબો સમય (>૩.૫ સેકન્ડ)",
+    "recentlyMastered": "હાલમાં નિપુણ થયેલા ફેક્ટ્સ",
+    "recentlyMasteredSubtitle": "ઝડપી સીધું સ્મરણ અને મજબૂત સ્થિરતા",
+    "noBottlenecksYet": "હજુ સુધી કોઈ નોંધપાત્ર અડચણો જોવા મળી નથી.",
+    "noMasteredYet": "નબળા ફેક્ટ્સને કાયમી મેમરીમાં બદલવા માટે રાઉન્ડ પૂર્ણ કરો!",
+    "allRetained": "બધા પ્રેક્ટિસ કરેલા ફેક્ટ્સ સુરક્ષિત રીતે યાદ છે!",
+    "noWeakFacts": "બધા ફેક્ટ્સ ઉચ્ચ સ્થિરતા પર છે! કોઈ નબળા ફેક્ટ્સ નથી."
   },
   "customDrill": {
     "title": "कस्टम वर्कआउट बिल्डर",

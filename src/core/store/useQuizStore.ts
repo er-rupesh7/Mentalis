@@ -99,6 +99,21 @@ import { calculatePointsEarned, getLevelFromXP, getLevelProgress, MAX_LEVEL } fr
 import { presenceEngine } from '../social/presenceEngine';
 import { socialEngine } from '../social/socialEngine';
 import { getEvaluatedMasteryBadges } from '../badges/masteryBadges';
+import { evaluateCognitiveState, AiCognitiveTrainingState } from '../aiCognitiveEngine';
+
+export interface ThemeConfig {
+  fontFamily: 'inter' | 'mono' | 'outfit' | 'roboto';
+  accentColor: 'violet' | 'emerald' | 'amber' | 'cyan' | 'rose';
+  fontSize: 'compact' | 'standard' | 'large' | 'xlarge';
+  matrixRainEnabled: boolean;
+}
+
+export const initialThemeConfig: ThemeConfig = {
+  fontFamily: 'inter',
+  accentColor: 'violet',
+  fontSize: 'standard',
+  matrixRainEnabled: false,
+};
 
 let profileRealtimeUnsub: (() => void) | null = null;
 
@@ -448,6 +463,11 @@ interface QuizState {
   recordAnzanRun: (runData: Omit<AnzanRecord, 'id' | 'timestamp'>) => void;
   resetProgress: () => void;
 
+  // Theme & Visual Customization
+  themeConfig: ThemeConfig;
+  setThemeConfig: (config: Partial<ThemeConfig>) => void;
+  getCognitiveTrainingState: () => AiCognitiveTrainingState;
+
   // Actions - Learning Mode & Fact Training
   setLearningMode: (mode: LearningMode) => void;
   setWorkoutMode: (mode: WorkoutMode) => void;
@@ -606,6 +626,7 @@ export const useQuizStore = create<QuizState>()(
       locale: defaultLocale,
       hasCompletedLanguageOnboarding: false,
       isSettingsModalOpen: false,
+      themeConfig: initialThemeConfig,
 
       // Auth & Cloud Sync
       currentUser: null,
@@ -1633,6 +1654,39 @@ export const useQuizStore = create<QuizState>()(
 
       setIsSettingsModalOpen: (isSettingsModalOpen: boolean) => {
         set({ isSettingsModalOpen });
+      },
+
+      setThemeConfig: (config: Partial<ThemeConfig>) => {
+        const current = get().themeConfig || initialThemeConfig;
+        const updated = { ...current, ...config };
+        set({ themeConfig: updated });
+
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-theme-font', updated.fontFamily);
+          document.documentElement.setAttribute('data-theme-accent', updated.accentColor);
+          document.documentElement.setAttribute('data-theme-size', updated.fontSize);
+        }
+
+        if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+          try {
+            const ch = new BroadcastChannel('mentalis_theme_sync');
+            ch.postMessage({ type: 'THEME_SYNC', payload: updated });
+            ch.close();
+          } catch {}
+        }
+
+        get().triggerSync();
+      },
+
+      getCognitiveTrainingState: () => {
+        const { learnerProfile, factMemoryMap, sessionResponseTimes, overallStats } = get();
+        return evaluateCognitiveState(
+          learnerProfile,
+          factMemoryMap,
+          sessionResponseTimes,
+          0,
+          overallStats
+        );
       },
 
       setLearningMode: (mode: LearningMode) => {
@@ -2676,7 +2730,25 @@ export const useQuizStore = create<QuizState>()(
         selectedBadgeLevel: state.selectedBadgeLevel,
         selectedMasteryBadgeId: state.selectedMasteryBadgeId,
         username: state.username,
+        themeConfig: state.themeConfig,
       }),
     }
   )
 );
+
+// Cross-tab real-time theme synchronizer
+if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+  try {
+    const themeChannel = new BroadcastChannel('mentalis_theme_sync');
+    themeChannel.onmessage = (e) => {
+      if (e.data?.type === 'THEME_SYNC' && e.data.payload) {
+        useQuizStore.setState({ themeConfig: e.data.payload });
+        if (typeof document !== 'undefined') {
+          document.documentElement.setAttribute('data-theme-font', e.data.payload.fontFamily);
+          document.documentElement.setAttribute('data-theme-accent', e.data.payload.accentColor);
+          document.documentElement.setAttribute('data-theme-size', e.data.payload.fontSize);
+        }
+      }
+    };
+  } catch {}
+}

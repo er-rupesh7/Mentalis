@@ -66,9 +66,9 @@ const PRESET_WORKOUTS: {
 }[] = [
   {
     id: 'rrb_speed_sprint',
-    name: 'RRB PO Prelims Speed Sprint',
+    name: 'Apex Speed Arithmetic Sprint',
     subtitle: 'High-frequency teen tables (13-19) + 2d±2d and 3d±2d speed addition',
-    badge: 'Exam Focused',
+    badge: 'High Velocity',
     config: {
       selectedTables: [13, 14, 15, 16, 17, 18, 19],
       selectedSquareRanges: [{ min: 1, max: 25 }, { min: 26, max: 50 }],

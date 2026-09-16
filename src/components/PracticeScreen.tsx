@@ -268,7 +268,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
   } else if (activeModule === 'tables_bootcamp') {
     trackTitle = `Bootcamp Table ${activeBootcampTable ?? 11}`;
   } else if (activeModule === 'exam_quant') {
-    trackTitle = activeExamSkill ? activeExamSkill.replace(/_/g, ' ').toUpperCase() : 'RRB PO QUANT';
+    trackTitle = activeExamSkill ? activeExamSkill.replace(/_/g, ' ').toUpperCase() : 'APEX SPEED QUANT';
   } else if (activeModule === 'fractions_percentages') {
     trackTitle = 'Fraction ↔ Percentage';
   } else if (activeModule === 'custom_drill') {

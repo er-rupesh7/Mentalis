@@ -21,7 +21,9 @@
     "score": "ಅಂಕಗಳು",
     "loading": "ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
     "level": "ಹಂತ",
-    "tier": "ಶ್ರೇಣಿ"
+    "tier": "ಶ್ರೇಣಿ",
+    "enabled": "ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ",
+    "disabled": "ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ"
   },
   "nav": {
     "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
@@ -122,7 +124,24 @@
     "vedicBinomialShortcuts": "वैदिक व द्विपद शॉर्टकट",
     "anzanTeaser": "संज्ञानात्मक कार्यशील स्मृति इंजन (अंजन फ्लैश)",
     "startAnzan": "अंजन फ्लैश शुरू करें",
-    "achievementsBadges": "उपलब्धियां और बैज"
+    "achievementsBadges": "उपलब्धियां और बैज",
+    "apexQuantEngine": "ಅಪೆಕ್ಸ್ ಸ್ಪೀಡ್ ಕ್ವಾಂಟ್ ಇಂಜಿನ್",
+    "apexQuantEngineDesc": "ಉತ್ತಮ ಸ್ಪರ್ಧಾತ್ಮಕ ಮಾನದಂಡಗಳ ವಿರುದ್ಧ ನಿಮ್ಮ ಗಣಿತ ವೇಗವನ್ನು ಮೌಲ್ಯಮಾಪನ ಮಾಡುತ್ತದೆ.",
+    "quickMock": "ತ್ವರಿತ 15-ಪ್ರಶ್ನೆಗಳ ಮಾಕ್",
+    "subSkillsHub": "11 ಉಪ-ಕೌಶಲ್ಯ ಹಬ್",
+    "openBootcamp1120": "ಬೂಟ್‌ಕ್ಯಾಂಪ್ 11–20 ತೆರೆಯಿರಿ",
+    "readiness": "ಸಿದ್ಧತೆ",
+    "accuracy": "ನಿಖರತೆ",
+    "foundation": "ಬುಡಪಾಯ",
+    "cognitiveAiEngine": "ಕಾಗ್ನಿಟಿವ್ AI ಮಿದುಳು ಮತ್ತು ತರಬೇತಿ",
+    "currentMentalState": "ಪ್ರಸ್ತುತ ಮಾನಸಿಕ ಸ್ಥಿತಿ",
+    "cognitiveCapacity": "ಮಾನಸಿಕ ಸಾಮರ್ಥ್ಯ",
+    "activeFrontier": "ಸಕ್ರಿಯ ಕಲಿಕೆಯ ಗಡಿ",
+    "nextTechniqueToMaster": "ಕಲಿಯಬೇಕಾದ ಮುಂದಿನ ಪ್ರಮುಖ ತಂತ್ರ",
+    "whyAiSelectedThis": "AI ಇದನ್ನು ಏಕೆ ಆಯ್ಕೆ ಮಾಡಿದೆ",
+    "learnAndPracticeTechnique": "ತಂತ್ರವನ್ನು ಕಲಿಯಿರಿ ಮತ್ತು ಅಭ್ಯಾಸ ಮಾಡಿ",
+    "launchFrontierTraining": "ತರಬೇತಿಯನ್ನು ಪ್ರಾರಂಭಿಸಿ",
+    "domainFrontiers": "7-ಕ್ಷೇತ್ರಗಳ ಕಲಿಕೆಯ ಗಡಿಗಳು"
   },
   "practice": {
     "typeAnswer": "ಉತ್ತರವನ್ನು ಬರೆಯಿರಿ...",
@@ -235,7 +254,25 @@
     "howItWorks": "यह कैसे काम करता है",
     "innerEcho": "आंतरिक ध्वनि",
     "dailyRoutine": "आज का 5-ब्लॉक दैनिक रूटीन",
-    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र"
+    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र",
+    "calibrationRecommended": "ಮಾಪನಾಂಕ ನಿರ್ಣಯ ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ",
+    "calibrateBaselineTitle": "ನಿಮ್ಮ ವೇಗವನ್ನು ಮಾಪನಾಂಕ ನಿರ್ಣಯಿಸಿ",
+    "calibrateBaselineDesc": "ನಿಮ್ಮ ವೇಗದ ಮಿತಿಗಳನ್ನು ಕಂಡುಹಿಡಿಯಲು 10-20 ನಿಮಿಷಗಳ ರೋಗನಿರ್ಣಯವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ.",
+    "startAssessment": "ಮೌಲ್ಯಮಾಪನ ಪ್ರಾರಂಭಿಸಿ",
+    "diagnosticPausedDesc": "ಎಲ್ಲಾ ಅಂಕಗಣಿತದ ಕ್ಷೇತ್ರಗಳಲ್ಲಿ ನಿಮ್ಮ ವೇಗವನ್ನು ಮಾಪನಾಂಕ ನಿರ್ಣಯಿಸುವುದನ್ನು ಮುಂದುವರಿಸಿ.",
+    "pristineMemoryMapTitle": "ಮೆಮೊರಿ ನಕ್ಷೆಯು ಸಂಪೂರ್ಣ ಸ್ವಚ್ಛವಾಗಿದೆ",
+    "pristineMemoryMapDesc": "ಇನ್ನೂ ಯಾವುದೇ ತಪ್ಪುಗಳ ದಾಖಲೆಯಿಲ್ಲ! ಶಾರ್ಟ್‌ಕಟ್‌ಗಳನ್ನು ನೋಡಲು ಮೌಲ್ಯಮಾಪನ ಪ್ರಾರಂಭಿಸಿ.",
+    "starterTargets": "ಆರಂಭಿಕ ಗುರಿಗಳು",
+    "exploreMemoryMap": "ಮೆಮೊರಿ ನಕ್ಷೆಯಲ್ಲಿ ಎಲ್ಲವನ್ನೂ ವೀಕ್ಷಿಸಿ",
+    "learnShortcut": "ಶಾರ್ಟ್‌ಕಟ್ ಕಲಿಯಿರಿ",
+    "speedBottlenecks": "ವೇಗದ ಅಡೆತಡೆಗಳು",
+    "speedBottlenecksSubtitle": "ನಿಖರವಾಗಿದೆ ಆದರೆ ಹೆಚ್ಚಿನ ಸಮಯ (>3.5ಸೆ)",
+    "recentlyMastered": "ಇತ್ತೀಚೆಗೆ ಕರಗತ ಮಾಡಿಕೊಂಡ ಅಂಶಗಳು",
+    "recentlyMasteredSubtitle": "ವೇಗದ ಮರುಸ್ಥಾಪನೆ ಮತ್ತು ಬಲವಾದ ಸ್ಥಿರತೆ",
+    "noBottlenecksYet": "ಇನ್ನೂ ಯಾವುದೇ ಗಮನಾರ್ಹ ವೇಗದ ಅಡೆತಡೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ.",
+    "noMasteredYet": "ಶಾಶ್ವತ ಸ್ಮರಣೆಯಾಗಿ ಪರಿವರ್ತಿಸಲು ಅಭ್ಯಾಸವನ್ನು ಪೂರ್ಣಗೊಳಿಸಿ!",
+    "allRetained": "ಎಲ್ಲವನ್ನೂ ಸುರಕ್ಷಿತವಾಗಿ ನೆನಪಿನಲ್ಲಿಡಲಾಗಿದೆ!",
+    "noWeakFacts": "ಎಲ್ಲವೂ ಉತ್ತಮ ಸ್ಥಿರತೆಯಲ್ಲಿದೆ! ದುರ್ಬಲವಾದವುಗಳಿಲ್ಲ."
   },
   "customDrill": {
     "title": "कस्टम वर्कआउट बिल्डर",

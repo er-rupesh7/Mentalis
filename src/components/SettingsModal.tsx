@@ -23,6 +23,9 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
+  Palette,
+  Type,
+  Activity,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { LanguageSelector } from './LanguageSelector';
@@ -50,6 +53,8 @@ export const SettingsModal: React.FC = () => {
     toggleReducedMotion,
     timerVisible,
     toggleTimerVisibility,
+    themeConfig,
+    setThemeConfig,
     exportBrainMatrixJSON,
     importBrainMatrixJSON,
     resetProgress,
@@ -653,6 +658,143 @@ export const SettingsModal: React.FC = () => {
                     />
                   </button>
                 </div>
+              </div>
+            </div>
+
+            {/* Visual Theme & Matrix Digital Rain Customization */}
+            <div className="space-y-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-violet-400" />
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    Visual Theme & Matrix Canvas
+                  </h3>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                  Realtime Synced
+                </span>
+              </div>
+
+              {/* Font Family Selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+                  <Type className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Typography Font Style</span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'inter', label: 'Inter', desc: 'Modern Clean' },
+                    { id: 'mono', label: 'Space Mono', desc: 'Futuristic' },
+                    { id: 'outfit', label: 'Outfit', desc: 'Geometric' },
+                    { id: 'roboto', label: 'Roboto', desc: 'Crisp' },
+                  ].map((font) => (
+                    <button
+                      key={font.id}
+                      type="button"
+                      onClick={() => setThemeConfig({ fontFamily: font.id as any })}
+                      className={`p-2.5 rounded-xl border text-left transition-all ${
+                        (themeConfig?.fontFamily || 'inter') === font.id
+                          ? 'bg-violet-600/20 border-violet-500 text-white shadow-md shadow-violet-600/20'
+                          : 'bg-slate-950/60 border-slate-800 hover:border-slate-700 text-slate-400'
+                      }`}
+                    >
+                      <div className="text-xs font-bold text-white">{font.label}</div>
+                      <div className="text-[10px] text-slate-500">{font.desc}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Neon Accent Glow Color */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Neon Accent Glow Aura
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { id: 'violet', label: 'Violet Cyber', hex: '#8b5cf6' },
+                    { id: 'emerald', label: 'Emerald Hacker', hex: '#10b981' },
+                    { id: 'cyan', label: 'Matrix Cyan', hex: '#06b6d4' },
+                    { id: 'amber', label: 'Gold Spark', hex: '#f59e0b' },
+                    { id: 'rose', label: 'Apex Crimson', hex: '#f43f5e' },
+                  ].map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={() => setThemeConfig({ accentColor: color.id as any })}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-2 transition-all ${
+                        (themeConfig?.accentColor || 'violet') === color.id
+                          ? 'border-white text-white shadow-lg'
+                          : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                      style={{
+                        boxShadow: (themeConfig?.accentColor || 'violet') === color.id ? `0 0 12px ${color.hex}80` : undefined,
+                      }}
+                    >
+                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color.hex }} />
+                      <span>{color.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Font Size Scaling */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-300">
+                  Interface Scale & Font Size
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: 'compact', label: 'Compact', scale: '90%' },
+                    { id: 'standard', label: 'Standard', scale: '100%' },
+                    { id: 'large', label: 'Large', scale: '110%' },
+                    { id: 'xlarge', label: 'X-Large', scale: '125%' },
+                  ].map((size) => (
+                    <button
+                      key={size.id}
+                      type="button"
+                      onClick={() => setThemeConfig({ fontSize: size.id as any })}
+                      className={`py-1.5 px-2 rounded-xl text-xs font-medium border text-center transition-all ${
+                        (themeConfig?.fontSize || 'standard') === size.id
+                          ? 'bg-violet-600/20 border-violet-500 text-violet-300 font-bold'
+                          : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {size.label} ({size.scale})
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Digital Matrix Rain Background Canvas */}
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-950/80 border border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-xl bg-slate-800 text-emerald-400">
+                    <Activity className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-white block">
+                      Digital Matrix Math Rain
+                    </span>
+                    <span className="text-xs text-slate-400 block">
+                      Atmospheric 0/1, formulas & roots floating in background
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setThemeConfig({ matrixRainEnabled: !themeConfig?.matrixRainEnabled })}
+                  className={`w-12 h-6 rounded-full transition-colors relative p-1 ${
+                    themeConfig?.matrixRainEnabled ? 'bg-emerald-600' : 'bg-slate-800'
+                  }`}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white transition-transform ${
+                      themeConfig?.matrixRainEnabled ? 'translate-x-6' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
               </div>
             </div>
 

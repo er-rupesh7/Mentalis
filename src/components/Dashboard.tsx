@@ -81,7 +81,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
     currentUser,
     setIsChatDrawerOpen,
     setAuthModalOpen,
+    getCognitiveTrainingState,
   } = useQuizStore();
+
+  const cognitiveState = getCognitiveTrainingState();
 
   const [isCoachDrawerOpen, setIsCoachDrawerOpen] = useState(false);
   const [backupFeedback, setBackupFeedback] = useState<string | null>(null);
@@ -310,6 +313,128 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
 
       {/* Main content area — full-bleed on mobile, centered on desktop */}
       <div className="flex-1 w-full md:max-w-4xl md:mx-auto px-4 py-4 sm:py-6 space-y-6 sm:space-y-8">
+        {/* Cognitive AI Brain & Ongoing Training Mission Card */}
+        <section className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/60 border border-violet-500/30 shadow-2xl space-y-6 relative overflow-hidden card-3d">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Header & Mental State Status */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-violet-600/20 text-violet-300 border border-violet-500/30 shadow-inner">
+                  <Brain className="w-5 h-5" />
+                </div>
+                <h2 className="text-lg sm:text-xl font-black text-white tracking-wide">
+                  {tDash('cognitiveAiEngine')}
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 text-[10px] font-mono font-bold uppercase border border-violet-500/30 animate-pulse">
+                  Neural State: {cognitiveState.capacityIndex}% Capacity
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+                {cognitiveState.mentalStateDescription}
+              </p>
+            </div>
+
+            {/* Live Mental State Pill */}
+            <div className="flex items-center gap-2">
+              <span className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono border shadow-md ${
+                cognitiveState.mentalState === 'optimal_flow'
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  : cognitiveState.mentalState === 'focused_effort'
+                  ? 'bg-sky-500/20 text-sky-300 border-sky-500/40'
+                  : cognitiveState.mentalState === 'mild_strain'
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  : 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+              }`}>
+                {cognitiveState.mentalStateLabel}
+              </span>
+            </div>
+          </div>
+
+          {/* Prescribed Mental Technique to Learn Card */}
+          <div className="p-5 rounded-2xl bg-slate-950/80 border border-amber-500/30 space-y-3 relative z-10 shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                  {tDash('nextTechniqueToMaster')}
+                </span>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                Expected Velocity Boost: +{cognitiveState.recommendedTechnique.expectedSpeedGainPercent}% Faster
+              </span>
+            </div>
+
+            <div className="space-y-1">
+              <h3 className="text-base sm:text-lg font-extrabold text-white">
+                {cognitiveState.recommendedTechnique.name}
+              </h3>
+              <div className="text-xs font-mono text-emerald-400 bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+                Formula: {cognitiveState.recommendedTechnique.mentalFormula}
+              </div>
+            </div>
+
+            <div className="text-xs text-slate-300 leading-relaxed bg-slate-900/50 p-3 rounded-xl border border-slate-800/60">
+              <strong className="text-amber-300">{tDash('whyAiSelectedThis')}:</strong> {cognitiveState.recommendedTechnique.rationale}
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+              <button
+                onClick={() => {
+                  setViewMode('techniques');
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                <BookOpen className="w-4 h-4 text-slate-950" />
+                <span>{tDash('learnAndPracticeTechnique')}</span>
+              </button>
+              <button
+                onClick={() => {
+                  startSession({ mode: 'standard' });
+                  setViewMode('practice');
+                }}
+                className="py-2.5 px-4 rounded-xl bg-violet-600 hover:bg-violet-500 active:scale-95 text-white font-bold text-xs shadow-lg shadow-violet-600/30 transition-all flex items-center justify-center gap-2"
+              >
+                <Zap className="w-4 h-4 fill-white" />
+                <span>{tDash('launchFrontierTraining')}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 7-Domain Active Frontiers Radar Grid */}
+          <div className="space-y-2.5 relative z-10">
+            <div className="flex items-center justify-between text-xs text-slate-400 font-semibold uppercase tracking-wider">
+              <span className="flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5 text-violet-400" />
+                <span>{tDash('domainFrontiers')}</span>
+              </span>
+              <span className="text-[10px] font-mono text-slate-500">
+                Probed via CAT Diagnostic Engine
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+              {Object.entries(cognitiveState.frontierProbes).map(([domKey, probe]) => (
+                <div
+                  key={domKey}
+                  className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/90 text-center space-y-1 hover:border-slate-700 transition-colors"
+                >
+                  <div className="text-[10px] font-bold text-slate-300 truncate" title={probe.domain}>
+                    {probe.domain.split(' ')[0]}
+                  </div>
+                  <div className="text-xs font-mono font-extrabold text-violet-400">
+                    Tier {probe.tierLevel}
+                  </div>
+                  <div className="text-[9px] font-mono text-slate-500">
+                    {probe.tierName}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Prominent My Learning Plan Section */}
         <MyLearningPlan />
 
@@ -525,7 +650,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
           </div>
         </section>
 
-        {/* RRB PO Prelims Speed Quant Readiness Card */}
+        {/* Apex Speed Quant Engine Readiness Card */}
         <section className="p-6 rounded-3xl bg-gradient-to-r from-emerald-950/40 via-slate-900 to-indigo-950/40 border border-emerald-500/30 shadow-2xl space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
@@ -534,14 +659,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                   <Target className="w-5 h-5" />
                 </span>
                 <h2 className="text-lg font-bold text-white tracking-wide">
-                  RRB PO Prelims Speed Quant Engine
+                  {tDash('apexQuantEngine')}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold uppercase border border-emerald-500/30">
                   Target: 35/35
                 </span>
               </div>
               <p className="text-xs text-slate-400 max-w-xl leading-relaxed">
-                Evaluates your real arithmetic automaticity against IBPS RRB Officer Scale-I benchmarks.
+                {tDash('apexQuantEngineDesc')}
               </p>
             </div>
 
@@ -550,14 +675,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 onClick={() => setViewMode('exam_quant')}
                 className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors"
               >
-                11 Sub-Skills Hub
+                {tDash('subSkillsHub')}
               </button>
               <button
                 onClick={() => startExamQuantDrill('quant_simplification')}
                 className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-1.5"
               >
                 <Zap className="w-3.5 h-3.5 fill-white" />
-                <span>Quick 15-Q Mock</span>
+                <span>{tDash('quickMock')}</span>
               </button>
             </div>
           </div>
@@ -565,7 +690,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
           {/* 5 Transfer Metrics */}
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 font-mono text-center">
             <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
-              <div className="text-[10px] text-slate-500 uppercase">Readiness</div>
+              <div className="text-[10px] text-slate-500 uppercase">{tDash('readiness')}</div>
               <div className="text-xl font-bold text-emerald-400">{scores.rrbReadiness}%</div>
             </div>
             <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
@@ -573,21 +698,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               <div className="text-xl font-bold text-violet-400">{scores.calculationAutomaticity}%</div>
             </div>
             <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
-              <div className="text-[10px] text-slate-500 uppercase">Exam Speed</div>
+              <div className="text-[10px] text-slate-500 uppercase">Speed Index</div>
               <div className="text-xl font-bold text-amber-400">{scores.examSpeed}%</div>
             </div>
             <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800">
-              <div className="text-[10px] text-slate-500 uppercase">Accuracy</div>
+              <div className="text-[10px] text-slate-500 uppercase">{tDash('accuracy')}</div>
               <div className="text-xl font-bold text-sky-400">{scores.examAccuracy}%</div>
             </div>
             <div className="p-3 rounded-2xl bg-slate-950/90 border border-slate-800 col-span-2 sm:col-span-1">
-              <div className="text-[10px] text-slate-500 uppercase">Foundation</div>
+              <div className="text-[10px] text-slate-500 uppercase">{tDash('foundation')}</div>
               <div className="text-xl font-bold text-white">{scores.foundationScore}%</div>
             </div>
           </div>
         </section>
 
-        {/* 60-Day RRB PO Quant Roadmap & Micro-Sessions */}
+        {/* 60-Day Apex Speed Quant Roadmap & Micro-Sessions */}
         <section className="space-y-4">
           <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -610,7 +735,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
                 className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg shadow-amber-600/30 transition-all flex items-center gap-2 shrink-0"
               >
                 <Flame className="w-4 h-4 fill-white" />
-                <span>Open Bootcamp 11–20</span>
+                <span>{tDash('openBootcamp1120')}</span>
               </button>
             </div>
 

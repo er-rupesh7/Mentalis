@@ -21,7 +21,9 @@
     "score": "ସ୍କୋର",
     "loading": "ଲୋଡ୍ ହେଉଛି...",
     "level": "ସ୍ତର",
-    "tier": "ଟିୟର"
+    "tier": "ଟିୟର",
+    "enabled": "ସକ୍ଷମ",
+    "disabled": "ଅକ୍ଷମ"
   },
   "nav": {
     "dashboard": "ଡ୍ୟାସବୋର୍ଡ",
@@ -122,7 +124,24 @@
     "vedicBinomialShortcuts": "वैदिक व द्विपद शॉर्टकट",
     "anzanTeaser": "संज्ञानात्मक कार्यशील स्मृति इंजन (अंजन फ्लैश)",
     "startAnzan": "अंजन फ्लैश शुरू करें",
-    "achievementsBadges": "उपलब्धियां और बैज"
+    "achievementsBadges": "उपलब्धियां और बैज",
+    "apexQuantEngine": "ଆପେକ୍ସ ସ୍ପିଡ୍ କ୍ୱାଣ୍ଟ ଇଞ୍ଜିନ୍",
+    "apexQuantEngineDesc": "ପ୍ରତିଯୋଗିତା ମାନଦଣ୍ଡ ବିରୁଦ୍ଧରେ ଆପଣଙ୍କ ଗଣିତ ଗତିର ମୂଲ୍ୟାଙ୍କନ କରେ।",
+    "quickMock": "ଦ୍ରୁତ ୧୫-ପ୍ରଶ୍ନ ମକ୍",
+    "subSkillsHub": "୧୧ ଉପ-ଦକ୍ଷତା ହବ୍",
+    "openBootcamp1120": "ବୁଟକ୍ୟାମ୍ପ ୧୧–୨୦ ଖୋଲନ୍ତୁ",
+    "readiness": "ପ୍ରସ୍ତୁତି",
+    "accuracy": "ସଠିକତା",
+    "foundation": "ମୂଳଦୁଆ",
+    "cognitiveAiEngine": "କଗ୍ନିଟିଭ୍ AI ମସ୍ତିଷ୍କ ଏବଂ ତାଲିମ",
+    "currentMentalState": "ବର୍ତ୍ତମାନର ମାନସିକ ସ୍ଥିତି",
+    "cognitiveCapacity": "ମାନସିକ କ୍ଷମତା",
+    "activeFrontier": "ସକ୍ରିୟ ଶିକ୍ଷଣ ସୀମା",
+    "nextTechniqueToMaster": "ଶିଖିବା ପାଇଁ ପରବର୍ତ୍ତୀ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ କୌଶଳ",
+    "whyAiSelectedThis": "AI ଏହାକୁ କାହିଁକି ବାଛିଲା",
+    "learnAndPracticeTechnique": "କୌଶଳ ଶିଖନ୍ତୁ ଏବଂ ଅଭ୍ୟାସ କରନ୍ତୁ",
+    "launchFrontierTraining": "ତାଲିମ ଆରମ୍ଭ କରନ୍ତୁ",
+    "domainFrontiers": "୭-ବିଭାଗୀୟ ଶିକ୍ଷଣ ସୀମା"
   },
   "practice": {
     "typeAnswer": "ଉତ୍ତର ଲେଖନ୍ତୁ...",
@@ -235,7 +254,25 @@
     "howItWorks": "यह कैसे काम करता है",
     "innerEcho": "आंतरिक ध्वनि",
     "dailyRoutine": "आज का 5-ब्लॉक दैनिक रूटीन",
-    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र"
+    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र",
+    "calibrationRecommended": "କାଲିବ୍ରେସନ୍ ସୁପାରିଶ କରାଯାଇଛି",
+    "calibrateBaselineTitle": "ଆପଣଙ୍କ ଗତି କାଲିବ୍ରେଟ୍ କରନ୍ତୁ",
+    "calibrateBaselineDesc": "ଆପଣଙ୍କ ଗତି ସୀମା ଏବଂ ଅନ୍ତର ଖୋଜିବା ପାଇଁ ୧୦-୨୦ ମିନିଟର ମୂଲ୍ୟାଙ୍କନ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ।",
+    "startAssessment": "ମୂଲ୍ୟାଙ୍କନ ଆରମ୍ଭ କରନ୍ତୁ",
+    "diagnosticPausedDesc": "ସମସ୍ତ ଗଣିତ ବିଭାଗରେ ଆପଣଙ୍କ ଗତି କାଲିବ୍ରେଟ୍ କରିବା ଜାରି ରଖନ୍ତୁ।",
+    "pristineMemoryMapTitle": "ସ୍ମୃତି ମାନଚିତ୍ର ସମ୍ପୂର୍ଣ୍ଣ ସ୍ୱଚ୍ଛ ଅଟେ",
+    "pristineMemoryMapDesc": "କୌଣସି ତ୍ରୁଟି ରେକର୍ଡ ହୋଇନାହିଁ! ସର୍ଟକଟ୍ ଦେଖିବାକୁ ମୂଲ୍ୟାଙ୍କନ ଆରମ୍ଭ କରନ୍ତୁ।",
+    "starterTargets": "ପ୍ରାରମ୍ଭିକ ଲକ୍ଷ୍ୟ",
+    "exploreMemoryMap": "ସ୍ମୃତି ମାନଚିତ୍ରରେ ସବୁ ଦେଖନ୍ତୁ",
+    "learnShortcut": "ସର୍ଟକଟ୍ ଶିଖନ୍ତୁ",
+    "speedBottlenecks": "ଗତି ବାଧା",
+    "speedBottlenecksSubtitle": "ସଠିକ୍ କିନ୍ତୁ ଅଧିକ ସମୟ (>୩.୫ ସେକେଣ୍ଡ)",
+    "recentlyMastered": "ନିକଟରେ ଶିଖିଥିବା ତଥ୍ୟ",
+    "recentlyMasteredSubtitle": "ଦ୍ରୁତ ମନେ ପକାଇବା ଏବଂ ଦୃଢ଼ ସ୍ଥିରତା",
+    "noBottlenecksYet": "କୌଣସି ଗତି ବାଧା ମିଳିନାହିଁ।",
+    "noMasteredYet": "ସ୍ଥାୟୀ ସ୍ମୃତିରେ ପରିଣତ କରିବାକୁ ଅଭ୍ୟାସ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ!",
+    "allRetained": "ସବୁକିଛି ସୁରକ୍ଷିତ ଭାବେ ମନେ ରହିଛି!",
+    "noWeakFacts": "ସବୁକିଛି ଉଚ୍ଚ ସ୍ଥିରତାରେ ଅଛି! କୌଣସି ଦୁର୍ବଳ ତଥ୍ୟ ନାହିଁ।"
   },
   "customDrill": {
     "title": "कस्टम वर्कआउट बिल्डर",

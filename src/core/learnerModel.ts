@@ -48,6 +48,9 @@ export type SkillDimension =
   | 'squares_duplex_general'    // General 2-digit duplex method
   | 'cubes_anchors'             // Anchor cubes 1³–12³, 20³–100³
   | 'cubes_advanced'            // Advanced 2-digit cubes 13³–99³
+  | 'shakuntala_cube_roots'     // Exact 6-digit cube roots in < 2s
+  | 'shakuntala_square_roots'   // Exact 4/5-digit square roots
+  | 'complements_10000'         // Vedic 10,000 complements (All from 9, last from 10)
 
   // Working Memory
   | 'anzan_stream'              // Sequential flashed working memory addition
@@ -140,6 +143,19 @@ export interface BaselineStrengthOrGap {
   detail: string;
 }
 
+export interface DomainProficiencyAnalysis {
+  domain: string;
+  label: string;
+  tierLevel: number; // 1 to 9
+  tierName: string; // e.g. "Moderate", "Mastery (Shakuntala Devi)"
+  accuracy: number; // 0 - 100
+  avgLatencyMs: number;
+  theta: number;
+  recommendedTechnique?: string;
+  techniqueExplanation?: string;
+  status: 'champion' | 'proficient' | 'needs_strengthening';
+}
+
 export interface BaselineReport {
   assessedAt: number;
   overallTheta: number;
@@ -154,6 +170,13 @@ export interface BaselineReport {
   recommendedDailyPaceMinutes: number;
   firstWeekRoadmap: string[];
   summaryMessage?: string;
+  domainProficiencies?: DomainProficiencyAnalysis[];
+  recommendedTechniquesList?: {
+    domain: string;
+    techniqueName: string;
+    description: string;
+    drillRoute?: string;
+  }[];
 }
 
 export interface AssessmentSession {
@@ -343,6 +366,9 @@ export const EXTENDED_SKILL_DIMENSIONS: SkillDimension[] = [
   'quant_speed_distance',
   'quant_di_arithmetic',
   'quant_number_series',
+  'shakuntala_cube_roots',
+  'shakuntala_square_roots',
+  'complements_10000',
 ];
 
 export const TOTAL_SKILL_DIMENSIONS: SkillDimension[] = [
@@ -367,6 +393,7 @@ export function getDimensionLabel(dim: SkillDimension): string {
     case 'mult_decade_ext': return 'Decade Multiplication (20-75)';
     case 'complements_10': return 'Base-10 Complements';
     case 'complements_100': return 'Base-100 Complements';
+    case 'complements_10000': return '10,000 Complements (All from 9, last from 10)';
     case 'doubles_halves': return 'Doubles & Halves';
     case 'near_doubles': return 'Near-Doubles Mental Step';
     case 'fraction_percentage_equiv': return 'Fraction ↔ Percentage Conversions';
@@ -391,6 +418,8 @@ export function getDimensionLabel(dim: SkillDimension): string {
     case 'squares_duplex_general': return 'Duplex Mental Squares';
     case 'cubes_anchors': return 'Anchor Cubes (1-12, Decades)';
     case 'cubes_advanced': return 'Advanced Cubes (13-100)';
+    case 'shakuntala_cube_roots': return 'Shakuntala 6-Digit Cube Roots';
+    case 'shakuntala_square_roots': return 'Instant Mental Square Roots';
     case 'anzan_stream': return 'Anzan Working Memory';
     case 'quant_simplification': return 'Simplification & BODMAS';
     case 'quant_approximation': return 'Approximation & Estimation';

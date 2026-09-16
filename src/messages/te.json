@@ -21,7 +21,9 @@
     "score": "స్కోరు",
     "loading": "లోడ్ అవుతోంది...",
     "level": "స్థాయి",
-    "tier": "టైర్"
+    "tier": "టైర్",
+    "enabled": "ప్రారంభించబడింది",
+    "disabled": "నిలిపివేయబడింది"
   },
   "nav": {
     "dashboard": "డ్యాష్‌బోర్డ్",
@@ -122,7 +124,24 @@
     "vedicBinomialShortcuts": "वैदिक व द्विपद शॉर्टकट",
     "anzanTeaser": "संज्ञानात्मक कार्यशील स्मृति इंजन (अंजन फ्लैश)",
     "startAnzan": "अंजन फ्लैश शुरू करें",
-    "achievementsBadges": "उपलब्धियां और बैज"
+    "achievementsBadges": "उपलब्धियां और बैज",
+    "apexQuantEngine": "అపెక్స్ స్పీడ్ క్వాంట్ ఇంజిన్",
+    "apexQuantEngineDesc": "ఉత్తమ పోటీ ప్రమాణాలకు అనుగుణంగా మీ మానసిక గణిత వేగాన్ని అంచనా వేస్తుంది.",
+    "quickMock": "త్వరిత 15-ప్రశ్నల మాక్",
+    "subSkillsHub": "11 సబ్-స్కిల్స్ హబ్",
+    "openBootcamp1120": "బూట్‌క్యాంప్ 11–20 తెరవండి",
+    "readiness": "సిద్ధత",
+    "accuracy": "ఖచ్చితత్వం",
+    "foundation": "పునాది",
+    "cognitiveAiEngine": "కాగ్నిటివ్ AI బ్రెయిన్ & మానసిక స్థితి",
+    "currentMentalState": "ప్రస్తుత మానసిక స్థితి",
+    "cognitiveCapacity": "జ్ఞాన సామర్థ్యం",
+    "activeFrontier": "క్రియాశీల అభ్యాస సరిహద్దు",
+    "nextTechniqueToMaster": "నేర్చుకోవలసిన తదుపరి ముఖ్యమైన పద్ధతి",
+    "whyAiSelectedThis": "AI దీనిని ఎందుకు ఎంచుకుంది",
+    "learnAndPracticeTechnique": "పద్ధతిని నేర్చుకుని ప్రాక్టీస్ చేయండి",
+    "launchFrontierTraining": "శిక్షణను ప్రారంభించండి",
+    "domainFrontiers": "7-విభాగాల అభ్యాస సరిహద్దులు"
   },
   "practice": {
     "typeAnswer": "సమాధానం రాయండి...",
@@ -235,7 +254,25 @@
     "howItWorks": "यह कैसे काम करता है",
     "innerEcho": "आंतरिक ध्वनि",
     "dailyRoutine": "आज का 5-ब्लॉक दैनिक रूटीन",
-    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र"
+    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र",
+    "calibrationRecommended": "కాలిబ్రేషన్ సిఫార్సు చేయబడింది",
+    "calibrateBaselineTitle": "మీ బేస్‌లైన్ వేగాన్ని కాలిబ్రేట్ చేయండి",
+    "calibrateBaselineDesc": "మీ వేగ పరిమితులు మరియు అంతరాలను కనుగొనడానికి 10–20 నిమిషాల మూల్యాంకనాన్ని పూర్తి చేయండి.",
+    "startAssessment": "మూల్యాంకనాన్ని ప్రారంభించండి",
+    "diagnosticPausedDesc": "అన్ని గణిత విభాగాలలో మీ వేగాన్ని కాలిబ్రేట్ చేయడం కొనసాగించండి.",
+    "pristineMemoryMapTitle": "మెమరీ మ్యాప్ చాలా స్పష్టంగా ఉంది",
+    "pristineMemoryMapDesc": "ఇంకా ఎలాంటి తప్పుల రికార్డు లేదు! షార్ట్‌కట్‌లను చూడటానికి మూల్యాంకనాన్ని ప్రారంభించండి.",
+    "starterTargets": "ప్రారంభ లక్ష్యాలు",
+    "exploreMemoryMap": "మెమరీ మ్యాప్‌లో అన్నీ అన్వేషించండి",
+    "learnShortcut": "షార్ట్‌కట్ నేర్చుకోండి",
+    "speedBottlenecks": "వేగ అడ్డంకులు",
+    "speedBottlenecksSubtitle": "ఖచ్చితత్వముంది కానీ ఎక్కువ సమయం (>3.5సె)",
+    "recentlyMastered": "ఇటీవల నేర్చుకున్నవి",
+    "recentlyMasteredSubtitle": "వేగవంతమైన గుర్తుచేసుకోవడం మరియు స్థిరత్వం",
+    "noBottlenecksYet": "ఇంకా ఎలాంటి వేగ అడ్డంకులు కనుగొనబడలేదు.",
+    "noMasteredYet": "శాశ్వత జ్ఞాపకశక్తిగా మార్చడానికి ప్రాక్టీస్ పూర్తి చేయండి!",
+    "allRetained": "అన్నీ సురక్షితంగా గుర్తుంచుకోబడ్డాయి!",
+    "noWeakFacts": "అన్నీ అధిక స్థిరత్వంతో ఉన్నాయి! బలహీనమైనవి ఏవీ లేవు."
   },
   "customDrill": {
     "title": "कस्टम वर्कआउट बिल्डर",

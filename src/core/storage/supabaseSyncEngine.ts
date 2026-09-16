@@ -48,6 +48,7 @@ class SupabaseSyncEngine {
       ast: state.activeSquareTrack || '',
       fmc: state.factMemoryMap ? Object.keys(state.factMemoryMap).length : 0,
       tmc: state.techniqueMasteryMap ? Object.keys(state.techniqueMasteryMap).length : 0,
+      th: JSON.stringify(state.themeConfig || {}),
     });
   }
 
@@ -256,6 +257,10 @@ class SupabaseSyncEngine {
           hydratedState.customDrillConfig = s.custom_drill_config;
           hydratedState.aiCoachingEnabled = s.ai_coaching_enabled;
           hydratedState.aiCoachState = s.ai_coach_state;
+          const coachState = s.ai_coach_state as Record<string, any> | null;
+          if (coachState?.theme_config) {
+            hydratedState.themeConfig = coachState.theme_config;
+          }
         }
 
         this.lastSyncedHash = this.computeStateHash(hydratedState);
@@ -470,7 +475,10 @@ class SupabaseSyncEngine {
         anzan_config: state.anzanConfig || {},
         custom_drill_config: state.customDrillConfig || null,
         ai_coaching_enabled: state.aiCoachingEnabled ?? true,
-        ai_coach_state: state.aiCoachState || {},
+        ai_coach_state: {
+          ...(state.aiCoachState || {}),
+          theme_config: state.themeConfig || null,
+        },
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' });
       if (setErr) console.warn('[SyncEngine] Settings sync note:', setErr.message);

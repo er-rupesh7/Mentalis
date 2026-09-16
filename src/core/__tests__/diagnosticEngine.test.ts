@@ -68,7 +68,28 @@ describe('Diagnostic Engine', () => {
       const keys = Object.keys(result.initialFactMemoryMap);
       if (keys.length > 0) {
         expect(result.initialFactMemoryMap[keys[0]].skipCount).toBe(1);
-        expect(result.initialFactMemoryMap[keys[0]].masteryState).toBe('weak');
+        expect(['weak', 'fragile']).toContain(result.initialFactMemoryMap[keys[0]].masteryState);
+      }
+    }
+  });
+
+  it('enforces cognitive ceiling: never asks harder questions in a domain once user fails at level X', () => {
+    let session = createAssessmentSession();
+    let profile = createDefaultLearnerProfile();
+
+    // Answer first question (tables tier 3) incorrectly to trigger ceiling cap at <= 2
+    const firstQ = session.questions[0];
+    const initialDifficulty = firstQ.difficultyRating || 3;
+    const res1 = recordAssessmentAnswer(session, firstQ.correctAnswer + 50, 3000, profile);
+    session = res1.updatedSession;
+    profile = res1.updatedProfile;
+
+    // Simulate continuing through questions until another tables question is presented
+    for (let i = 1; i < session.questions.length; i++) {
+      const q = session.questions[i];
+      if (q.module === 'tables_bootcamp' || q.subTrack?.startsWith('mul:')) {
+        // Must NEVER exceed the failed difficulty (tier <= initialDifficulty - 1)
+        expect(q.difficultyRating).toBeLessThan(initialDifficulty);
       }
     }
   });

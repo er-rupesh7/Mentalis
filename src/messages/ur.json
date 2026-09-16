@@ -21,7 +21,9 @@
     "score": "اسکور",
     "loading": "لوڈ ہو رہا ہے...",
     "level": "سطح",
-    "tier": "درجہ"
+    "tier": "درجہ",
+    "enabled": "فعال",
+    "disabled": "غیر فعال"
   },
   "nav": {
     "dashboard": "ڈیش بورڈ",
@@ -122,7 +124,24 @@
     "vedicBinomialShortcuts": "वैदिक व द्विपद शॉर्टकट",
     "anzanTeaser": "संज्ञानात्मक कार्यशील स्मृति इंजन (अंजन फ्लैश)",
     "startAnzan": "अंजन फ्लैश शुरू करें",
-    "achievementsBadges": "उपलब्धियां और बैज"
+    "achievementsBadges": "उपलब्धियां और बैज",
+    "apexQuantEngine": "ایپیکس اسپیڈ کوانٹ انجن",
+    "apexQuantEngineDesc": "اعلیٰ مسابقتی معیارات کے مطابق آپ کی ذہنی ریاضی کی رفتار کا جائزہ لیتا ہے۔",
+    "quickMock": "فوری 15 سوالات کا موک",
+    "subSkillsHub": "11 ذیلی مہارتوں کا مرکز",
+    "openBootcamp1120": "بوٹ کیمپ 11–20 کھولیں",
+    "readiness": "تیاری",
+    "accuracy": "درستگی",
+    "foundation": "بنیاد",
+    "cognitiveAiEngine": "ادراکی AI دماغ اور ذہنی حالت",
+    "currentMentalState": "موجودہ ذہنی حالت",
+    "cognitiveCapacity": "ادراکی صلاحیت",
+    "activeFrontier": "فعال ادراکی سرحد",
+    "nextTechniqueToMaster": "سیکھنے کے لیے اگلی ضروری تکنیک",
+    "whyAiSelectedThis": "AI نے اسے کیوں منتخب کیا",
+    "learnAndPracticeTechnique": "تکنیک سیکھیں اور مشق کریں",
+    "launchFrontierTraining": "کیلیبریٹڈ تربیت شروع کریں",
+    "domainFrontiers": "7 شعبوں کی ادراکی سرحدیں"
   },
   "practice": {
     "typeAnswer": "جواب درج کریں...",
@@ -235,7 +254,25 @@
     "howItWorks": "यह कैसे काम करता है",
     "innerEcho": "आंतरिक ध्वनि",
     "dailyRoutine": "आज का 5-ब्लॉक दैनिक रूटीन",
-    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र"
+    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र",
+    "calibrationRecommended": "کیلیبریشن تجویز کی جاتی ہے",
+    "calibrateBaselineTitle": "اپنی بنیادی رفتار کو کیلیبریٹ کریں",
+    "calibrateBaselineDesc": "اپنی صحیح رفتار کی حدود اور حکمت عملی کے خلا کو دریافت کرنے کے لیے 10–20 منٹ کی تشخیص مکمل کریں۔",
+    "startAssessment": "تشخیص شروع کریں",
+    "diagnosticPausedDesc": "تمام حسابی شعبوں میں اپنی رفتار اور ہچکچاہٹ کو کیلیبریٹ کرنا جاری رکھیں۔",
+    "pristineMemoryMapTitle": "حافظے کا نقشہ بالکل صاف ہے",
+    "pristineMemoryMapDesc": "ابھی تک کوئی غلطی ریکارڈ نہیں ہوئی! شارٹ کٹس دیکھنے کے لیے تشخیصی ٹیسٹ شروع کریں۔",
+    "starterTargets": "ابتدائی اہداف",
+    "exploreMemoryMap": "حافظے کے نقشے میں سب دیکھیں",
+    "learnShortcut": "شارٹ کٹ سیکھیں",
+    "speedBottlenecks": "رفتار کی رکاوٹیں",
+    "speedBottlenecksSubtitle": "درست لیکن زیادہ وقت (>3.5 سیکنڈ)",
+    "recentlyMastered": "حال ہی میں یاد کیے گئے حقائق",
+    "recentlyMasteredSubtitle": "تیز براہ راست یادداشت اور مضبوط استحکام",
+    "noBottlenecksYet": "ابھی تک کوئی خاص رکاوٹ نہیں پائی گئی۔",
+    "noMasteredYet": "مستقل یادداشت بنانے کے لیے مشق مکمل کریں!",
+    "allRetained": "تمام حقائق محفوظ طریقے سے یاد ہیں!",
+    "noWeakFacts": "تمام حقائق اعلیٰ استحکام پر ہیں! کوئی کمزور حقیقت نہیں ملی۔"
   },
   "customDrill": {
     "title": "कस्टम वर्कआउट बिल्डर",

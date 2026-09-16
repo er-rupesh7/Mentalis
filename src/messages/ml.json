@@ -21,7 +21,9 @@
     "score": "സ്കോർ",
     "loading": "ലോഡ് ചെയ്യുന്നു...",
     "level": "ലെവൽ",
-    "tier": "തലം"
+    "tier": "തലം",
+    "enabled": "പ്രവർത്തനക്ഷമം",
+    "disabled": "പ്രവർത്തനരഹിതം"
   },
   "nav": {
     "dashboard": "ഡാഷ്‌ബോർഡ്",
@@ -122,7 +124,24 @@
     "vedicBinomialShortcuts": "वैदिक व द्विपद शॉर्टकट",
     "anzanTeaser": "संज्ञानात्मक कार्यशील स्मृति इंजन (अंजन फ्लैश)",
     "startAnzan": "अंजन फ्लैश शुरू करें",
-    "achievementsBadges": "उपलब्धियां और बैज"
+    "achievementsBadges": "उपलब्धियां और बैज",
+    "apexQuantEngine": "അപെക്സ് സ്പീഡ് ക്വാണ്ട് എഞ്ചിൻ",
+    "apexQuantEngineDesc": "മികച്ച മത്സര നിലവാരങ്ങൾക്കെതിരെ നിങ്ങളുടെ കണക്കുകൂട്ടൽ വേഗത വിലയിരുത്തുന്നു.",
+    "quickMock": "പെട്ടെന്നുള്ള 15-ചോദ്യ മോക്ക്",
+    "subSkillsHub": "11 ഉപ-നൈപുണ്യ ഹബ്",
+    "openBootcamp1120": "ബൂട്ട്ക്യാമ്പ് 11–20 തുറക്കുക",
+    "readiness": "സന്നദ്ധത",
+    "accuracy": "കൃത്യത",
+    "foundation": "അടിത്തറ",
+    "cognitiveAiEngine": "കോഗ്നിറ്റീവ് AI മസ്തിഷ്കവും പരിശീലനവും",
+    "currentMentalState": "നിലവിലെ മാനസികാവസ്ഥ",
+    "cognitiveCapacity": "മാനസിക ശേഷി",
+    "activeFrontier": "സജീവ പഠന അതിർത്തി",
+    "nextTechniqueToMaster": "പഠിക്കേണ്ട അടുത്ത പ്രധാന തന്ത്രം",
+    "whyAiSelectedThis": "AI ഇത് എന്തുകൊണ്ട് തിരഞ്ഞെടുത്തു",
+    "learnAndPracticeTechnique": "തന്ത്രം പഠിച്ച് പരിശീലിക്കുക",
+    "launchFrontierTraining": "പരിശീലനം ആരംഭിക്കുക",
+    "domainFrontiers": "7-മേഖല പഠന അതിർത്തികൾ"
   },
   "practice": {
     "typeAnswer": "ഉത്തരം ടൈപ്പ് ചെയ്യുക...",
@@ -235,7 +254,25 @@
     "howItWorks": "यह कैसे काम करता है",
     "innerEcho": "आंतरिक ध्वनि",
     "dailyRoutine": "आज का 5-ब्लॉक दैनिक रूटीन",
-    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र"
+    "dailyRoutineSubtitle": "संज्ञानात्मक स्वचालितता और स्मृति स्थिरता हेतु दैनिक चक्र",
+    "calibrationRecommended": "കാലിബ്രേഷൻ ശുപാർശ ചെയ്യുന്നു",
+    "calibrateBaselineTitle": "നിങ്ങളുടെ വേഗത കാലിബ്രേറ്റ് ചെയ്യുക",
+    "calibrateBaselineDesc": "വേഗതയും തന്ത്ര വിടവുകളും കണ്ടെത്താൻ 10-20 മിനിറ്റ് മൂല്യനിർണ്ണയം പൂർത്തിയാക്കുക.",
+    "startAssessment": "മൂല്യനിർണ്ണയം ആരംഭിക്കുക",
+    "diagnosticPausedDesc": "എല്ലാ മേഖലകളിലും നിങ്ങളുടെ വേഗത കാലിബ്രേറ്റ് ചെയ്യുന്നത് തുടരുക.",
+    "pristineMemoryMapTitle": "മെമ്മറി മാപ്പ് വളരെ വ്യക്തമാണ്",
+    "pristineMemoryMapDesc": "തെറ്റുകളൊന്നും ഇതുവരെ രേഖപ്പെടുത്തിയിട്ടില്ല! ഷോർട്ട്‌കട്ടുകൾ കാണാൻ പരീക്ഷ ആരംഭിക്കുക.",
+    "starterTargets": "പ്രാരംഭ ലക്ഷ്യങ്ങൾ",
+    "exploreMemoryMap": "മെമ്മറി മാപ്പിൽ എല്ലാം കാണുക",
+    "learnShortcut": "ഷോർട്ട്‌കട്ട് പഠിക്കുക",
+    "speedBottlenecks": "വേഗത തടസ്സങ്ങൾ",
+    "speedBottlenecksSubtitle": "കൃത്യതയുണ്ട് എന്നാൽ കൂടുതൽ സമയം (>3.5സെ)",
+    "recentlyMastered": "അടുത്തിടെ സ്വായത്തമാക്കിയവ",
+    "recentlyMasteredSubtitle": "വേഗത്തിലുള്ള ഓർമ്മപ്പെടുത്തലും ശക്തമായ സ്ഥിരതയും",
+    "noBottlenecksYet": "ശ്രദ്ധേയമായ വേഗത തടസ്സങ്ങളൊന്നും ഇതുവരെ കണ്ടെത്തിയിട്ടില്ല.",
+    "noMasteredYet": "ശാശ്വത സ്മരണയാക്കി മാറ്റാൻ പരിശീലനം പൂർത്തിയാക്കുക!",
+    "allRetained": "എല്ലാം സുരക്ഷിതമായി ഓർമ്മയിൽ സൂക്ഷിച്ചിരിക്കുന്നു!",
+    "noWeakFacts": "എല്ലാം മികച്ച സ്ഥിരതയിലാണ്! ദുർബലമായവ ഒന്നുമില്ല."
   },
   "customDrill": {
     "title": "कस्टम वर्कआउट बिल्डर",

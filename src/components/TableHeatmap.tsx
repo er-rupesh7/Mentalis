@@ -438,7 +438,7 @@ export const TableHeatmap: React.FC = () => {
                 <p className="text-xs text-slate-400">
                   {mode === 'tables'
                     ? selectedItem >= 13 && selectedItem <= 19
-                      ? 'High-Frequency RRB Teen Table (Proximity & Split-Add)'
+                      ? 'High-Frequency Speed Teen Table (Proximity & Split-Add)'
                       : 'Full 1 to 12 Multiples Automaticity Band'
                     : mode === 'squares'
                     ? selectedItem <= 25
