@@ -5,13 +5,14 @@ import { useQuizStore } from '../../core/store/useQuizStore';
 
 const MATH_GLYPHS = [
   '0', '1', '+', '×', '÷', '−', '=', '≠', '√', '∛', '²', '³',
-  'π', '∞', '∑', 'θ', 'λ', '∆', '%', '∫', '≈', '≤', '≥'
+  'π', '∞', '∑', 'θ', 'λ', '∆', '%', '∫', '≈', '≤', '≥', '9', '8', '7'
 ];
 
 export const MatrixRainCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { themeConfig, reducedMotion } = useQuizStore();
-  const enabled = themeConfig?.matrixRainEnabled && !reducedMotion;
+  // Default to enabled if themeConfig is undefined
+  const enabled = (themeConfig?.matrixRainEnabled ?? true) && !reducedMotion;
 
   useEffect(() => {
     if (!enabled) return;
@@ -25,6 +26,7 @@ export const MatrixRainCanvas: React.FC = () => {
     let animId: number;
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
+    let surgeMultiplier = 1.0;
 
     const handleResize = () => {
       if (!canvas) return;
@@ -33,32 +35,41 @@ export const MatrixRainCanvas: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
 
+    const handleSurge = () => {
+      surgeMultiplier = 2.8;
+    };
+    window.addEventListener('mentalis_matrix_surge', handleSurge);
+
     const fontSize = 16;
     const columns = Math.floor(width / fontSize);
-    const drops: number[] = new Array(columns).fill(1).map(() => Math.floor(Math.random() * -50));
+    const rows = Math.floor(height / fontSize);
+    
+    // Distribute drops across the entire screen from frame 0 with random speeds
+    const drops: number[] = new Array(columns).fill(0).map(() => Math.floor(Math.random() * rows));
+    const speeds: number[] = new Array(columns).fill(1).map(() => 0.65 + Math.random() * 0.7);
 
     // Accent color theme resolution
-    const accent = themeConfig?.accentColor || 'emerald';
+    const accent = themeConfig?.accentColor || 'violet';
     const headColor = '#ffffff';
-    let trailColor = 'rgba(16, 185, 129, 0.85)'; // emerald
-    let glowColor = '#10b981';
+    let baseRgb = '168, 85, 247'; // violet
+    let glowColor = '#a855f7';
 
-    if (accent === 'violet') {
-      trailColor = 'rgba(168, 85, 247, 0.85)';
-      glowColor = '#a855f7';
+    if (accent === 'emerald') {
+      baseRgb = '16, 185, 129';
+      glowColor = '#10b981';
     } else if (accent === 'cyan') {
-      trailColor = 'rgba(6, 182, 212, 0.85)';
+      baseRgb = '6, 182, 212';
       glowColor = '#06b6d4';
     } else if (accent === 'amber') {
-      trailColor = 'rgba(245, 158, 11, 0.85)';
+      baseRgb = '245, 158, 11';
       glowColor = '#f59e0b';
     } else if (accent === 'rose') {
-      trailColor = 'rgba(244, 63, 94, 0.85)';
+      baseRgb = '244, 63, 94';
       glowColor = '#f43f5e';
     }
 
     let lastFrame = 0;
-    const fpsInterval = 1000 / 30; // 30 FPS for optimal battery and smooth flow
+    const fpsInterval = 1000 / 30; // 30 FPS for buttery performance
 
     const render = (currentTime: number) => {
       animId = requestAnimationFrame(render);
@@ -67,33 +78,50 @@ export const MatrixRainCanvas: React.FC = () => {
       if (elapsed < fpsInterval) return;
       lastFrame = currentTime - (elapsed % fpsInterval);
 
-      // Translucent slate fade for trail effect
-      ctx.fillStyle = 'rgba(2, 6, 23, 0.12)';
+      // Smooth decay of surge
+      if (surgeMultiplier > 1.0) {
+        surgeMultiplier = Math.max(1.0, surgeMultiplier - 0.08);
+      }
+
+      // Atmospheric fade clear for persistent smooth trails
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.09)';
       ctx.fillRect(0, 0, width, height);
 
-      ctx.font = `${fontSize}px "JetBrains Mono", monospace`;
+      ctx.font = `bold ${fontSize}px "Space Mono", "JetBrains Mono", monospace`;
 
       for (let i = 0; i < drops.length; i++) {
         const char = MATH_GLYPHS[Math.floor(Math.random() * MATH_GLYPHS.length)];
         const x = i * fontSize;
-        const y = drops[i] * fontSize;
+        const currentY = drops[i] * fontSize;
 
-        // Draw bright head glyph
+        // 1. Bright energetic leading glyph with neon radial glow
         ctx.fillStyle = headColor;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = surgeMultiplier > 1.2 ? 16 : 10;
         ctx.shadowColor = glowColor;
-        ctx.fillText(char, x, y);
+        ctx.fillText(char, x, currentY);
 
-        // Draw glow trail glyph
-        ctx.fillStyle = trailColor;
-        ctx.shadowBlur = 4;
-        ctx.fillText(char, x, y - fontSize);
+        // 2. Cascading glowing trail with diminishing alpha
+        ctx.shadowBlur = surgeMultiplier > 1.2 ? 8 : 4;
+        ctx.fillStyle = `rgba(${baseRgb}, 0.90)`;
+        ctx.fillText(char, x, currentY - fontSize);
+
         ctx.shadowBlur = 0;
+        ctx.fillStyle = `rgba(${baseRgb}, 0.65)`;
+        ctx.fillText(MATH_GLYPHS[(i + 3) % MATH_GLYPHS.length], x, currentY - fontSize * 2);
 
-        if (y > height && Math.random() > 0.975) {
+        ctx.fillStyle = `rgba(${baseRgb}, 0.40)`;
+        ctx.fillText(MATH_GLYPHS[(i + 7) % MATH_GLYPHS.length], x, currentY - fontSize * 3);
+
+        ctx.fillStyle = `rgba(${baseRgb}, 0.20)`;
+        ctx.fillText(MATH_GLYPHS[(i + 11) % MATH_GLYPHS.length], x, currentY - fontSize * 4);
+
+        // Reset drop smoothly when off screen
+        if (currentY > height + 80 && Math.random() > 0.82) {
           drops[i] = 0;
+          speeds[i] = 0.65 + Math.random() * 0.7;
         }
-        drops[i]++;
+
+        drops[i] += speeds[i] * (surgeMultiplier > 1.5 ? 2.2 : 1.0);
       }
     };
 
@@ -101,6 +129,7 @@ export const MatrixRainCanvas: React.FC = () => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('mentalis_matrix_surge', handleSurge);
       cancelAnimationFrame(animId);
     };
   }, [enabled, themeConfig?.accentColor, reducedMotion]);
@@ -111,7 +140,7 @@ export const MatrixRainCanvas: React.FC = () => {
     <canvas
       ref={canvasRef}
       aria-hidden="true"
-      className="fixed inset-0 pointer-events-none z-0 opacity-25 transition-opacity duration-1000"
+      className="fixed inset-0 pointer-events-none z-0 opacity-80 sm:opacity-90 transition-opacity duration-700"
     />
   );
 };

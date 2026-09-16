@@ -374,6 +374,8 @@ export interface AdaptiveQuestionOptions {
   examSubSkill?: ExamSubSkill;
   customDrillConfig?: CustomDrillConfig;
   targetMasteryTable?: number;
+  userLevel?: number;
+  previousQuestion?: Question;
 }
 
 /**
@@ -391,7 +393,14 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
     tableMode = 'recall',
     examSubSkill,
     customDrillConfig,
+    userLevel = 1,
+    previousQuestion,
   } = options;
+
+  const isHighLevel = userLevel >= 15;
+  const wasPrevSingleDigit = previousQuestion
+    ? previousQuestion.operandA < 10 && (previousQuestion.operandB || 1) < 10
+    : false;
 
   // 1. Custom Drill Mode (multi-select tables, squares, arithmetic combos, target mastery table)
   if (module === 'custom_drill' && customDrillConfig) {
@@ -575,13 +584,18 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
   let q: Question;
   switch (module) {
     case 'add_sub':
-      q = generateAddSubQuestion(activeAddSubLevel);
+      q = isHighLevel && activeAddSubLevel <= 2
+        ? generateArithmeticComboQuestion('add_sub_3d_2d')
+        : generateAddSubQuestion(activeAddSubLevel);
       break;
     case 'multiplication':
-      q = generateMultiplicationQuestion(activeTable);
+      q = generateMultiplicationQuestion(activeTable, undefined, {
+        forbidSingleDigit: wasPrevSingleDigit,
+        userLevel,
+      });
       break;
     case 'tables_bootcamp': {
-      const m = Math.floor(Math.random() * 12) + 1;
+      const m = isHighLevel && wasPrevSingleDigit ? Math.floor(Math.random() * 8) + 12 : Math.floor(Math.random() * 12) + 1;
       q = generateTableModeQuestion(activeTable || 13, m, tableMode);
       break;
     }
@@ -597,7 +611,9 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       q = generateSquareCubeQuestion(activeSquareTrack);
       break;
     default:
-      q = generateAddSubQuestion(2);
+      q = isHighLevel
+        ? generateArithmeticComboQuestion('add_sub_3d_2d')
+        : generateAddSubQuestion(2);
       break;
   }
 

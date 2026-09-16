@@ -173,9 +173,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-slate-100 pb-nav sm:pb-12">
+    <div className="flex-1 flex flex-col min-h-screen bg-transparent text-slate-100 pb-nav sm:pb-12 relative z-[2]">
       {/* Top Banner / Hero — Compact on mobile, expanded on desktop */}
-      <div className="border-b border-slate-800/80 bg-gradient-to-b from-slate-900 to-slate-950 px-4 py-4 sm:py-8">
+      <div className="border-b border-slate-800/60 bg-gradient-to-b from-slate-900/40 to-slate-950/10 backdrop-blur-[2px] px-4 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Hero row: branding + desktop-only CTA buttons */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

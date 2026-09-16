@@ -97,7 +97,7 @@ export default function MentalisApp() {
       messages={currentMessages}
       timeZone="Asia/Kolkata"
     >
-      <main className="flex-1 flex flex-col min-h-screen bg-slate-950 relative">
+      <main className="flex-1 flex flex-col min-h-screen bg-transparent relative">
         {/* Navigation Top Bar (Hidden during practice/anzan for 100% full screen focus) */}
         {viewMode !== 'practice' && viewMode !== 'anzan' && (
           <Navigation onOpenTutorial={() => setIsTutorialOpen(true)} />

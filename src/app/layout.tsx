@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { MatrixRainCanvas } from '../components/theme/MatrixRainCanvas';
+import { ThemeProvider } from '../components/theme/ThemeProvider';
 
 export const metadata: Metadata = {
   title: 'Mentalab - High-Performance Cognitive Math Training',
@@ -43,9 +44,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="hi" className="dark">
-      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-violet-600 selection:text-white">
-        <MatrixRainCanvas />
-        {children}
+      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-violet-600 selection:text-white relative">
+        <ThemeProvider>
+          <MatrixRainCanvas />
+          <div className="relative z-10 flex-1 flex flex-col min-h-screen bg-transparent">
+            {children}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );

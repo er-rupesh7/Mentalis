@@ -15,7 +15,7 @@
  * 6: Moderate | 7: Hard | 8: Very Hard | 9: Shakuntala Mastery
  */
 
-import { Question } from './types';
+import { Question, Operator } from './types';
 import {
   AssessmentSession,
   AssessmentResponse,
@@ -23,6 +23,7 @@ import {
   LearnerProfile,
   SkillDimension,
   DomainProficiencyAnalysis,
+  TableDecadeStat,
   updateSkillEstimate,
   getDimensionLabel,
 } from './learnerModel';
@@ -94,28 +95,31 @@ export const PRIMARY_DIAGNOSTIC_DOMAINS: DiagnosticDomain[] = [
   'shakuntala_feats',
 ];
 
-// 21-question sequence alternating all 7 domains smoothly
+// 24-question sequence alternating tables deeply with all 6 core mental arithmetic domains
 const BALANCED_DOMAIN_SEQUENCE: DiagnosticDomain[] = [
   'tables',
   'addition',
-  'multiplication',
+  'tables',
   'subtraction',
-  'squares_cubes',
+  'tables',
+  'multiplication',
+  'tables',
   'division',
+  'tables',
+  'squares_cubes',
+  'tables',
   'shakuntala_feats',
   'tables',
   'addition',
-  'subtraction',
-  'multiplication',
-  'squares_cubes',
-  'division',
-  'shakuntala_feats',
   'tables',
-  'addition',
-  'multiplication',
   'subtraction',
+  'tables',
+  'multiplication',
+  'tables',
   'division',
+  'tables',
   'squares_cubes',
+  'tables',
   'shakuntala_feats',
 ];
 
@@ -174,64 +178,111 @@ function normalizeDomain(domain: DiagnosticDomain): 'tables' | 'addition' | 'sub
 function generateTablesQuestion(tier: number, qId: string): Question {
   let table = 5;
   let mult = 7;
+  let mode: 'direct' | 'commutative' | 'missing_factor' | 'division' = 'direct';
 
   if (tier === 1) {
-    table = pickRandom([2, 5, 10]);
+    // Single-digit foundations: 2, 3, 5, 10
+    table = pickRandom([2, 3, 5, 10]);
     mult = randInt(2, 9);
+    if (Math.random() > 0.6) mode = 'commutative';
   } else if (tier === 2) {
-    table = pickRandom([3, 4]);
-    mult = randInt(3, 9);
-  } else if (tier === 3) {
+    // Single-digit core: 6, 7, 8, 9
     table = pickRandom([6, 7, 8, 9]);
     mult = randInt(6, 9);
+    if (Math.random() > 0.5) mode = 'commutative';
+  } else if (tier === 3) {
+    // Foundation teen tables: 11, 12, 13, 14, 15 (lower multipliers)
+    table = pickRandom([11, 12, 13, 14, 15]);
+    mult = randInt(2, 6);
   } else if (tier === 4) {
-    table = pickRandom([11, 12]);
-    mult = randInt(4, 9);
+    // Core teen tables: 12, 13, 14, 15, 16 (higher multipliers)
+    table = pickRandom([12, 13, 14, 15, 16]);
+    mult = randInt(6, 9);
   } else if (tier === 5) {
-    table = pickRandom([13, 14, 15]);
-    mult = randInt(4, 8);
-  } else if (tier === 6) {
+    // High teen tables: 16, 17, 18, 19
     table = pickRandom([16, 17, 18, 19]);
     mult = randInt(4, 9);
+    // 40% chance of missing factor: 17 × ? = 119
+    if (Math.random() > 0.6) mode = 'missing_factor';
+  } else if (tier === 6) {
+    // 20s decade tables: 21, 22, 23, 24, 25, 26, 28
+    table = pickRandom([21, 22, 23, 24, 25, 26, 28]);
+    mult = randInt(3, 8);
+    if (Math.random() > 0.5) mode = 'commutative';
   } else if (tier === 7) {
-    table = randInt(21, 35);
+    // 30s & 40s decade tables: 31, 32, 35, 36, 42, 45, 48
+    table = pickRandom([31, 32, 35, 36, 42, 45, 48]);
     mult = randInt(3, 7);
   } else if (tier === 8) {
-    table = randInt(36, 75);
+    // 50s–75 decade tables: 52, 54, 56, 64, 72, 75
+    table = pickRandom([52, 54, 56, 64, 72, 75]);
     mult = randInt(4, 8);
+    if (Math.random() > 0.6) mode = 'division';
   } else {
-    table = randInt(76, 99);
+    // High tables (76–99) & rapid two-digit multiplication
+    table = pickRandom([76, 82, 84, 88, 92, 95, 96, 98]);
     mult = randInt(6, 9);
   }
 
-  const answer = table * mult;
-  const prompt = `${table} × ${mult}`;
+  const product = table * mult;
   const factKey: FactKey = `mul:${table}:${mult}`;
+
+  let prompt = `${table} × ${mult}`;
+  let correctAnswer = product;
+  let opA = table;
+  let opB = mult;
+  let operator: Operator = '×';
+  let tip = table > 12
+    ? `Split-and-Add: ${table} × ${mult} = (${Math.floor(table / 10) * 10} × ${mult}) + (${table % 10} × ${mult}).`
+    : `Anchor Fact: Recall ${table} × ${mult} directly without finger counting.`;
+  let strategyTitle = table > 12 ? 'Split-and-Add Teen Table' : 'Core Table Memory';
+
+  if (mode === 'commutative') {
+    prompt = `${mult} × ${table}`;
+    correctAnswer = product;
+    opA = mult;
+    opB = table;
+    operator = '×';
+    tip = `Commutative Reflex: ${mult} × ${table} = ${table} × ${mult} = ${product}.`;
+    strategyTitle = 'Commutative Table Inversion';
+  } else if (mode === 'missing_factor') {
+    prompt = `${table} × ? = ${product}`;
+    correctAnswer = mult;
+    opA = table;
+    opB = product;
+    operator = '×';
+    tip = `Missing Factor: Find the factor that multiplies with ${table} to reach ${product} → ${mult}.`;
+    strategyTitle = 'Missing Factor Table Retrieval';
+  } else if (mode === 'division') {
+    prompt = `${product} ÷ ${table} = ?`;
+    correctAnswer = mult;
+    opA = product;
+    opB = table;
+    operator = '÷';
+    tip = `Table Quotient: ${product} ÷ ${table} = ${mult} (since ${table} × ${mult} = ${product}).`;
+    strategyTitle = 'Inverse Table Division';
+  }
 
   return {
     id: qId,
     prompt,
-    operandA: table,
-    operandB: mult,
-    operator: '×',
-    correctAnswer: answer,
+    operandA: opA,
+    operandB: opB,
+    operator,
+    correctAnswer,
     targetTimeSeconds: tier <= 3 ? 3 : tier <= 6 ? 4 : 5,
     difficultyRating: tier,
-    mentalTip: table > 12
-      ? `Split-and-Add: ${table} × ${mult} = (${Math.floor(table / 10) * 10} × ${mult}) + (${table % 10} × ${mult}).`
-      : `Anchor Fact: Recall ${table} × ${mult} directly without finger counting.`,
+    mentalTip: tip,
     steps: [
       {
         stepNumber: 1,
-        title: table > 12 ? 'Decomposition' : 'Direct Recall',
-        subVocalization: `${prompt} = ${answer}`,
-        intermediateValue: answer,
-        explanation: table > 12
-          ? `${Math.floor(table / 10) * 10 * mult} + ${table % 10 * mult} = ${answer}`
-          : `Direct retrieval from ${table} times table.`,
+        title: strategyTitle,
+        subVocalization: `${prompt} → ${correctAnswer}`,
+        intermediateValue: correctAnswer,
+        explanation: tip,
       },
     ],
-    strategyTitle: table > 12 ? 'Split-and-Add Teen Table' : 'Core Table Memory',
+    strategyTitle,
     module: 'tables_bootcamp',
     subTrack: factKey,
   };
@@ -840,15 +891,14 @@ function generateShakuntalaQuestion(tier: number, qId: string): Question {
  * Always starts with diverse, approachable probes across the initial domains.
  */
 export function createAssessmentSession(targetMinutes: number = 15): AssessmentSession {
-  // Start with 7 diverse probes across the 7 domains at comfortable baseline Tier 3 (Normal)
+  // Start with 6 curated initial probes across foundational domains, heavily grounding in Tables 1-100
   const initialQuestions: Question[] = [
-    generateProceduralQuestion('tables', 3, 'diag_1_tables'),
+    generateProceduralQuestion('tables', 2, 'diag_1_tables'),
     generateProceduralQuestion('addition', 3, 'diag_2_addition'),
-    generateProceduralQuestion('subtraction', 3, 'diag_3_subtraction'),
-    generateProceduralQuestion('multiplication', 3, 'diag_4_multiplication'),
-    generateProceduralQuestion('division', 3, 'diag_5_division'),
-    generateProceduralQuestion('squares_cubes', 3, 'diag_6_squares_cubes'),
-    generateProceduralQuestion('shakuntala_feats', 3, 'diag_7_shakuntala_feats'),
+    generateProceduralQuestion('tables', 3, 'diag_3_tables'),
+    generateProceduralQuestion('subtraction', 3, 'diag_4_subtraction'),
+    generateProceduralQuestion('tables', 4, 'diag_5_tables'),
+    generateProceduralQuestion('multiplication', 3, 'diag_6_multiplication'),
   ];
 
   return {
@@ -856,7 +906,7 @@ export function createAssessmentSession(targetMinutes: number = 15): AssessmentS
     startedAt: Date.now(),
     status: 'in_progress',
     currentQuestionIndex: 0,
-    totalQuestions: 20, // targeted dynamic count between 14 and 20
+    totalQuestions: 24, // targeted 24-question deep cognitive CAT battery with 12 table probes
     questions: initialQuestions,
     responses: [],
     earlyStopped: false,
@@ -1175,11 +1225,12 @@ export function recordAssessmentAnswer(
   let isCompleted = false;
   let earlyStopped = false;
 
-  // Early stopping criteria: answered >= 14 questions and all 7 core domains tested
-  if (nextIndex >= 14) {
+  // Early stopping criteria: answered >= 18 questions, all 7 core domains tested, and at least 7 tables tested
+  if (nextIndex >= 18) {
     const testedDomains = new Set(updatedResponses.map((r) => getDomainForResponse(r)));
     const allDomainsTested = PRIMARY_DIAGNOSTIC_DOMAINS.every((d) => testedDomains.has(d));
-    if (allDomainsTested && (nextIndex >= session.totalQuestions || PRIMARY_DIAGNOSTIC_DOMAINS.every((d) => isDomainCalibrated(updatedResponses, d)))) {
+    const tableResponses = updatedResponses.filter((r) => getDomainForResponse(r) === 'tables');
+    if (allDomainsTested && tableResponses.length >= 7 && (nextIndex >= session.totalQuestions || PRIMARY_DIAGNOSTIC_DOMAINS.every((d) => isDomainCalibrated(updatedResponses, d)))) {
       earlyStopped = true;
       isCompleted = true;
     }
@@ -1413,6 +1464,61 @@ export function generateBaselineReport(
     summaryMessage = 'High cognitive calculation speed. We will equip you with quick parity and magnitude verification checks so your speed translates into 100% rock-solid accuracy.';
   }
 
+  // Detailed Tables 1-100 Decade Breakdown
+  const tableResponses = responses.filter((r) => getDomainForResponse(r) === 'tables');
+  const decadeBuckets: Record<string, { label: string; responses: AssessmentResponse[] }> = {
+    decade1_10: { label: 'Single Digits (1–10)', responses: [] },
+    decade11_20: { label: 'Teen Tables (11–20)', responses: [] },
+    decade21_30: { label: '20s Decade (21–30)', responses: [] },
+    decade31_50: { label: '30s–50s Decade', responses: [] },
+    decade51_100: { label: 'High Tables (51–100)', responses: [] },
+  };
+
+  for (const r of tableResponses) {
+    let tbl = 5;
+    if (r.factKey && r.factKey.startsWith('mul:')) {
+      const parts = r.factKey.split(':');
+      tbl = parseInt(parts[1], 10) || 5;
+    } else {
+      const q = session.questions.find((x) => x.id === r.questionId);
+      tbl = q ? Math.max(q.operandA, q.operandB) : 5;
+    }
+
+    if (tbl <= 10) decadeBuckets.decade1_10.responses.push(r);
+    else if (tbl <= 20) decadeBuckets.decade11_20.responses.push(r);
+    else if (tbl <= 30) decadeBuckets.decade21_30.responses.push(r);
+    else if (tbl <= 50) decadeBuckets.decade31_50.responses.push(r);
+    else decadeBuckets.decade51_100.responses.push(r);
+  }
+
+  const tablesDecadeBreakdown: TableDecadeStat[] = Object.entries(decadeBuckets).map(
+    ([decadeKey, bucket]) => {
+      const asked = bucket.responses.length;
+      const correct = bucket.responses.filter((x) => x.isCorrect).length;
+      const accuracyPercent = asked > 0 ? Math.round((correct / asked) * 100) : 0;
+      const avgLatencyMs = asked > 0
+        ? Math.round(bucket.responses.reduce((sum, x) => sum + x.latencyMs, 0) / asked)
+        : 2500;
+
+      let status: 'mastered' | 'fluent' | 'learning' | 'struggling' = 'learning';
+      if (asked === 0) status = 'learning';
+      else if (accuracyPercent >= 90 && avgLatencyMs < 2000) status = 'mastered';
+      else if (accuracyPercent >= 75) status = 'fluent';
+      else if (accuracyPercent >= 50) status = 'learning';
+      else status = 'struggling';
+
+      return {
+        decadeKey: decadeKey as TableDecadeStat['decadeKey'],
+        label: bucket.label,
+        totalAsked: asked,
+        correctCount: correct,
+        accuracyPercent,
+        avgLatencyMs,
+        status,
+      };
+    }
+  );
+
   return {
     assessedAt: Date.now(),
     overallTheta,
@@ -1428,6 +1534,7 @@ export function generateBaselineReport(
     firstWeekRoadmap: roadmap,
     summaryMessage,
     domainProficiencies,
+    tablesDecadeBreakdown,
     recommendedTechniquesList,
   };
 }

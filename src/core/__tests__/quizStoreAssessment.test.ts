@@ -20,7 +20,7 @@ describe('QuizStore Assessment & Learning Workflow', () => {
     const state = useQuizStore.getState();
     expect(state.activeAssessment).not.toBeNull();
     expect(state.activeAssessment?.status).toBe('in_progress');
-    expect(state.activeAssessment?.totalQuestions).toBe(20);
+    expect(state.activeAssessment?.totalQuestions).toBe(24);
     expect(state.viewMode).toBe('assessment');
     expect(state.assessmentQuestionStartTime).toBeGreaterThan(0);
   });

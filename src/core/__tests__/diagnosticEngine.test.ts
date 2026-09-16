@@ -11,7 +11,7 @@ describe('Diagnostic Engine', () => {
   it('creates an assessment session with calibrated balanced probe questions', () => {
     const session = createAssessmentSession(15);
     expect(session.status).toBe('in_progress');
-    expect(session.totalQuestions).toBe(20);
+    expect(session.totalQuestions).toBe(24);
     expect(session.questions.length).toBeGreaterThanOrEqual(4);
     expect(session.currentQuestionIndex).toBe(0);
     expect(session.responses.length).toBe(0);

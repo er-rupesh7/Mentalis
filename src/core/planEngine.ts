@@ -10,6 +10,9 @@ import {
   generateAddSubQuestion,
   generateMultiplicationQuestion,
   generateSquareCubeQuestion,
+  generateArithmeticComboQuestion,
+  generateTwoDigitMultiplicationQuestion,
+  randomInt,
 } from './calcEngine';
 import {
   LearnerProfile,
@@ -30,25 +33,19 @@ export interface TrainingBlockExt extends TrainingBlock {
 }
 
 /**
- * Robust, fully offline "Level 0 Foundation Plan".
- * Activates when uncalibrated, offline, Groq rate-limited, missing API key,
- * or when AI response validation fails.
- *
- * Grounded in cognitive arithmetic pedagogy:
- * 1. Simple place-value addition & complements to 100
- * 2. Multiplication anchors (×1, ×2, ×5, ×10) & shortcuts (×9, ×11, ×12, ×15, ×25, ×50)
- * 3. Progressive tables (3, 4, 6, 7, 8, 9, 11, 12) targeting exact skips
- * 4. Square anchors (1²–20²), ending in 5, near 50, near 100, and cube anchors (1³–20³)
- * 5. Anzan working memory phonological loop expansion
+ * Robust, fully offline "Foundation Plan".
+ * Calibrates difficulty according to user level (Level 1 vs Level 20+).
  */
 export function generateLevel0FoundationPlan(
   profile: LearnerProfile,
   requestedMinutes: number = profile.preferredDailyMinutes || 15,
-  factMemoryMap?: Record<string, FactMemoryState>
+  factMemoryMap?: Record<string, FactMemoryState>,
+  userLevel: number = 1
 ): TrainingPlan {
   const totalMinutes = Math.max(10, Math.min(30, requestedMinutes));
   const todayStr = new Date().toISOString().split('T')[0];
   const now = Date.now();
+  const isHighLevel = userLevel >= 15;
 
   const facts = factMemoryMap ? Object.values(factMemoryMap) : [];
 
@@ -101,82 +98,145 @@ export function generateLevel0FoundationPlan(
     personalNotes.push('Master anchor tables (×1, ×2, ×5, ×10), place-value addition/subtraction, and base-50 squares.');
   }
 
-  const rationale = `Level 0 Foundation Plan: ${personalNotes.join(' ')}`;
+  const defaultRationale = `Level 0 Foundation Plan: ${personalNotes.join(' ')}`;
 
   // Block time allocations
   const block1Min = Math.max(2, Math.round(totalMinutes * 0.20));
-  const block2Min = Math.max(3, Math.round(totalMinutes * 0.25));
-  const block3Min = Math.max(3, Math.round(totalMinutes * 0.25));
+  const block2Min = Math.max(2, Math.round(totalMinutes * 0.25));
+  const block3Min = Math.max(2, Math.round(totalMinutes * 0.25));
   const block4Min = Math.max(2, Math.round(totalMinutes * 0.15));
   const block5Min = Math.max(1, totalMinutes - (block1Min + block2Min + block3Min + block4Min));
 
   // Determine repair target table
   const repairTable = skippedFacts.find((f) => f.factType === 'multiplication')?.operandA || 7;
 
-  const blocks: TrainingBlock[] = [
-    {
-      id: `block_l0_addsub_${now}_1`,
-      blockType: 'warmup',
-      title: `${block1Min} min: Addition & Subtraction Place-Value Foundations`,
-      description: 'Left-to-right accumulation and complements to 100 for rapid baseline calculation.',
-      dimension: 'mult_foundations',
-      drillId: 'add_sub_level_2',
-      targetCount: Math.round(block1Min * 3.5),
-      allocatedMinutes: block1Min,
-      completedCount: 0,
-      status: 'pending',
-    },
-    {
-      id: `block_l0_repair_${now}_2`,
-      blockType: 'priority_weakness',
-      title: `${block2Min} min: Progressive Tables & Skipped Repair (Table ×${repairTable})`,
-      description: skippedFacts.length > 0
-        ? `Targeted repair on skipped items (${skippedFacts.slice(0, 3).map((f) => `${f.operandA}×${f.operandB || 1}`).join(', ')}) to build direct memory.`
-        : `Progressive times table fluency for core tables 3, 4, 6, 7, 8, 9, 11, 12.`,
-      dimension: 'mult_core_tables',
-      drillId: `table_${repairTable}`,
-      targetCount: Math.round(block2Min * 3.0),
-      allocatedMinutes: block2Min,
-      completedCount: 0,
-      status: 'pending',
-    },
-    {
-      id: `block_l0_shortcuts_${now}_3`,
-      blockType: 'mixed_retrieval',
-      title: `${block3Min} min: Multiplication Anchors & Shortcuts (×2, ×5, ×9, ×11, ×12, ×15, ×25, ×50)`,
-      description: 'Internalize anchor relationships: ×9 = ×10−group, ×11 patterns, ×12 = ×10+×2, ×25 = ÷4×100.',
-      dimension: 'mult_decade_ext',
-      drillId: 'table_4',
-      targetCount: Math.round(block3Min * 3.0),
-      allocatedMinutes: block3Min,
-      completedCount: 0,
-      status: 'pending',
-    },
-    {
-      id: `block_l0_squares_${now}_4`,
-      blockType: 'strategy_refinement',
-      title: `${block4Min} min: Squares (1²–20², Ending in 5, Near 50) & Cube Anchors`,
-      description: 'Apply Ekadhikena for ending in 5 (N(N+1)|25) and near-50 base 25 shortcuts (48²=2304).',
-      dimension: 'squares_near_50',
-      drillId: 'sq_near_50',
-      targetCount: Math.round(block4Min * 2.5),
-      allocatedMinutes: block4Min,
-      completedCount: 0,
-      status: 'pending',
-    },
-    {
-      id: `block_l0_anzan_${now}_5`,
-      blockType: 'anzan_working_memory',
-      title: `${block5Min} min: Working Memory Agility (Anzan Flash)`,
-      description: 'Strengthen phonological loop capacity through rapid flash serial accumulation.',
-      dimension: 'anzan_stream',
-      drillId: 'anzan_standard',
-      targetCount: Math.round(block5Min * 2.5),
-      allocatedMinutes: block5Min,
-      completedCount: 0,
-      status: 'pending',
-    },
-  ];
+  const blocks: TrainingBlock[] = isHighLevel
+    ? [
+        {
+          id: `block_l20_warmup_${now}_1`,
+          blockType: 'warmup',
+          title: `${block1Min} min: High-Teen & Decade Reflex Warmup (Tables 16–29)`,
+          description: 'Zero-hesitation automaticity drill on teen and decade multipliers.',
+          dimension: 'mult_teen_tables',
+          drillId: 'table_19',
+          targetCount: Math.round(block1Min * 3.5),
+          allocatedMinutes: block1Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l20_2d_mult_${now}_2`,
+          blockType: 'priority_weakness',
+          title: `${block2Min} min: 2-Digit × 2-Digit Speed Multiplication & Shortcuts`,
+          description: 'Master Vedic Criss-Cross and Base-100 cross multiplication without scratch paper.',
+          dimension: 'mult_decade_ext',
+          drillId: 'table_24',
+          targetCount: Math.round(block2Min * 2.5),
+          allocatedMinutes: block2Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l20_addsub_${now}_3`,
+          blockType: 'mixed_retrieval',
+          title: `${block3Min} min: 3-Digit & 4-Digit Place-Value Chains (H→T→U)`,
+          description: 'High-bandwidth fluid accumulation across 3-digit and 4-digit numbers.',
+          dimension: 'add_sub_multidigit_l2r',
+          drillId: 'add_sub_level_4',
+          targetCount: Math.round(block3Min * 2.8),
+          allocatedMinutes: block3Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l20_squares_${now}_4`,
+          blockType: 'strategy_refinement',
+          title: `${block4Min} min: Base-50 & Base-100 Squares (35²–99²)`,
+          description: 'Algebraic squaring shortcuts: (50 ± d)² and (100 - d)² under 2.5 seconds.',
+          dimension: 'squares_near_50',
+          drillId: 'sq_near_50',
+          targetCount: Math.round(block4Min * 2.5),
+          allocatedMinutes: block4Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l20_anzan_${now}_5`,
+          blockType: 'anzan_working_memory',
+          title: `${block5Min} min: High-Speed Anzan Serial Working Memory`,
+          description: 'Expand phonological loop buffer capacity through rapid flash accumulation.',
+          dimension: 'anzan_stream',
+          drillId: 'anzan_standard',
+          targetCount: Math.round(block5Min * 2.5),
+          allocatedMinutes: block5Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+      ]
+    : [
+        {
+          id: `block_l0_addsub_${now}_1`,
+          blockType: 'warmup',
+          title: `${block1Min} min: Addition & Subtraction Place-Value Foundations`,
+          description: 'Left-to-right accumulation and complements to 100 for rapid baseline calculation.',
+          dimension: 'mult_foundations',
+          drillId: 'add_sub_level_2',
+          targetCount: Math.round(block1Min * 3.5),
+          allocatedMinutes: block1Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l0_repair_${now}_2`,
+          blockType: 'priority_weakness',
+          title: `${block2Min} min: Progressive Tables & Skipped Repair (Table ×${repairTable})`,
+          description: skippedFacts.length > 0
+            ? `Targeted repair on skipped items (${skippedFacts.slice(0, 3).map((f) => `${f.operandA}×${f.operandB || 1}`).join(', ')}) to build direct memory.`
+            : `Progressive times table fluency for core tables 3, 4, 6, 7, 8, 9, 11, 12.`,
+          dimension: 'mult_core_tables',
+          drillId: `table_${repairTable}`,
+          targetCount: Math.round(block2Min * 3.0),
+          allocatedMinutes: block2Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l0_shortcuts_${now}_3`,
+          blockType: 'mixed_retrieval',
+          title: `${block3Min} min: Multiplication Anchors & Shortcuts (×2, ×5, ×9, ×11, ×12, ×15, ×25, ×50)`,
+          description: 'Internalize anchor relationships: ×9 = ×10−group, ×11 patterns, ×12 = ×10+×2, ×25 = ÷4×100.',
+          dimension: 'mult_decade_ext',
+          drillId: 'table_4',
+          targetCount: Math.round(block3Min * 3.0),
+          allocatedMinutes: block3Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l0_squares_${now}_4`,
+          blockType: 'strategy_refinement',
+          title: `${block4Min} min: Squares (1²–20², Ending in 5, Near 50) & Cube Anchors`,
+          description: 'Apply Ekadhikena for ending in 5 (N(N+1)|25) and near-50 base 25 shortcuts (48²=2304).',
+          dimension: 'squares_near_50',
+          drillId: 'sq_near_50',
+          targetCount: Math.round(block4Min * 2.5),
+          allocatedMinutes: block4Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+        {
+          id: `block_l0_anzan_${now}_5`,
+          blockType: 'anzan_working_memory',
+          title: `${block5Min} min: Working Memory Agility (Anzan Flash)`,
+          description: 'Strengthen phonological loop capacity through rapid flash serial accumulation.',
+          dimension: 'anzan_stream',
+          drillId: 'anzan_standard',
+          targetCount: Math.round(block5Min * 2.5),
+          allocatedMinutes: block5Min,
+          completedCount: 0,
+          status: 'pending',
+        },
+      ];
 
   return {
     id: `plan_l0_${todayStr}_${now}`,
@@ -184,8 +244,12 @@ export function generateLevel0FoundationPlan(
     createdAt: now,
     totalEstimatedMinutes: totalMinutes,
     blocks,
-    focusDimensions: ['add_sub_bridging_decade', 'mult_foundations', 'mult_core_tables', 'squares_near_50'],
-    rationale,
+    focusDimensions: isHighLevel
+      ? ['mult_teen_tables', 'mult_decade_ext', 'add_sub_multidigit_l2r', 'squares_near_50']
+      : ['mult_foundations', 'mult_core_tables', 'mult_decade_ext', 'squares_near_50'],
+    rationale: isHighLevel
+      ? 'Advanced Level 20+ plan prioritizing multi-digit cross-multiplication, high-teen tables, and 3D place-value accumulation.'
+      : defaultRationale,
     isCompleted: false,
     source: 'offline',
     isLevel0: true,
@@ -194,19 +258,20 @@ export function generateLevel0FoundationPlan(
 
 /**
  * Generates a structured daily training plan based on fact-level memory states,
- * cognitive profile, prioritized weak areas, and allocated minutes.
+ * cognitive profile, prioritized weak areas, user level, and allocated minutes.
  */
 export function generateDailyTrainingPlan(
   profile: LearnerProfile,
   requestedMinutes: number = profile.preferredDailyMinutes || 15,
-  factMemoryMap?: Record<string, FactMemoryState>
+  factMemoryMap?: Record<string, FactMemoryState>,
+  userLevel: number = 1
 ): TrainingPlan {
-  // If user has not calibrated via baseline assessment or has 0 attempts across all skills,
-  // provide the Level 0 Foundation Plan immediately.
+  const isHighLevel = userLevel >= 15;
   const allSkills = Object.values(profile.skills);
   const totalAttemptsAcrossAll = allSkills.reduce((acc, s) => acc + s.totalAttempts, 0);
+
   if (!profile.baselineReport && totalAttemptsAcrossAll === 0) {
-    return generateLevel0FoundationPlan(profile, requestedMinutes, factMemoryMap);
+    return generateLevel0FoundationPlan(profile, requestedMinutes, factMemoryMap, userLevel);
   }
 
   const totalMinutes = Math.max(10, Math.min(30, requestedMinutes));
@@ -249,12 +314,23 @@ export function generateDailyTrainingPlan(
   const sortedByTheta = [...allSkills].sort((a, b) => a.theta - b.theta);
   const lowestSkill = sortedByTheta.find((s) => s.totalAttempts > 0) || sortedByTheta[0];
 
-  const warmupDim: SkillDimension = isBeginner ? 'mult_foundations' : 'mult_core_tables';
-  const weaknessDim: SkillDimension = (lowestSkill && lowestSkill.theta < 0.2 && lowestSkill.totalAttempts > 0)
+  const warmupDim: SkillDimension = isHighLevel
+    ? 'mult_teen_tables'
+    : isBeginner
+    ? 'mult_foundations'
+    : 'mult_core_tables';
+
+  const weaknessDim: SkillDimension = isHighLevel
+    ? 'mult_decade_ext'
+    : (lowestSkill && lowestSkill.theta < 0.2 && lowestSkill.totalAttempts > 0)
     ? lowestSkill.dimension
     : 'mult_teen_tables';
 
-  const mixedDim: SkillDimension = decayedSkill ? decayedSkill.dimension : 'mult_decade_ext';
+  const mixedDim: SkillDimension = isHighLevel
+    ? 'add_sub_multidigit_l2r'
+    : decayedSkill
+    ? decayedSkill.dimension
+    : 'mult_decade_ext';
 
   // Dynamic block minute allocations based on requestedMinutes
   const warmupMin = Math.max(2, Math.round(totalMinutes * 0.20));
@@ -264,17 +340,23 @@ export function generateDailyTrainingPlan(
   const anzanMin = Math.max(1, totalMinutes - (warmupMin + repairMin + mixedMin + squareMin));
 
   // Build targeted block titles and descriptions with explicit fact names
-  const dueFactSample = dueMulFacts.slice(0, 3).map((f) => `${f.operandA}×${f.operandB || 1}`).join(', ') || '7×8, 8×6, 9×7';
-  const repairTable = weakMulFacts[0]?.operandA || 17;
+  const dueFactSample = isHighLevel
+    ? '17×14, 18×16, 24×8'
+    : dueMulFacts.slice(0, 3).map((f) => `${f.operandA}×${f.operandB || 1}`).join(', ') || '7×8, 8×6, 9×7';
+  const repairTable = isHighLevel ? 19 : weakMulFacts[0]?.operandA || 17;
 
   const blocks: TrainingBlock[] = [
     {
       id: `block_warmup_${Date.now()}_1`,
       blockType: 'warmup',
-      title: `${warmupMin} min: Due Spaced Review (${dueFactSample})`,
-      description: 'Strengthen facts nearing their forgetting threshold before memory fades.',
+      title: isHighLevel
+        ? `${warmupMin} min: Teen Tables Reflex Warmup (Tables 16–19)`
+        : `${warmupMin} min: Due Spaced Review (${dueFactSample})`,
+      description: isHighLevel
+        ? 'High-speed automaticity drill on advanced multiplication tables (16 to 19).'
+        : 'Strengthen facts nearing their forgetting threshold before memory fades.',
       dimension: warmupDim,
-      drillId: isBeginner ? 'table_2' : 'table_7',
+      drillId: isHighLevel ? 'table_19' : isBeginner ? 'table_2' : 'table_7',
       targetCount: Math.round(warmupMin * 3.5),
       allocatedMinutes: warmupMin,
       completedCount: 0,
@@ -283,10 +365,14 @@ export function generateDailyTrainingPlan(
     {
       id: `block_repair_${Date.now()}_2`,
       blockType: 'priority_weakness',
-      title: `${repairMin} min: Repair Priority Weakness (${weaknessDim.replace(/_/g, ' ')})`,
-      description: `Targeted repair on table ×${repairTable} and primary weakness to consolidate accuracy.`,
+      title: isHighLevel
+        ? `${repairMin} min: 2-Digit × 2-Digit Multiplication & Decades (21–99)`
+        : `${repairMin} min: Repair Priority Weakness (${weaknessDim.replace(/_/g, ' ')})`,
+      description: isHighLevel
+        ? 'Vedic Criss-Cross and Base-100 multiplication algorithms without paper.'
+        : `Targeted repair on table ×${repairTable} and primary weakness to consolidate accuracy.`,
       dimension: weaknessDim,
-      drillId: weaknessDim.startsWith('add_sub') ? 'add_sub_level_2' : `table_${repairTable}`,
+      drillId: isHighLevel ? 'table_24' : weaknessDim.startsWith('add_sub') ? 'add_sub_level_2' : `table_${repairTable}`,
       targetCount: Math.round(repairMin * 3.0),
       allocatedMinutes: repairMin,
       completedCount: 0,
@@ -295,10 +381,14 @@ export function generateDailyTrainingPlan(
     {
       id: `block_mixed_${Date.now()}_3`,
       blockType: 'mixed_retrieval',
-      title: `${mixedMin} min: Mixed Retrieval & Spaced Refresh`,
-      description: 'Interleaved fact retrieval across varied operations.',
+      title: isHighLevel
+        ? `${mixedMin} min: 3-Digit & 4-Digit Place-Value Left-to-Right`
+        : `${mixedMin} min: Mixed Retrieval & Spaced Refresh`,
+      description: isHighLevel
+        ? 'Rapid Left-to-Right place-value accumulation across 3-digit and 4-digit numbers.'
+        : 'Interleaved fact retrieval across varied operations.',
       dimension: mixedDim,
-      drillId: mixedDim.startsWith('mult') ? 'table_8' : 'table_7',
+      drillId: isHighLevel ? 'add_sub_level_4' : mixedDim.startsWith('mult') ? 'table_8' : 'table_7',
       targetCount: Math.round(mixedMin * 3.0),
       allocatedMinutes: mixedMin,
       completedCount: 0,
@@ -307,8 +397,10 @@ export function generateDailyTrainingPlan(
     {
       id: `block_strategy_${Date.now()}_4`,
       blockType: 'strategy_refinement',
-      title: `${squareMin} min: Squares Near 50 & Ending in 5 (47², 48², 55²)`,
-      description: 'Apply (50 ± d)² and Ekadhikena shortcuts to compute 2-digit squares in under 3 seconds.',
+      title: isHighLevel
+        ? `${squareMin} min: Base-50 & Base-100 Squares (35²–99²)`
+        : `${squareMin} min: Squares Near 50 & Ending in 5 (47², 48², 55²)`,
+      description: 'Apply (50 ± d)² and (100 - d)² algebraic shortcuts under 2.5 seconds.',
       dimension: 'squares_near_50',
       drillId: 'sq_near_50',
       targetCount: Math.round(squareMin * 2.5),
@@ -319,7 +411,7 @@ export function generateDailyTrainingPlan(
     {
       id: `block_anzan_${Date.now()}_5`,
       blockType: 'anzan_working_memory',
-      title: `${anzanMin} min: Working Memory Agility`,
+      title: `${anzanMin} min: Working Memory Agility (Anzan Flash)`,
       description: 'Hold intermediate calculations active in working memory.',
       dimension: 'anzan_stream',
       drillId: 'anzan_standard',
@@ -336,8 +428,12 @@ export function generateDailyTrainingPlan(
     createdAt: Date.now(),
     totalEstimatedMinutes: totalMinutes,
     blocks,
-    focusDimensions: ['mult_core_tables', 'mult_teen_tables', 'squares_near_50'],
-    rationale: `Targeted daily plan prioritizing due recall (${dueFactSample}), table ${repairTable} repair, and squares/cubes benchmarks.`,
+    focusDimensions: isHighLevel
+      ? ['mult_teen_tables', 'mult_decade_ext', 'squares_near_50']
+      : ['mult_core_tables', 'mult_teen_tables', 'squares_near_50'],
+    rationale: isHighLevel
+      ? `Elite Level 20+ plan: Teen Tables (16-19), Decades (21-99), 2D×2D cross multiplication, and Base-50/100 squares.`
+      : `Targeted daily plan prioritizing due recall (${dueFactSample}), table ${repairTable} repair, and squares/cubes benchmarks.`,
     isCompleted: false,
     source: 'offline',
   };
@@ -379,40 +475,117 @@ export function adjustPlanForFatigue(
 
 /**
  * Returns an appropriate question for the active training block.
+ * Strictly enforces single-digit anti-repetition guard and scales with user level.
  */
-export function getQuestionForTrainingBlock(block: TrainingBlock): Question {
+export function getQuestionForTrainingBlock(
+  block: TrainingBlock,
+  profile?: LearnerProfile,
+  userLevel: number = 1,
+  previousQuestion?: Question
+): Question {
+  const isHighLevel = userLevel >= 15;
+  const wasPrevSingleDigit = previousQuestion
+    ? previousQuestion.operandA < 10 && (previousQuestion.operandB || 1) < 10
+    : false;
+
   switch (block.dimension) {
     case 'mult_foundations':
-      return generateMultiplicationQuestion(4);
-    case 'mult_core_tables':
-      return generateMultiplicationQuestion(7);
-    case 'mult_teen_tables':
-      return generateMultiplicationQuestion(17);
-    case 'mult_decade_ext':
-      return generateMultiplicationQuestion(25);
+      if (isHighLevel) {
+        return generateMultiplicationQuestion(
+          randomInt(16, 29),
+          wasPrevSingleDigit ? randomInt(11, 20) : randomInt(7, 20),
+          { forbidSingleDigit: true, userLevel }
+        );
+      }
+      return generateMultiplicationQuestion(4, wasPrevSingleDigit ? randomInt(11, 19) : randomInt(2, 12));
+
+    case 'mult_core_tables': {
+      if (isHighLevel) {
+        // High-level users get teen tables or decades with multi-digit multipliers!
+        const tables = [14, 16, 17, 18, 19, 23, 24, 27, 28, 29];
+        const tbl = tables[Math.floor(Math.random() * tables.length)];
+        const mult = wasPrevSingleDigit ? randomInt(11, 20) : randomInt(7, 20);
+        return generateMultiplicationQuestion(tbl, mult, { forbidSingleDigit: true, userLevel });
+      }
+      // Standard users: rotate across tables 6, 7, 8, 9, 12
+      const coreTables = [6, 7, 8, 9, 11, 12];
+      const tbl = coreTables[Math.floor(Math.random() * coreTables.length)];
+      const mult = wasPrevSingleDigit ? randomInt(11, 20) : randomInt(2, 12);
+      return generateMultiplicationQuestion(tbl, mult, { forbidSingleDigit: wasPrevSingleDigit, userLevel });
+    }
+
+    case 'mult_teen_tables': {
+      const teenTables = [13, 14, 15, 16, 17, 18, 19];
+      const tbl = teenTables[Math.floor(Math.random() * teenTables.length)];
+      const mult = isHighLevel
+        ? wasPrevSingleDigit
+          ? randomInt(11, 20)
+          : randomInt(7, 20)
+        : wasPrevSingleDigit
+        ? randomInt(11, 19)
+        : randomInt(2, 12);
+      return generateMultiplicationQuestion(tbl, mult, { forbidSingleDigit: wasPrevSingleDigit, userLevel });
+    }
+
+    case 'mult_decade_ext': {
+      if (isHighLevel) {
+        // 50% chance of 2-digit × 2-digit Criss-Cross speed question
+        if (Math.random() < 0.5) {
+          return generateTwoDigitMultiplicationQuestion(14, 48);
+        }
+        const decades = [21, 22, 23, 24, 25, 26, 27, 28, 29, 32, 35, 36, 42, 45, 48, 54, 75];
+        const tbl = decades[Math.floor(Math.random() * decades.length)];
+        const mult = randomInt(7, 20);
+        return generateMultiplicationQuestion(tbl, mult, { forbidSingleDigit: true, userLevel });
+      }
+      return generateMultiplicationQuestion(25, wasPrevSingleDigit ? randomInt(11, 19) : randomInt(2, 12));
+    }
+
     case 'squares_ending_5':
       return generateSquareCubeQuestion('ending_5');
-    case 'squares_near_50':
+
+    case 'squares_near_50': {
+      if (isHighLevel && Math.random() < 0.45) {
+        return generateSquareCubeQuestion('near_100');
+      }
       return generateSquareCubeQuestion('near_50');
+    }
+
     case 'squares_near_100':
       return generateSquareCubeQuestion('near_100');
+
     case 'squares_duplex_general':
       return generateSquareCubeQuestion('general_duplex');
+
     case 'cubes_anchors':
-      return generateSquareCubeQuestion('cubes_anchor');
+      return generateSquareCubeQuestion(isHighLevel ? 'cubes_advanced' : 'cubes_anchor');
+
     case 'cubes_advanced':
       return generateSquareCubeQuestion('cubes_advanced');
+
     case 'add_sub_non_bridging':
-      return generateAddSubQuestion(1);
+      return isHighLevel ? generateArithmeticComboQuestion('add_sub_3d_2d') : generateAddSubQuestion(1);
+
     case 'add_sub_bridging_decade':
-      return generateAddSubQuestion(2);
+      return isHighLevel ? generateArithmeticComboQuestion('add_sub_3d_3d') : generateAddSubQuestion(2);
+
     case 'add_sub_complements_100':
-      return generateAddSubQuestion(3);
+      return isHighLevel ? generateArithmeticComboQuestion('add_sub_chain_3') : generateAddSubQuestion(3);
+
     case 'add_sub_multidigit_l2r':
-      return generateAddSubQuestion(4);
+      return isHighLevel
+        ? Math.random() < 0.5
+          ? generateArithmeticComboQuestion('add_sub_4d_3d')
+          : generateArithmeticComboQuestion('add_sub_3d_3d')
+        : generateAddSubQuestion(4);
+
     case 'add_sub_mixed_chain':
-      return generateAddSubQuestion(5);
+      return generateArithmeticComboQuestion('add_sub_chain_3');
+
     default:
-      return generateMultiplicationQuestion(8);
+      if (isHighLevel) {
+        return generateMultiplicationQuestion(randomInt(16, 29), randomInt(11, 20), { forbidSingleDigit: true, userLevel });
+      }
+      return generateMultiplicationQuestion(8, wasPrevSingleDigit ? randomInt(11, 19) : randomInt(2, 12));
   }
 }

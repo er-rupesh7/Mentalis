@@ -301,7 +301,8 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
   return (
     <AnimatePresence>
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-hidden"
+        className="fixed inset-0 z-[60] flex items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md overflow-y-auto"
+        style={{ WebkitOverflowScrolling: 'touch' }}
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -310,7 +311,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
           initial={{ opacity: 0, scale: 0.98, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.98, y: 10 }}
-          className="relative w-full h-full sm:h-auto sm:max-h-[92vh] max-w-3xl bg-slate-900 border-0 sm:border border-slate-800/90 rounded-none sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
+          className="relative w-full h-[100dvh] sm:h-auto sm:max-h-[92vh] max-w-3xl bg-slate-900 border-0 sm:border border-slate-800/90 rounded-none sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden"
         >
           {/* Header */}
           <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80 shrink-0">
@@ -424,7 +425,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
           </div>
 
           {/* Tab Content (Scrollable with mobile momentum) */}
-          <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-6 pb-28 sm:pb-6" style={{ WebkitOverflowScrolling: 'touch' }}>
             {/* TAB 1: MULTIPLICATION TABLES */}
             {activeTab === 'tables' && (
               <div className="space-y-5">
@@ -891,7 +892,7 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
           </div>
 
           {/* Footer Action (Mobile friendly stacked/full-width) */}
-          <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/95 shrink-0 pb-safe">
+          <div className="px-4 sm:px-6 py-4 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900 shrink-0 sticky bottom-0 z-30 shadow-[0_-8px_24px_rgba(0,0,0,0.7)] pb-[max(1.25rem,env(safe-area-inset-bottom,1.25rem))]">
             <div className="text-xs text-slate-400 flex items-center justify-center sm:justify-start gap-2">
               <Clock className="w-4 h-4 text-slate-500" />
               <span>

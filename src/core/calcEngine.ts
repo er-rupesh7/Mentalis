@@ -481,19 +481,46 @@ export function generateCustomCubeQuestion(min: number = 1, max: number = 30): Q
 
 /**
  * Module B: Generates Multiplication Table questions (Tables 1 to 100)
+ * Supports level-aware operand scaling and strict single-digit anti-repetition guard.
  */
-export function generateMultiplicationQuestion(targetTable?: number, targetMultiplier?: number): Question {
-  const table =
+export function generateMultiplicationQuestion(
+  targetTable?: number,
+  targetMultiplier?: number,
+  options?: {
+    forbidSingleDigit?: boolean;
+    userLevel?: number;
+  }
+): Question {
+  const isHighLevel = (options?.userLevel || 1) >= 15;
+
+  let table =
     targetTable && targetTable >= 1 && targetTable <= 100
       ? targetTable
+      : isHighLevel
+      ? Math.random() > 0.4
+        ? randomInt(16, 29)
+        : randomInt(31, 99)
       : Math.random() > 0.55
       ? randomInt(2, 20)
       : randomInt(21, 100);
 
-  const multiplier =
+  let multiplier =
     targetMultiplier && targetMultiplier >= 1 && targetMultiplier <= 20
       ? targetMultiplier
+      : isHighLevel
+      ? randomInt(7, 20)
       : randomInt(1, 20);
+
+  // Single-digit anti-repetition guard:
+  // If single digit is forbidden OR high-level user is practicing a table < 10 (e.g. Table 7),
+  // force the multiplier to be a double-digit challenge (11 to 20)!
+  if (options?.forbidSingleDigit || (isHighLevel && table < 10)) {
+    if (multiplier < 10) {
+      multiplier = randomInt(11, 20);
+    }
+  } else if (table < 10 && multiplier < 10 && isHighLevel) {
+    multiplier = randomInt(11, 20);
+  }
 
   const product = table * multiplier;
   const { strategyTitle, steps, mentalTip } = getMultiplicationStrategy(table, multiplier);
@@ -516,6 +543,33 @@ export function generateMultiplicationQuestion(targetTable?: number, targetMulti
     targetTimeSeconds: targetTime,
     difficultyRating: difficulty,
     subTrack: `table_${table}`,
+  };
+}
+
+/**
+ * Advanced Module: Generates 2-digit × 2-digit speed multiplication questions (e.g. 24 × 18, 36 × 25)
+ * Solved via Vedic Criss-Cross (Urdhva Tiryagbhyam) or Base Method.
+ */
+export function generateTwoDigitMultiplicationQuestion(minVal: number = 14, maxVal: number = 99): Question {
+  const a = randomInt(minVal, maxVal);
+  const b = randomInt(minVal, maxVal);
+  const product = a * b;
+  const { strategyTitle, steps, mentalTip } = getMultiplicationStrategy(a, b);
+
+  return {
+    id: `mul_2d_${a}_${b}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    module: 'multiplication',
+    operandA: a,
+    operandB: b,
+    operator: '×',
+    correctAnswer: product,
+    prompt: `${a} × ${b}`,
+    strategyTitle: strategyTitle || 'Vedic Criss-Cross Multiplication',
+    steps,
+    mentalTip: mentalTip || 'Multiply units, cross-multiply diagonals and add, multiply tens.',
+    targetTimeSeconds: 5.0,
+    difficultyRating: 8,
+    subTrack: 'two_digit_mult',
   };
 }
 

@@ -156,6 +156,16 @@ export interface DomainProficiencyAnalysis {
   status: 'champion' | 'proficient' | 'needs_strengthening';
 }
 
+export interface TableDecadeStat {
+  decadeKey: 'decade1_10' | 'decade11_20' | 'decade21_30' | 'decade31_50' | 'decade51_100';
+  label: string;
+  totalAsked: number;
+  correctCount: number;
+  accuracyPercent: number;
+  avgLatencyMs: number;
+  status: 'mastered' | 'fluent' | 'learning' | 'struggling';
+}
+
 export interface BaselineReport {
   assessedAt: number;
   overallTheta: number;
@@ -171,6 +181,7 @@ export interface BaselineReport {
   firstWeekRoadmap: string[];
   summaryMessage?: string;
   domainProficiencies?: DomainProficiencyAnalysis[];
+  tablesDecadeBreakdown?: TableDecadeStat[];
   recommendedTechniquesList?: {
     domain: string;
     techniqueName: string;

@@ -100,19 +100,28 @@ import { presenceEngine } from '../social/presenceEngine';
 import { socialEngine } from '../social/socialEngine';
 import { getEvaluatedMasteryBadges } from '../badges/masteryBadges';
 import { evaluateCognitiveState, AiCognitiveTrainingState } from '../aiCognitiveEngine';
+import {
+  playClickSound,
+  playCorrectSound,
+  playComboFanfare,
+  playErrorSound,
+  playLevelUpFanfare,
+} from '../soundEffects';
 
 export interface ThemeConfig {
-  fontFamily: 'inter' | 'mono' | 'outfit' | 'roboto';
+  fontFamily: 'inter' | 'mono' | 'space_mono' | 'outfit' | 'roboto';
   accentColor: 'violet' | 'emerald' | 'amber' | 'cyan' | 'rose';
   fontSize: 'compact' | 'standard' | 'large' | 'xlarge';
   matrixRainEnabled: boolean;
+  tactile3DEnabled?: boolean;
 }
 
 export const initialThemeConfig: ThemeConfig = {
   fontFamily: 'inter',
   accentColor: 'violet',
   fontSize: 'standard',
-  matrixRainEnabled: false,
+  matrixRainEnabled: true,
+  tactile3DEnabled: true,
 };
 
 let profileRealtimeUnsub: (() => void) | null = null;
@@ -1005,7 +1014,7 @@ export const useQuizStore = create<QuizState>()(
         if (state.isPlanActive && state.activeTrainingPlan) {
           const currentBlock = state.activeTrainingPlan.blocks[state.activeTrainingBlockIndex];
           if (currentBlock) {
-            const q = getQuestionForTrainingBlock(currentBlock);
+            const q = getQuestionForTrainingBlock(currentBlock, state.learnerProfile, state.level, state.currentQuestion || undefined);
             set({
               currentQuestion: q,
               inputBuffer: '',
@@ -1150,6 +1159,8 @@ export const useQuizStore = create<QuizState>()(
           customDrillConfig: state.customDrillConfig || undefined,
           targetMasteryTable: state.targetMasteryTable || undefined,
           factMemoryMap: state.factMemoryMap,
+          userLevel: state.level,
+          previousQuestion: state.currentQuestion || undefined,
         });
         if (!q.selectionReason) {
           q.selectionReason = 'Curriculum progression question';
@@ -1176,12 +1187,17 @@ export const useQuizStore = create<QuizState>()(
         const { inputBuffer, isEvaluating, isPaused } = get();
         if (isEvaluating || isPaused) return;
         if (inputBuffer.replace('-', '').length >= 8) return;
+        playClickSound();
+        if (typeof window !== 'undefined' && 'navigator' in window && navigator.vibrate) {
+          try { navigator.vibrate(12); } catch {}
+        }
         set({ inputBuffer: inputBuffer + digit });
       },
 
       toggleNegative: () => {
         const { inputBuffer, isEvaluating, isPaused } = get();
         if (isEvaluating || isPaused) return;
+        playClickSound();
         if (inputBuffer.startsWith('-')) {
           set({ inputBuffer: inputBuffer.substring(1) });
         } else {
@@ -1192,11 +1208,16 @@ export const useQuizStore = create<QuizState>()(
       backspace: () => {
         const { inputBuffer, isEvaluating, isPaused } = get();
         if (isEvaluating || isPaused) return;
+        playClickSound();
+        if (typeof window !== 'undefined' && 'navigator' in window && navigator.vibrate) {
+          try { navigator.vibrate(10); } catch {}
+        }
         set({ inputBuffer: inputBuffer.slice(0, -1) });
       },
 
       clearBuffer: () => {
         if (get().isEvaluating || get().isPaused) return;
+        playClickSound();
         set({ inputBuffer: '' });
       },
 

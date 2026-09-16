@@ -17,6 +17,7 @@ export const MobileTabBar: React.FC = () => {
   const {
     viewMode,
     setViewMode,
+    isCustomDrillModalOpen,
     setIsCustomDrillModalOpen,
     level,
     streak,
@@ -24,8 +25,8 @@ export const MobileTabBar: React.FC = () => {
     setAuthModalOpen,
   } = useQuizStore();
 
-  // Hide during focused full-screen drill modes
-  if (viewMode === 'practice' || viewMode === 'anzan') {
+  // Hide during focused full-screen drill modes or when custom drill builder modal is open
+  if (viewMode === 'practice' || viewMode === 'anzan' || isCustomDrillModalOpen) {
     return null;
   }
 

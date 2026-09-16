@@ -19,6 +19,7 @@ import {
   HelpCircle,
   Crown,
   TrendingUp,
+  Grid,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { getDimensionLabel } from '../core/learnerModel';
@@ -159,8 +160,28 @@ export const SkillAssessmentModal: React.FC = () => {
     return 'addition';
   };
 
+  const resolveTableDecadeTag = (q?: any): string | null => {
+    if (!q || resolveDomainKey(q) !== 'tables') return null;
+    let tbl = 5;
+    if (q.subTrack?.startsWith('mul:')) {
+      const parts = q.subTrack.split(':');
+      tbl = parseInt(parts[1], 10) || 5;
+    } else {
+      tbl = Math.max(q.operandA, q.operandB);
+    }
+    if (q.prompt?.includes('?')) {
+      return q.prompt.includes('÷') ? 'Table Quotient Recall' : 'Missing Factor Table';
+    }
+    if (tbl <= 10) return 'Single Digits (1–10)';
+    if (tbl <= 20) return 'Teen Tables (11–20)';
+    if (tbl <= 30) return '20s Decade (21–30)';
+    if (tbl <= 50) return '30s–50s Decade';
+    return 'High Tables (51–100)';
+  };
+
   const activeDomain = resolveDomainKey(currentQ);
   const activeDomainName = DOMAIN_LABELS[activeDomain] || 'Mental Arithmetic';
+  const activeTableTag = resolveTableDecadeTag(currentQ);
   const activeTierLevel = currentQ?.difficultyRating || 3;
   const activeTierName = TIER_NAMES[activeTierLevel] || 'Normal';
 
@@ -293,6 +314,12 @@ export const SkillAssessmentModal: React.FC = () => {
               <span className="text-xs font-semibold text-violet-300 bg-violet-950/60 px-3 py-1 rounded-full border border-violet-500/30">
                 Domain: {activeDomainName}
               </span>
+              {activeTableTag && (
+                <span className="text-xs font-mono font-bold text-emerald-300 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1.5 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {activeTableTag}
+                </span>
+              )}
               <span className="text-xs font-mono font-bold text-amber-300 bg-amber-950/60 px-3 py-1 rounded-full border border-amber-500/30">
                 Tier {activeTierLevel}: {activeTierName}
               </span>
@@ -444,6 +471,50 @@ export const SkillAssessmentModal: React.FC = () => {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tables 1-100 Decade Mastery Breakdown */}
+            {report?.tablesDecadeBreakdown && report.tablesDecadeBreakdown.length > 0 && (
+              <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5 font-mono uppercase text-emerald-400">
+                    <Grid className="w-4 h-4 text-emerald-400" />
+                    Tables 1–100 Decade Mastery Analysis
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-400">5 Cognitive Zones</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-2">
+                  {report.tablesDecadeBreakdown.map((dec) => {
+                    const statusColor =
+                      dec.status === 'mastered'
+                        ? 'text-emerald-400 bg-emerald-950/40 border-emerald-500/40'
+                        : dec.status === 'fluent'
+                        ? 'text-cyan-400 bg-cyan-950/40 border-cyan-500/40'
+                        : dec.status === 'learning'
+                        ? 'text-amber-400 bg-amber-950/40 border-amber-500/40'
+                        : 'text-rose-400 bg-rose-950/40 border-rose-500/40';
+
+                    return (
+                      <div key={dec.decadeKey} className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex flex-col justify-between space-y-2 shadow-sm">
+                        <div className="text-[10px] font-mono text-slate-400 font-bold truncate">
+                          {dec.label}
+                        </div>
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-sm font-mono font-black text-white">
+                            {dec.totalAsked > 0 ? `${dec.accuracyPercent}%` : '—'}
+                          </span>
+                          <span className="text-[10px] font-mono text-slate-400">
+                            {dec.avgLatencyMs ? `${(dec.avgLatencyMs / 1000).toFixed(1)}s` : ''}
+                          </span>
+                        </div>
+                        <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded text-center border font-bold uppercase ${statusColor}`}>
+                          {dec.status}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@400;600;700;800;900&family=Roboto:wght@400;500;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,34 +10,80 @@
   --scrollbar-thumb: #334155;
   --scrollbar-thumb-hover: #64748b;
   --scrollbar-track: #020617;
+  --color-primary: #8b5cf6;
+  --color-primary-rgb: 139, 92, 246;
+  --color-primary-hover: #7c3aed;
+  --color-primary-glow: rgba(139, 92, 246, 0.45);
+  --color-primary-light-bg: rgba(139, 92, 246, 0.15);
+  --color-primary-border: rgba(139, 92, 246, 0.40);
+  --font-current: 'Inter', system-ui, -apple-system, sans-serif;
+  --app-font-scale: 1.0;
 }
 
 html {
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-gutter: stable;
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  scrollbar-width: auto;
+  -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%;
+}
+
+@media (min-width: 769px) {
+  html {
+    scrollbar-gutter: stable;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    scrollbar-width: auto;
+  }
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: var(--font-current, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   width: 100%;
-  min-height: 100%;
+  min-height: 100dvh;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Suppress pull-to-refresh on mobile touch viewports while keeping desktop scrolling natural */
-@media (max-width: 768px) {
-  body {
-    overscroll-behavior-y: none;
-  }
+/* Dynamic Theme Utilities */
+.text-theme-primary {
+  color: var(--color-primary, #8b5cf6) !important;
 }
+
+.bg-theme-primary {
+  background-color: var(--color-primary, #8b5cf6) !important;
+}
+
+.bg-theme-light {
+  background-color: var(--color-primary-light-bg, rgba(139, 92, 246, 0.15)) !important;
+}
+
+.border-theme-primary {
+  border-color: var(--color-primary-border, rgba(139, 92, 246, 0.40)) !important;
+}
+
+.glow-theme-primary {
+  box-shadow: 0 0 16px var(--color-primary-glow, rgba(139, 92, 246, 0.45));
+}
+
+.ring-theme-primary {
+  --tw-ring-color: var(--color-primary, #8b5cf6) !important;
+}
+
+.btn-theme-gradient {
+  background: linear-gradient(135deg, var(--color-primary, #8b5cf6) 0%, var(--color-primary-hover, #7c3aed) 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px var(--color-primary-glow, rgba(139, 92, 246, 0.4));
+  transition: all 0.2s ease;
+}
+
+.btn-theme-gradient:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
 
 /* Mobile touch improvements */
 button, a, input, select {
@@ -274,6 +322,152 @@ button, input[type="button"], input[type="submit"], [role="button"], .select-non
 [data-font-size="xlarge"] {
   --font-scale: 1.2;
   font-size: 19px;
+}
+
+/* Universal Font Family Overrides */
+[data-font="space_mono"],
+[data-font="space_mono"] * {
+  font-family: 'Space Mono', monospace !important;
+}
+
+[data-font="outfit"],
+[data-font="outfit"] * {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif !important;
+}
+
+[data-font="roboto"],
+[data-font="roboto"] * {
+  font-family: 'Roboto', system-ui, -apple-system, sans-serif !important;
+}
+
+[data-font="inter"],
+[data-font="inter"] * {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* 3D Tactile Mechanical Button Physics */
+.btn-3d {
+  position: relative;
+  border-bottom: 3.5px solid rgba(0, 0, 0, 0.45);
+  transform: translateY(0);
+  transition: transform 0.06s cubic-bezier(0.4, 0, 0.2, 1), border-bottom 0.06s ease, filter 0.1s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.btn-3d:hover {
+  filter: brightness(1.1);
+}
+
+.btn-3d:active {
+  transform: translateY(2.5px) !important;
+  border-bottom-width: 1px !important;
+  box-shadow: none !important;
+}
+
+/* Dynamic Accent Theme Re-skinning (Emerald) */
+[data-theme="emerald"] .bg-violet-600,
+[data-theme="emerald"] .bg-violet-500 {
+  background-color: #059669 !important;
+}
+[data-theme="emerald"] .hover\:bg-violet-500:hover,
+[data-theme="emerald"] .hover\:bg-violet-600:hover {
+  background-color: #10b981 !important;
+}
+[data-theme="emerald"] .text-violet-400,
+[data-theme="emerald"] .text-violet-300,
+[data-theme="emerald"] .text-violet-200 {
+  color: #34d399 !important;
+}
+[data-theme="emerald"] .border-violet-500,
+[data-theme="emerald"] .border-violet-600,
+[data-theme="emerald"] .border-violet-500\/30,
+[data-theme="emerald"] .border-violet-500\/40 {
+  border-color: #10b981 !important;
+}
+[data-theme="emerald"] .bg-violet-600\/20,
+[data-theme="emerald"] .bg-violet-500\/10,
+[data-theme="emerald"] .bg-violet-950\/40 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+/* Dynamic Accent Theme Re-skinning (Cyan) */
+[data-theme="cyan"] .bg-violet-600,
+[data-theme="cyan"] .bg-violet-500 {
+  background-color: #0891b2 !important;
+}
+[data-theme="cyan"] .hover\:bg-violet-500:hover,
+[data-theme="cyan"] .hover\:bg-violet-600:hover {
+  background-color: #06b6d4 !important;
+}
+[data-theme="cyan"] .text-violet-400,
+[data-theme="cyan"] .text-violet-300,
+[data-theme="cyan"] .text-violet-200 {
+  color: #22d3ee !important;
+}
+[data-theme="cyan"] .border-violet-500,
+[data-theme="cyan"] .border-violet-600,
+[data-theme="cyan"] .border-violet-500\/30,
+[data-theme="cyan"] .border-violet-500\/40 {
+  border-color: #06b6d4 !important;
+}
+[data-theme="cyan"] .bg-violet-600\/20,
+[data-theme="cyan"] .bg-violet-500\/10,
+[data-theme="cyan"] .bg-violet-950\/40 {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+}
+
+/* Dynamic Accent Theme Re-skinning (Amber) */
+[data-theme="amber"] .bg-violet-600,
+[data-theme="amber"] .bg-violet-500 {
+  background-color: #d97706 !important;
+}
+[data-theme="amber"] .hover\:bg-violet-500:hover,
+[data-theme="amber"] .hover\:bg-violet-600:hover {
+  background-color: #f59e0b !important;
+}
+[data-theme="amber"] .text-violet-400,
+[data-theme="amber"] .text-violet-300,
+[data-theme="amber"] .text-violet-200 {
+  color: #fbbf24 !important;
+}
+[data-theme="amber"] .border-violet-500,
+[data-theme="amber"] .border-violet-600,
+[data-theme="amber"] .border-violet-500\/30,
+[data-theme="amber"] .border-violet-500\/40 {
+  border-color: #f59e0b !important;
+}
+[data-theme="amber"] .bg-violet-600\/20,
+[data-theme="amber"] .bg-violet-500\/10,
+[data-theme="amber"] .bg-violet-950\/40 {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+}
+
+/* Dynamic Accent Theme Re-skinning (Rose) */
+[data-theme="rose"] .bg-violet-600,
+[data-theme="rose"] .bg-violet-500 {
+  background-color: #e11d48 !important;
+}
+[data-theme="rose"] .hover\:bg-violet-500:hover,
+[data-theme="rose"] .hover\:bg-violet-600:hover {
+  background-color: #f43f5e !important;
+}
+[data-theme="rose"] .text-violet-400,
+[data-theme="rose"] .text-violet-300,
+[data-theme="rose"] .text-violet-200 {
+  color: #fb7185 !important;
+}
+[data-theme="rose"] .border-violet-500,
+[data-theme="rose"] .border-violet-600,
+[data-theme="rose"] .border-violet-500\/30,
+[data-theme="rose"] .border-violet-500\/40 {
+  border-color: #f43f5e !important;
+}
+[data-theme="rose"] .bg-violet-600\/20,
+[data-theme="rose"] .bg-violet-500\/10,
+[data-theme="rose"] .bg-violet-950\/40 {
+  background-color: rgba(244, 63, 94, 0.15) !important;
 }
 
 
