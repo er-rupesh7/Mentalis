@@ -55,6 +55,7 @@ export const TableChart: React.FC = () => {
     startSession,
     factMemoryMap,
     practiceFact,
+    startSingleTableMastery,
   } = useQuizStore();
 
   // Local state for tabs & filters
@@ -81,11 +82,9 @@ export const TableChart: React.FC = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Practice table in Zen Drill
+  // Practice table in Table Mastery Workout
   const handlePracticeTable = (tableNum: number) => {
-    setActiveTable(tableNum);
-    startSession({ mode: 'standard' });
-    setViewMode('practice');
+    startSingleTableMastery(tableNum);
   };
 
   const handlePracticeSquares = () => {

@@ -142,10 +142,10 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
 
   const [activeTab, setActiveTab] = useState<DrillTab>('tables');
 
-  // Custom drill configuration state (Default: empty arrays for squares, cubes, combos so no phantom counts!)
-  const [selectedTables, setSelectedTables] = useState<number[]>([18, 19]);
+  // Custom drill configuration state (Default: empty arrays so user starts with clean slate)
+  const [selectedTables, setSelectedTables] = useState<number[]>([]);
   const [singleTableMasteryMode, setSingleTableMasteryMode] = useState<boolean>(false);
-  const [singleTableTarget, setSingleTableTarget] = useState<number>(18);
+  const [singleTableTarget, setSingleTableTarget] = useState<number>(13);
 
   const [selectedSquareRanges, setSelectedSquareRanges] = useState<{ min: number; max: number }[]>([]);
   const [selectedCubeRanges, setSelectedCubeRanges] = useState<{ min: number; max: number }[]>([]);
@@ -430,22 +430,26 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
             {activeTab === 'tables' && (
               <div className="space-y-5">
                 {/* Single Table Mastery Callout */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-violet-950/30 border border-violet-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-violet-950/40 via-slate-900/90 to-indigo-950/30 border border-violet-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-violet-950/30">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <Flame className="w-4 h-4 text-violet-400" />
-                      <span className="text-sm font-bold text-white">Single-Table Automaticity Focus</span>
+                      <div className="p-1.5 rounded-lg bg-violet-600/30 border border-violet-500/40">
+                        <Flame className="w-4 h-4 text-violet-300" />
+                      </div>
+                      <span className="text-sm font-bold text-white tracking-tight">
+                        Master a Table (Two-Stage Adaptive Workout)
+                      </span>
                     </div>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Target 1 table (e.g. Table 18 or 19). Drills facts until 95% accuracy & &lt;2.2s latency with automatic next-table level-up!
+                    <p className="text-xs text-slate-300 leading-relaxed max-w-xl">
+                      Master any table (e.g. Table ×{singleTableTarget}). Stage 1 drills <span className="text-violet-300 font-semibold font-mono">×1 to ×10</span> until 100% error-free. Unlocks Stage 2 <span className="text-cyan-300 font-semibold font-mono">×11 to ×20</span>. Mistakes &amp; hesitation (&gt;1.8s) trigger spaced re-testing after 2–3 questions!
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                  <div className="flex items-center gap-2.5 self-end sm:self-auto shrink-0">
                     <select
                       value={singleTableTarget}
                       onChange={(e) => setSingleTableTarget(parseInt(e.target.value, 10))}
-                      className="bg-slate-900 text-white font-mono font-bold text-xs border border-violet-500/40 rounded-xl px-3 py-2 focus:outline-none focus:border-violet-400 min-h-[44px]"
+                      className="bg-slate-900 text-white font-mono font-bold text-xs border border-violet-500/40 rounded-xl px-3 py-2.5 focus:outline-none focus:border-violet-400 min-h-[44px] cursor-pointer"
                     >
                       {Array.from({ length: 99 }, (_, i) => i + 2).map((t) => (
                         <option key={t} value={t}>
@@ -455,14 +459,14 @@ export const CustomDrillModal: React.FC<CustomDrillModalProps> = ({ isOpen, onCl
                     </select>
 
                     <button
-                      onClick={() => setSingleTableMasteryMode(!singleTableMasteryMode)}
-                      className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
-                        singleTableMasteryMode
-                          ? 'bg-violet-600 text-white shadow-md shadow-violet-600/30'
-                          : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                      }`}
+                      onClick={() => {
+                        startSingleTableMastery(singleTableTarget);
+                        onClose();
+                      }}
+                      className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md shadow-violet-600/30 transition-all min-h-[44px] flex items-center gap-1.5 active:scale-95"
                     >
-                      {singleTableMasteryMode ? 'Active ✓' : 'Activate'}
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Master Table ×{singleTableTarget}</span>
                     </button>
                   </div>
                 </div>

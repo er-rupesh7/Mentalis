@@ -31,6 +31,7 @@ import {
   TechniqueMasteryState,
   TableMasteryAlert,
   BrainMatrix,
+  TableMasterySessionState,
 } from '../types';
 import { SquareCubeSubTrack } from '../calcEngine';
 import { evaluateMasteryStatus, updateDailyStreak, calculateMedian, calculateCPM } from '../mastery';
@@ -40,6 +41,9 @@ import {
   analyzeProgress,
   checkTableAutomaticity,
   evaluateTechniqueMastery,
+  createInitialTableMasteryState,
+  evaluateTableMasteryAttempt,
+  getNextTableMasteryMultiplier,
 } from '../adaptive';
 import { soundEngine } from '../soundEngine';
 import {
@@ -379,6 +383,7 @@ interface QuizState {
   // Custom Drill, Single Table Mastery & Techniques
   customDrillConfig: CustomDrillConfig | null;
   targetMasteryTable: number | null;
+  tableMasterySession: TableMasterySessionState | null;
   techniqueMasteryMap: Record<CalculationTechniqueId, TechniqueMasteryState>;
   tableMasteryAlert: TableMasteryAlert | null;
   isCustomDrillModalOpen: boolean;
@@ -618,6 +623,7 @@ export const useQuizStore = create<QuizState>()(
       // Custom Drill, Single Table Mastery & Techniques
       customDrillConfig: null,
       targetMasteryTable: null,
+      tableMasterySession: null,
       techniqueMasteryMap: INITIAL_TECHNIQUE_MASTERY_MAP,
       tableMasteryAlert: null,
       isCustomDrillModalOpen: false,
@@ -774,10 +780,13 @@ export const useQuizStore = create<QuizState>()(
       },
 
       startCustomDrill: (config: CustomDrillConfig) => {
+        const isMasteryRun = Boolean(config.targetMasteryTable);
+        const isEndless = isMasteryRun || (!config.goalCount && !config.timeLimitSeconds);
         set({
           activeModule: 'custom_drill',
           customDrillConfig: config,
           targetMasteryTable: config.targetMasteryTable || null,
+          tableMasterySession: isMasteryRun ? createInitialTableMasteryState(config.targetMasteryTable!) : null,
           tableMasteryAlert: null,
           isPlanActive: false,
           activeRepairCard: null,
@@ -785,9 +794,9 @@ export const useQuizStore = create<QuizState>()(
           viewMode: 'practice',
           sessionConfig: {
             mode: 'standard',
-            goalCount: config.goalCount || 25,
-            timeLimitSeconds: config.timeLimitSeconds,
-            isEndless: !config.goalCount && !config.timeLimitSeconds,
+            goalCount: isMasteryRun ? undefined : (config.goalCount || (config.timeLimitSeconds ? undefined : 25)),
+            timeLimitSeconds: isMasteryRun ? undefined : config.timeLimitSeconds,
+            isEndless,
           },
           sessionAnswered: 0,
           sessionCorrect: 0,
@@ -809,8 +818,6 @@ export const useQuizStore = create<QuizState>()(
           selectedArithmeticCombos: [],
           selectedExamSkills: [],
           operatorPreference: '×',
-          timeLimitSeconds: 300,
-          goalCount: 20,
           interleavePreviousLearned: true,
           targetMasteryTable: tableNum,
         };
@@ -993,6 +1000,8 @@ export const useQuizStore = create<QuizState>()(
             tableMode: state.currentTableMode,
             customDrillConfig: state.customDrillConfig || undefined,
             targetMasteryTable: state.targetMasteryTable || undefined,
+            tableMasterySession: state.tableMasterySession || undefined,
+            previousQuestion: state.currentQuestion || undefined,
             factMemoryMap: state.factMemoryMap,
           });
 
@@ -1283,7 +1292,7 @@ export const useQuizStore = create<QuizState>()(
       submitAnswer: (overrideAnswer?: number) => {
         const state = get();
         if (state.isEvaluating || !state.currentQuestion || state.isPaused) return;
-        if (!state.sessionConfig.isEndless && state.sessionAnswered >= state.sessionConfig.goalCount) return;
+        if (!state.sessionConfig.isEndless && state.sessionConfig.goalCount && state.sessionAnswered >= state.sessionConfig.goalCount) return;
 
         const isNumOverride = typeof overrideAnswer === 'number' && !isNaN(overrideAnswer);
         const trimmed = state.inputBuffer.trim();
@@ -1502,10 +1511,31 @@ export const useQuizStore = create<QuizState>()(
           }
         }
 
-        // Check single-table automaticity
+        // Check single-table automaticity & Table Mastery State Machine
         let tableMasteryAlert = state.tableMasteryAlert;
+        let updatedTableMasterySession = state.tableMasterySession;
         const targetTable = state.targetMasteryTable || (state.activeModule === 'custom_drill' && state.customDrillConfig?.targetMasteryTable ? state.customDrillConfig.targetMasteryTable : null);
-        if (targetTable && !tableMasteryAlert) {
+
+        if (targetTable && updatedTableMasterySession && state.currentQuestion.operandA === targetTable) {
+          const mult = state.currentQuestion.operandB || 1;
+          const { nextState, event } = evaluateTableMasteryAttempt(
+            updatedTableMasterySession,
+            mult,
+            isCorrect,
+            responseTimeMs,
+            userAnswer
+          );
+          updatedTableMasterySession = nextState;
+
+          if (event === 'table_mastered' && !tableMasteryAlert) {
+            tableMasteryAlert = {
+              table: targetTable,
+              nextTable: targetTable + 1,
+              accuracy: Math.round((nextCorrect / nextAnswered) * 100),
+              medianLatencyMs: calculateMedian(nextTimes),
+            };
+          }
+        } else if (targetTable && !tableMasteryAlert) {
           const autoCheck = checkTableAutomaticity(targetTable, updatedFactMap);
           if (autoCheck.isMastered) {
             tableMasteryAlert = {
@@ -1547,11 +1577,12 @@ export const useQuizStore = create<QuizState>()(
         });
 
         // XP Calculation:
+        // Table Mastery mode & Practice Mode award 1/20th XP (deliberate micro-drills)
         // Exercise Mode = 100% normal XP (examination conditions)
-        // Practice Mode = 1/20th of normal XP (study mode with hints accessible)
+        const isTableMastery = Boolean(state.targetMasteryTable || state.tableMasterySession);
         const effectiveXP = !isCorrect
           ? 0
-          : state.workoutMode === 'practice'
+          : state.workoutMode === 'practice' || isTableMastery
           ? Math.max(1, Math.round(pointsEarned.totalXP / 20))
           : pointsEarned.totalXP;
 
@@ -1596,6 +1627,7 @@ export const useQuizStore = create<QuizState>()(
           factMemoryMap: updatedFactMap,
           techniqueMasteryMap: updatedTechniqueMap,
           tableMasteryAlert,
+          tableMasterySession: updatedTableMasterySession,
           activeRepairCard,
           delayedReviewQueue: updatedDelayedQueue,
           batchAnswerCount: nextBatchCount >= 10 ? 0 : nextBatchCount,
@@ -1618,6 +1650,14 @@ export const useQuizStore = create<QuizState>()(
           syncEngine.debouncedSync(currentUser.id, get());
         }
 
+        // Check if Table Mastery workout completed (all 20 facts mastered at instant speed)
+        if (updatedTableMasterySession && updatedTableMasterySession.stage === 'completed') {
+          setTimeout(() => {
+            get().endSession();
+          }, isCorrect ? 800 : 1600);
+          return;
+        }
+
         // If in plan mode and current block is done, advance block
         if (state.isPlanActive && updatedPlan) {
           const block = updatedPlan.blocks[state.activeTrainingBlockIndex];
@@ -1630,7 +1670,7 @@ export const useQuizStore = create<QuizState>()(
         }
 
         // Check if session goal reached
-        if (!state.sessionConfig.isEndless && nextAnswered >= state.sessionConfig.goalCount) {
+        if (!state.sessionConfig.isEndless && state.sessionConfig.goalCount && nextAnswered >= state.sessionConfig.goalCount) {
           setTimeout(() => {
             get().endSession();
           }, isCorrect ? 400 : 1500);

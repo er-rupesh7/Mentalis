@@ -159,7 +159,7 @@ export interface AnzanStats {
 }
 
 export interface SessionDrillConfig {
-  goalCount: number; // e.g. 10, 20, 0 for endless
+  goalCount?: number; // e.g. 10, 20, 0 or undefined for endless
   isEndless: boolean;
   mode: 'standard' | 'targeted_refresh' | 'weak_spots';
   timeLimitSeconds?: number;
@@ -265,6 +265,62 @@ export interface CustomDrillConfig {
   interleavePreviousLearned: boolean;                   // default true
   targetMasteryTable?: number;                          // if single-table mastery run
 }
+
+export type TableMasteryStage =
+  | 'stage_1_to_10'
+  | 'stage_11_to_20'
+  | 'stage_mixed_sprint'
+  | 'completed';
+
+export interface TableMasteryFactStatus {
+  multiplier: number;
+  status: 'untested' | 'learning' | 'mastered' | 'hesitant' | 'error' | 'slip';
+  consecutiveInstantCorrect: number;
+  lastLatencyMs?: number;
+  lastResult?: 'correct' | 'incorrect';
+  totalAttempts: number;
+}
+
+export interface TableMasteryRetestItem {
+  multiplier: number;
+  askAtQuestionIndex: number;
+  reason: 'error' | 'hesitation' | 'slip';
+}
+
+export type TypingSlipType =
+  | 'keypad_adjacency'
+  | 'digit_transposition'
+  | 'premature_enter'
+  | 'double_stroke';
+
+export interface TableMasteryAiTelemetry {
+  isSlip?: boolean;
+  slipType?: TypingSlipType;
+  retrievalPathway: 'direct_associative' | 'mental_decomposition' | 'motor_slip' | 'interference_error';
+  netCognitiveLatencyMs: number;
+  motorLatencyEstimateMs: number;
+  automaticityIndex: number; // 0 to 100 velocity
+  automaticityVelocity?: number;
+  aiBotDiagnosis: string;
+}
+
+export interface TableMasterySessionState {
+  targetTable: number;
+  stage: TableMasteryStage;
+  facts: Record<number, TableMasteryFactStatus>; // multipliers 1 to 20
+  retestQueue: TableMasteryRetestItem[];
+  masteryScore: number; // 0 to 100 percentage reflecting true algorithmic automaticity
+  totalQuestionsInMastery: number;
+  hasErrorsInCurrentStage: boolean;
+  consecutiveCleanAnswers: number;
+  aiTelemetry?: TableMasteryAiTelemetry;
+  lastFeedback?: {
+    multiplier: number;
+    type: 'instant' | 'hesitation' | 'error' | 'slip';
+    message: string;
+  };
+}
+
 
 export type TechniqueModuleCategory =
   | 'fundamental_operations'

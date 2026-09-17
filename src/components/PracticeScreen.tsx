@@ -30,6 +30,7 @@ import {
   GraduationCap,
   ShieldCheck,
   SkipForward,
+  Activity,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import { ADD_SUB_LEVELS } from '../core/calcEngine';
@@ -71,6 +72,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     sessionStartTime,
     customDrillConfig,
     targetMasteryTable,
+    tableMasterySession,
     tableMasteryAlert,
     advanceToNextTable,
     dismissTableMasteryAlert,
@@ -310,7 +312,22 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
 
         {/* Center: Session Goal Indicator & Target Speed */}
         <div className="flex items-center gap-2">
-          {!sessionConfig.isEndless ? (
+          {tableMasterySession ? (
+            <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-violet-950/50 border border-violet-500/40 text-[11px] sm:text-xs font-mono shadow-sm">
+              <Flame className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+              <span className="font-bold text-violet-200">{tableMasterySession.masteryScore}%</span>
+              <span className="text-slate-600 hidden xs:inline">•</span>
+              <span className="text-[10px] sm:text-[11px] text-violet-300 font-semibold truncate max-w-[85px] sm:max-w-none">
+                {tableMasterySession.stage === 'stage_1_to_10'
+                  ? 'Stage 1 (1–10)'
+                  : tableMasterySession.stage === 'stage_11_to_20'
+                  ? 'Stage 2 (11–20)'
+                  : tableMasterySession.stage === 'stage_mixed_sprint'
+                  ? 'Sprint (1–20)'
+                  : 'Mastered!'}
+              </span>
+            </div>
+          ) : !sessionConfig.isEndless ? (
             <div className="text-[11px] sm:text-xs font-mono px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
               <span className="text-emerald-400 font-bold">{sessionAnswered}</span>
               <span className="text-slate-500"> / {sessionConfig.goalCount}</span>
@@ -376,7 +393,24 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
       </div>
 
       {/* Sleek Progress Bar Strip (Mobile only — desktop has the full HUD progress bar below) */}
-      {sessionConfig.goalCount && (
+      {tableMasterySession ? (
+        <div className="sm:hidden w-full h-1.5 bg-slate-900 overflow-hidden shrink-0">
+          <motion.div
+            className={`h-full ${
+              tableMasterySession.masteryScore >= 85
+                ? 'bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-400'
+                : tableMasterySession.masteryScore >= 50
+                ? 'bg-gradient-to-r from-violet-500 to-cyan-400'
+                : 'bg-gradient-to-r from-indigo-500 to-violet-500'
+            }`}
+            initial={{ width: 0 }}
+            animate={{
+              width: `${Math.min(100, Math.max(0, tableMasterySession.masteryScore))}%`,
+            }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+          />
+        </div>
+      ) : sessionConfig.goalCount ? (
         <div className="sm:hidden w-full h-1 bg-slate-900 overflow-hidden shrink-0">
           <motion.div
             className="h-full bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-400"
@@ -387,7 +421,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
             transition={{ duration: 0.25, ease: 'easeOut' }}
           />
         </div>
-      )}
+      ) : null}
 
       {/* Workout Mode Switcher Bar: Exercise (Exam) vs Practice (Study) */}
       <div className="flex w-full max-w-5xl xl:max-w-6xl mx-auto px-3 sm:px-4 py-1.5 items-center justify-between gap-2 border-b border-slate-800/60 bg-slate-900/20 backdrop-blur-[2px] shrink-0">
@@ -490,7 +524,56 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
       )}
 
       {/* Session Progress Bar & Questions Left HUD (Desktop only - mobile has top strip) */}
-      {(!sessionConfig.isEndless || secondsRemaining !== null) && (
+      {tableMasterySession ? (
+        <div className="hidden sm:block w-full max-w-5xl xl:max-w-6xl mx-auto px-4 pt-3 pb-1">
+          <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
+            <div className="flex items-center gap-2.5">
+              <span className="font-bold text-white flex items-center gap-1.5">
+                <Flame className="w-4 h-4 text-violet-400" />
+                <span>Table ×{tableMasterySession.targetTable} Mastery:</span>
+                <span className="text-violet-300 font-mono font-extrabold">{tableMasterySession.masteryScore}%</span>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/30 text-[11px] font-semibold">
+                {tableMasterySession.stage === 'stage_1_to_10'
+                  ? 'Stage 1: ×1 to ×10 Foundations'
+                  : tableMasterySession.stage === 'stage_11_to_20'
+                  ? 'Stage 2: ×11 to ×20 Expansion'
+                  : tableMasterySession.stage === 'stage_mixed_sprint'
+                  ? 'Final Sprint: ×1 to ×20 Automaticity'
+                  : 'Table Mastered!'}
+              </span>
+              {tableMasterySession.retestQueue.length > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-mono">
+                  {tableMasterySession.retestQueue.length} re-test queued
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <span className="text-slate-300 font-medium">
+                {Object.values(tableMasterySession.facts).filter((f) => f.status === 'mastered').length} / 20 Facts Mastered
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full h-2 bg-slate-900 border border-slate-800 rounded-full overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full transition-all ${
+                tableMasterySession.masteryScore >= 85
+                  ? 'bg-gradient-to-r from-violet-500 via-indigo-500 to-emerald-400'
+                  : tableMasterySession.masteryScore >= 50
+                  ? 'bg-gradient-to-r from-violet-500 to-cyan-400'
+                  : 'bg-gradient-to-r from-indigo-500 to-violet-500'
+              }`}
+              initial={{ width: 0 }}
+              animate={{
+                width: `${Math.min(100, Math.max(0, tableMasterySession.masteryScore))}%`,
+              }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+            />
+          </div>
+        </div>
+      ) : (!sessionConfig.isEndless || secondsRemaining !== null) ? (
         <div className="hidden sm:block w-full max-w-5xl xl:max-w-6xl mx-auto px-4 pt-3 pb-1">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
             <div className="flex items-center gap-2">
@@ -538,7 +621,7 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
             </div>
           )}
         </div>
-      )}
+      ) : null}
 
       {/* Practice Workspace Container (Responsive Desktop Arena / Mobile Pinned Keypad) */}
       <div
@@ -684,6 +767,153 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               </div>
             )}
 
+            {/* NEURO-COGNITIVE AI BOT TELEMETRY HUD (Table Mastery Mode) */}
+            {tableMasterySession && (
+              <div className="w-full mb-2 p-2.5 sm:p-3 rounded-2xl bg-gradient-to-r from-slate-950/95 via-violet-950/40 to-slate-950/95 border border-violet-500/30 shadow-lg backdrop-blur-md">
+                {/* Header row: AI Identity & Live Pathway Indicator */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    {/* Animated Cyber-Neurology Orb */}
+                    <div className="relative flex items-center justify-center w-7 h-7 rounded-full bg-violet-900/60 border border-violet-400/50 shadow-[0_0_12px_rgba(139,92,246,0.5)]">
+                      <motion.div
+                        animate={
+                          tableMasterySession.aiTelemetry?.isSlip
+                            ? { scale: [1, 1.35, 1], opacity: [0.5, 1, 0.5] }
+                            : { scale: [1, 1.2, 1], opacity: [0.4, 0.8, 0.4] }
+                        }
+                        transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+                        className={`absolute inset-0 rounded-full ${
+                          tableMasterySession.aiTelemetry?.isSlip
+                            ? 'bg-amber-500/30'
+                            : tableMasterySession.aiTelemetry?.retrievalPathway === 'direct_associative'
+                            ? 'bg-emerald-500/30'
+                            : 'bg-violet-500/30'
+                        }`}
+                      />
+                      <Brain className={`w-4 h-4 relative z-10 ${
+                        tableMasterySession.aiTelemetry?.isSlip
+                          ? 'text-amber-300'
+                          : tableMasterySession.aiTelemetry?.retrievalPathway === 'direct_associative'
+                          ? 'text-emerald-300'
+                          : 'text-violet-300'
+                      }`} />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-mono font-extrabold uppercase tracking-wider text-violet-200">
+                          SYNAPSE-AI Copilot
+                        </span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[9px] font-mono font-semibold bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                          <Activity className="w-2.5 h-2.5 animate-pulse text-violet-400" />
+                          LIVE TELEMETRY
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 font-mono">
+                        Table ×{tableMasterySession.targetTable} • Pure Cognitive Latency Analysis
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Deliberate Practice 1/20th XP Pill */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-semibold flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                      <span>1/20 XP Deliberate Drill</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Live AI Telemetry Badges */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 text-[10px] font-mono mb-2">
+                  {/* 1. Cognitive Latency */}
+                  <div className="p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col">
+                    <span className="text-slate-400 text-[9px] uppercase tracking-wider">Net Cognitive Time</span>
+                    <span className="text-white font-bold text-xs flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-cyan-400" />
+                      {tableMasterySession.aiTelemetry
+                        ? `${tableMasterySession.aiTelemetry.netCognitiveLatencyMs}ms`
+                        : 'Calibrating...'}
+                    </span>
+                    <span className="text-[8px] text-slate-500 truncate">
+                      Gross − {tableMasterySession.aiTelemetry?.motorLatencyEstimateMs ?? 700}ms motor offset
+                    </span>
+                  </div>
+
+                  {/* 2. Retrieval Pathway */}
+                  <div className="p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col">
+                    <span className="text-slate-400 text-[9px] uppercase tracking-wider">Retrieval Pathway</span>
+                    <span className={`font-bold text-xs truncate flex items-center gap-1 ${
+                      tableMasterySession.aiTelemetry?.isSlip
+                        ? 'text-amber-300'
+                        : tableMasterySession.aiTelemetry?.retrievalPathway === 'direct_associative'
+                        ? 'text-emerald-400'
+                        : tableMasterySession.aiTelemetry?.retrievalPathway === 'mental_decomposition'
+                        ? 'text-cyan-300'
+                        : 'text-violet-300'
+                    }`}>
+                      {tableMasterySession.aiTelemetry?.isSlip
+                        ? 'Keypad Slip Protected'
+                        : tableMasterySession.aiTelemetry?.retrievalPathway === 'direct_associative'
+                        ? 'Direct Synaptic Recall'
+                        : tableMasterySession.aiTelemetry?.retrievalPathway === 'mental_decomposition'
+                        ? 'Mental Decomposition'
+                        : tableMasterySession.aiTelemetry?.retrievalPathway === 'interference_error'
+                        ? 'Associative Interference'
+                        : 'Ready for Input'}
+                    </span>
+                    <span className="text-[8px] text-slate-500 truncate">Neuro-linguistic model</span>
+                  </div>
+
+                  {/* 3. Automaticity Velocity */}
+                  <div className="p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col">
+                    <span className="text-slate-400 text-[9px] uppercase tracking-wider">Automaticity Velocity</span>
+                    <span className="text-white font-bold text-xs flex items-center gap-1">
+                      <Zap className="w-3 h-3 text-amber-400" />
+                      {tableMasterySession.aiTelemetry?.automaticityVelocity !== undefined
+                        ? `${tableMasterySession.aiTelemetry.automaticityVelocity} ops/sec`
+                        : '0.0 ops/sec'}
+                    </span>
+                    <span className="text-[8px] text-slate-500 truncate">Cognitive throughput</span>
+                  </div>
+
+                  {/* 4. Slip Safeguard Status */}
+                  <div className="p-1.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-col">
+                    <span className="text-slate-400 text-[9px] uppercase tracking-wider">Keypad Safeguard</span>
+                    <span className={`font-bold text-xs truncate flex items-center gap-1 ${
+                      tableMasterySession.aiTelemetry?.isSlip
+                        ? 'text-amber-300'
+                        : 'text-emerald-400'
+                    }`}>
+                      <ShieldCheck className="w-3 h-3 shrink-0" />
+                      {tableMasterySession.aiTelemetry?.isSlip
+                        ? 'Slip Shielded'
+                        : 'Slip Defense Active'}
+                    </span>
+                    <span className="text-[8px] text-slate-500 truncate">Biomechanical filtering</span>
+                  </div>
+                </div>
+
+                {/* AI Diagnosis Banner */}
+                {tableMasterySession.aiTelemetry?.aiBotDiagnosis && (
+                  <div className={`p-2 rounded-xl text-xs font-mono flex items-center gap-2 border ${
+                    tableMasterySession.aiTelemetry.isSlip
+                      ? 'bg-amber-950/60 border-amber-500/50 text-amber-200'
+                      : tableMasterySession.aiTelemetry.retrievalPathway === 'direct_associative'
+                      ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-200'
+                      : tableMasterySession.aiTelemetry.retrievalPathway === 'interference_error'
+                      ? 'bg-rose-950/60 border-rose-500/40 text-rose-200'
+                      : 'bg-violet-950/50 border-violet-500/40 text-violet-200'
+                  }`}>
+                    <Sparkles className="w-3.5 h-3.5 shrink-0 animate-pulse" />
+                    <span className="text-[11px] leading-snug">
+                      {tableMasterySession.aiTelemetry.aiBotDiagnosis}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Arithmetic Card */}
             <motion.div
               animate={
@@ -789,7 +1019,25 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                       +{recentPointsEarned} XP
                     </span>
                     <span className="text-[10px] text-emerald-400/80 font-sans">
-                      {workoutMode === 'practice' ? '(1/20 XP Practice Mode)' : '(Full Exam XP)'}
+                      {tableMasterySession
+                        ? '(1/20 XP Table Mastery Drill)'
+                        : workoutMode === 'practice'
+                        ? '(1/20 XP Practice Mode)'
+                        : '(Full Exam XP)'}
+                    </span>
+                  </motion.div>
+                )}
+
+                {lastResult === 'correct' && tableMasterySession?.lastFeedback?.type === 'hesitation' && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    className="mb-2 px-3 py-1.5 rounded-xl bg-amber-950/80 border border-amber-500/50 text-xs font-mono flex items-center gap-2 shadow-sm text-amber-200"
+                  >
+                    <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>
+                      {tableMasterySession?.lastFeedback?.message || 'Hesitation • Re-testing in 2–3 questions for instant automaticity'}
                     </span>
                   </motion.div>
                 )}
@@ -813,12 +1061,24 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
                     initial={{ opacity: 0, y: -4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
-                    className="mb-2 px-3 py-1 rounded-xl bg-rose-950/70 border border-rose-800/80 text-xs font-mono flex items-center gap-1.5"
+                    className="mb-2 px-3 py-1.5 rounded-xl bg-rose-950/80 border border-rose-800/80 text-xs font-mono flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 shadow-sm"
                   >
-                    <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                    <span className="text-slate-300">
-                      Entered: {lastAnswerSubmitted} | Correct: <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <XCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span className="text-slate-300">
+                        Entered: {lastAnswerSubmitted} | Correct: <strong className="text-emerald-400 text-sm">{lastCorrectAnswer}</strong>
+                      </span>
+                    </div>
+                    {tableMasterySession?.aiTelemetry?.isSlip ? (
+                      <span className="text-[10px] text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-full font-bold border border-amber-500/40 flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-amber-400 shrink-0" />
+                        <span>Keypad Slip Protected • Mastery score preserved ({tableMasterySession.aiTelemetry.slipType})</span>
+                      </span>
+                    ) : tableMasterySession ? (
+                      <span className="text-[10px] text-rose-300 bg-rose-900/60 px-2 py-0.5 rounded-full font-bold">
+                        Mastery score dropped • Re-testing in 2 questions
+                      </span>
+                    ) : null}
                   </motion.div>
                 )}
               </AnimatePresence>
