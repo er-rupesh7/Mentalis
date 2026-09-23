@@ -123,7 +123,7 @@ export function SquaresAndCubesHub() {
   const currentShortcut = SHORTCUT_DETAILS[selectedShortcut];
 
   return (
-    <div className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+    <div className="flex-1 w-full max-w-6xl mx-auto px-4 pt-4 sm:pt-6 pb-32 sm:pb-16 space-y-6">
       {/* Header Banner */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />

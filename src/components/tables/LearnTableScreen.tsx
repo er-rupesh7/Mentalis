@@ -131,7 +131,7 @@ export function LearnTableScreen() {
   }, [currentTable, factMemoryMap]);
 
   return (
-    <div className="flex-1 w-full max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-6">
+    <div className="flex-1 w-full max-w-6xl mx-auto px-4 pt-4 sm:pt-6 pb-36 sm:pb-28 space-y-6">
       {/* Flutter style Header Card */}
       <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl relative overflow-hidden">
         <div className="absolute -top-24 -right-24 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -384,8 +384,8 @@ export function LearnTableScreen() {
         })}
       </div>
 
-      {/* Flutter style Bottom Floating Action Card: Launch 20-30 Question Practice Drill */}
-      <div className="sticky bottom-4 z-30 p-5 rounded-3xl bg-gradient-to-r from-slate-900 to-indigo-950/90 border border-violet-500/30 shadow-2xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Flutter style Practice Action Card: Launch 20-30 Question Practice Drill */}
+      <div className="mt-8 p-5 sm:p-6 rounded-3xl bg-gradient-to-r from-slate-900 to-indigo-950/90 border border-violet-500/30 shadow-2xl backdrop-blur-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-violet-400" />
