@@ -42,7 +42,10 @@
     "squaresTable": "୨. ବର୍ଗ ପଣିକିଆ",
     "cubesTable": "୩. ଘନ ପଣିକିଆ",
     "sqrtTable": "୪. ବର୍ଗମୂଳ ପଣିକିଆ",
-    "cbrtTable": "୫. ଘନମୂଳ ପଣିକିଆ"
+    "cbrtTable": "୫. ଘନମୂଳ ପଣିକିଆ",
+    "learnTables": "ପଣିକିଆ ଶିଖନ୍ତୁ",
+    "squaresAndCubes": "ବର୍ଗ ଏବଂ ଘନ",
+    "ranking": "ମାନ୍ୟତା"
   },
   "dashboard": {
     "title": "ଜ୍ଞାନାତ୍ମକ ଡ୍ୟାସବୋର୍ଡ",
@@ -162,7 +165,13 @@
     "pause": "ବିରତି",
     "resume": "ପୁନଃ ଆରମ୍ଭ",
     "paused": "ଅଧିବେଶନ ସ୍ଥଗିତ",
-    "pressSpaceOrEnter": "ଆଗକୁ ବଢିବା ପାଇଁ ସ୍ପେସ୍ କିମ୍ବା ଏଣ୍ଟର୍ ଦବାନ୍ତୁ"
+    "pressSpaceOrEnter": "ଆଗକୁ ବଢିବା ପାଇଁ ସ୍ପେସ୍ କିମ୍ବା ଏଣ୍ଟର୍ ଦବାନ୍ତୁ",
+    "sessionComplete": "ଅଭ୍ୟାସ ସମ୍ପୂର୍ଣ୍ଣ",
+    "congratulations": "ଉତ୍କୃଷ୍ଟ ପ୍ରଦର୍ଶନ! ସ୍ମରଣଶକ୍ତି ଏବଂ ବେଗ ବୃଦ୍ଧି ପାଇଛି।",
+    "avgSpeed": "ହାରାହାରି ବେଗ",
+    "totalAnswered": "ସମ୍ପୂର୍ଣ୍ଣ",
+    "practiceAgain": "ପୁନଃ ଅଭ୍ୟାସ କରନ୍ତୁ",
+    "returnDashboard": "ଡ୍ୟାସବୋର୍ଡକୁ ଫେରନ୍ତୁ"
   },
   "anzan": {
     "title": "ଅଞ୍ଜାନ ଫ୍ଲାସ୍ କାର୍ଯ୍ୟକାରୀ ସ୍ମୃତି",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "ପଣିକିଆ ଶିଖନ୍ତୁ",
+    "subtitle": "ଦ୍ରୁତ ସ୍ମରଣ ପାଇଁ ଅନିୟମିତ କ୍ରମରେ ଅଧ୍ୟୟନ କରନ୍ତୁ।",
+    "randomOrder": "ଅନିୟମିତ କ୍ରମ",
+    "sequentialOrder": "କ୍ରମିକ କ୍ରମ",
+    "revealAll": "ସମସ୍ତ ଦେଖାନ୍ତୁ",
+    "hideAnswers": "ଉତ୍ତର ଲୁଚାନ୍ତୁ",
+    "practiceTable": "ଅଭ୍ୟାସ କରନ୍ତୁ",
+    "startDrill": "୨୦-୩୦ ପ୍ରଶ୍ନର ଅଭ୍ୟାସ ଆରମ୍ଭ କରନ୍ତୁ",
+    "selectPrompt": "ପଣିକିଆ ବାଛନ୍ତୁ",
+    "clickToReveal": "ଉତ୍ତର ପାଇଁ ଟ୍ୟାପ୍ କରନ୍ତୁ",
+    "factsCount": "୨୦ ଗୁଣକ"
+  },
+  "ranking": {
+    "title": "ଚାମ୍ପିଅନ ହଲ୍",
+    "subtitle": "XP ଏବଂ ସଠିକତା ଉପରେ ଆଧାରିତ AI ମାନ୍ୟତା।",
+    "topChampions": "ଶ୍ରେଷ୍ଠ ୩ ଜଣ",
+    "rankPoints": "ର଼୍ୟାଙ୍କ ପଏଣ୍ଟ (RP)",
+    "liveActivity": "ସକ୍ରିୟ ଶିକ୍ଷାର୍ଥୀ",
+    "yourRank": "ଆପଣଙ୍କ ର଼୍ୟାଙ୍କ",
+    "unranked": "ର଼୍ୟାଙ୍କ ମିଳିନାହିଁ"
   }
 }

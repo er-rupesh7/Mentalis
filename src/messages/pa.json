@@ -42,7 +42,10 @@
     "squaresTable": "2. ਵਰਗ ਪਹਾੜੇ",
     "cubesTable": "3. ਘਣ ਪਹਾੜੇ",
     "sqrtTable": "4. ਵਰਗਮੂਲ ਪਹਾੜੇ",
-    "cbrtTable": "5. ਘਣਮੂਲ ਪਹਾੜੇ"
+    "cbrtTable": "5. ਘਣਮੂਲ ਪਹਾੜੇ",
+    "learnTables": "ਪਹਾੜੇ ਸਿੱਖੋ",
+    "squaresAndCubes": "ਵਰਗ ਅਤੇ ਘਣ",
+    "ranking": "ਰੈਂਕਿੰਗ"
   },
   "dashboard": {
     "title": "ਬੌਧਿਕ ਡੈਸ਼ਬੋਰਡ",
@@ -162,7 +165,13 @@
     "pause": "ਰੋਕੋ",
     "resume": "ਮੁੜ ਸ਼ੁਰੂ ਕਰੋ",
     "paused": "ਸੈਸ਼ਨ ਰੋਕਿਆ ਗਿਆ",
-    "pressSpaceOrEnter": "ਜਾਰੀ ਰੱਖਣ ਲਈ ਸਪੇਸ ਜਾਂ ਐਂਟਰ ਦਬਾਓ"
+    "pressSpaceOrEnter": "ਜਾਰੀ ਰੱਖਣ ਲਈ ਸਪੇਸ ਜਾਂ ਐਂਟਰ ਦਬਾਓ",
+    "sessionComplete": "ਅਭਿਆਸ ਪੂਰਾ ਹੋਇਆ",
+    "congratulations": "ਸ਼ਾਨਦਾਰ ਪ੍ਰਦਰਸ਼ਨ! ਯਾਦਦਾਸ਼ਤ ਅਤੇ ਗਤੀ ਵਿੱਚ ਸੁਧਾਰ ਹੋਇਆ ਹੈ।",
+    "avgSpeed": "ਔਸਤ ਗਤੀ",
+    "totalAnswered": "ਮੁਕੰਮਲ",
+    "practiceAgain": "ਦੁਬਾਰਾ ਅਭਿਆਸ ਕਰੋ",
+    "returnDashboard": "ਡੈਸ਼ਬੋਰਡ 'ਤੇ ਵਾਪਸ ਜਾਓ"
   },
   "anzan": {
     "title": "ਅੰਜਾਨ ਫਲੈਸ਼ ਯਾਦਦਾਸ਼ਤ",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "ਪਹਾੜੇ ਸਿੱਖੋ",
+    "subtitle": "ਤੇਜ਼ ਯਾਦ ਲਈ ਬੇਤਰਤੀਬੇ ਕ੍ਰਮ ਵਿੱਚ ਪਹਾੜੇ ਸਿੱਖੋ।",
+    "randomOrder": "ਬੇਤਰਤੀਬਾ ਕ੍ਰਮ",
+    "sequentialOrder": "ਲਗਾਤਾਰ ਕ੍ਰਮ",
+    "revealAll": "ਸਾਰੇ ਦਿਖਾਓ",
+    "hideAnswers": "ਉੱਤਰ ਛੁਪਾਓ (ਫਲੈਸ਼ਕਾਰਡ)",
+    "practiceTable": "ਅਭਿਆਸ ਕਰੋ",
+    "startDrill": "20-30 ਪ੍ਰਸ਼ਨਾਂ ਦਾ ਅਭਿਆਸ ਸ਼ੁਰੂ ਕਰੋ",
+    "selectPrompt": "ਪਹਾੜਾ ਚੁਣੋ",
+    "clickToReveal": "ਉੱਤਰ ਵੇਖਣ ਲਈ ਟੈਪ ਕਰੋ",
+    "factsCount": "20 ਗੁਣਕ"
+  },
+  "ranking": {
+    "title": "ਚੈਂਪੀਅਨਜ਼ ਹਾਲ",
+    "subtitle": "XP ਅਤੇ ਨਿਰੰਤਰਤਾ ਦੇ ਆਧਾਰ 'ਤੇ AI ਰੈਂਕਿੰਗ।",
+    "topChampions": "ਚੋਟੀ ਦੇ 3 ਰੈਂਕਰ",
+    "rankPoints": "ਰੈਂਕ ਪੁਆਇੰਟ (RP)",
+    "liveActivity": "ਸਰਗਰਮ ਸਿਖਿਆਰਥੀ",
+    "yourRank": "ਤੁਹਾਡਾ ਰੈਂਕ",
+    "unranked": "ਕੋਈ ਰੈਂਕ ਨਹੀਂ"
   }
 }

@@ -42,7 +42,10 @@
     "squaresTable": "2. वर्ग पाढे",
     "cubesTable": "3. घन पाढे",
     "sqrtTable": "4. वर्गमूळ पाढे",
-    "cbrtTable": "5. घनमूळ पाढे"
+    "cbrtTable": "5. घनमूळ पाढे",
+    "learnTables": "पाढे शिका",
+    "squaresAndCubes": "वर्ग आणि घन",
+    "ranking": "क्रमवारी"
   },
   "dashboard": {
     "title": "संज्ञानात्मक डॅशबोर्ड",
@@ -162,7 +165,13 @@
     "pause": "विराम द्या",
     "resume": "पुन्हा सुरू करा",
     "paused": "सत्र थांबवले आहे",
-    "pressSpaceOrEnter": "सुरू ठेवण्यासाठी स्पेस किंवा एंटर दाबा"
+    "pressSpaceOrEnter": "सुरू ठेवण्यासाठी स्पेस किंवा एंटर दाबा",
+    "sessionComplete": "सत्र पूर्ण",
+    "congratulations": "उत्कृष्ट कार्य! अचूकता आणि स्मरणशक्ती अधिक दृढ झाली.",
+    "avgSpeed": "सरासरी वेग",
+    "totalAnswered": "पूर्ण प्रश्न",
+    "practiceAgain": "पुन्हा सराव करा",
+    "returnDashboard": "डॅशबोर्डवर परत जा"
   },
   "anzan": {
     "title": "अंत्झान फ्लॅश कार्यशील स्मृती",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "पाढे शिका",
+    "subtitle": "थेट स्मरणशक्ती तयार करण्यासाठी यादृच्छिक क्रमाने पाढे अभ्यासा.",
+    "randomOrder": "यादृच्छिक क्रम",
+    "sequentialOrder": "अनुक्रमिक क्रम",
+    "revealAll": "सर्व दर्शवा",
+    "hideAnswers": "उत्तरे लपवा (फ्लॅशकार्ड मोड)",
+    "practiceTable": "या पाढ्याचा सराव करा",
+    "startDrill": "२०-३० प्रश्नांचा सराव सुरू करा",
+    "selectPrompt": "पाढा निवडा",
+    "clickToReveal": "उत्तर पाहण्यासाठी टॅप करा",
+    "factsCount": "२० मुख्य गुणक"
+  },
+  "ranking": {
+    "title": "विजेत्यांचे दालन",
+    "subtitle": "XP, सातत्य आणि अचूकतेवर आधारित पारदर्शक AI क्रमवारी.",
+    "topChampions": "शीर्ष ३ विजेते",
+    "rankPoints": "रँक गुण (RP)",
+    "liveActivity": "सक्रिय विद्यार्थी",
+    "yourRank": "तुमची रँक",
+    "unranked": "क्रमवारी नाही"
   }
 }

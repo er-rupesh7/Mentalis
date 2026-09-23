@@ -30,8 +30,9 @@ export const MobileTabBar: React.FC = () => {
     return null;
   }
 
-  const isTablesActive = viewMode === 'heatmap' || viewMode === 'table_chart';
+  const isTablesActive = viewMode === 'learn_table' || viewMode === 'heatmap' || viewMode === 'table_chart';
   const isTricksActive = viewMode === 'techniques';
+  const isPowersActive = viewMode === 'squares_cubes';
   const isHomeActive =
     viewMode === 'dashboard' ||
     viewMode === 'bootcamp_11_20' ||
@@ -75,11 +76,11 @@ export const MobileTabBar: React.FC = () => {
             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] rounded-full bg-violet-500 transition-all duration-300 ${isHomeActive ? 'w-6 opacity-100' : 'w-0 opacity-0'}`} />
           </button>
 
-          {/* TABLES */}
+          {/* LEARN TABLES */}
           <button
-            onClick={() => setViewMode('heatmap')}
+            onClick={() => setViewMode('learn_table')}
             className="flex flex-col items-center justify-end gap-1 flex-1 pb-0.5 group relative active:scale-95 transition-transform duration-100"
-            aria-label="100 Tables"
+            aria-label="Learn Tables"
           >
             <Grid
               className={`w-[22px] h-[22px] transition-colors duration-200 ${

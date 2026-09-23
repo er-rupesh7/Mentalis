@@ -25,10 +25,15 @@ import { BadgePickerModal } from '../components/badges/BadgePickerModal';
 import { LevelUpModal } from '../components/badges/LevelUpModal';
 import { ChatDrawer } from '../components/chat/ChatDrawer';
 import { MobileTabBar } from '../components/MobileTabBar';
+import { LearnTableScreen } from '../components/tables/LearnTableScreen';
+import { SquaresAndCubesHub } from '../components/powers/SquaresAndCubesHub';
+import { LiveRankTicker } from '../components/ranking/LiveRankTicker';
+import { InitialAssessmentFlow } from '../components/onboarding/InitialAssessmentFlow';
 
 export default function MentalisApp() {
   const {
     viewMode,
+    hasCompletedInitialOnboarding,
     isCustomDrillModalOpen,
     setIsCustomDrillModalOpen,
     locale,
@@ -98,9 +103,12 @@ export default function MentalisApp() {
       timeZone="Asia/Kolkata"
     >
       <main className="flex-1 flex flex-col min-h-screen bg-transparent relative">
-        {/* Navigation Top Bar (Hidden during practice/anzan for 100% full screen focus) */}
+        {/* Navigation Top Bar & Live Rank Ticker (Hidden during practice/anzan for 100% full screen focus) */}
         {viewMode !== 'practice' && viewMode !== 'anzan' && (
-          <Navigation onOpenTutorial={() => setIsTutorialOpen(true)} />
+          <>
+            <Navigation onOpenTutorial={() => setIsTutorialOpen(true)} />
+            <LiveRankTicker />
+          </>
         )}
 
         {/* Dynamic View Router */}
@@ -108,6 +116,8 @@ export default function MentalisApp() {
           {viewMode === 'dashboard' && (
             <Dashboard onOpenTutorial={() => setIsTutorialOpen(true)} />
           )}
+          {viewMode === 'learn_table' && <LearnTableScreen />}
+          {viewMode === 'squares_cubes' && <SquaresAndCubesHub />}
           {viewMode === 'bootcamp_11_20' && <TablesBootcampView />}
           {viewMode === 'exam_quant' && <ExamQuantView />}
           {viewMode === 'techniques' && <TechniquesCurriculumView />}
@@ -136,6 +146,9 @@ export default function MentalisApp() {
 
         {/* First-Launch Language Onboarding Modal */}
         <LanguageOnboardingModal />
+
+        {/* First-Launch Initial Mental Assessment & Baseline Calibration */}
+        {!hasCompletedInitialOnboarding && <InitialAssessmentFlow />}
 
         {/* Centralized Settings & Accessibility Modal */}
         <SettingsModal />

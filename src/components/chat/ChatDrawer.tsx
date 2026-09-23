@@ -16,6 +16,7 @@ import {
   ArrowLeft,
   ExternalLink,
   AlertCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { useQuizStore } from '../../core/store/useQuizStore';
 import { socialEngine, FriendSummary, ChatMessageItem } from '../../core/social/socialEngine';
@@ -58,12 +59,12 @@ export const ChatDrawer: React.FC = () => {
     return unsub;
   }, []);
 
-  // Load mutual friends & suggested users when drawer is opened
+  // Load mutual friends & suggested users when drawer is opened (reads from 1-hour cache)
   useEffect(() => {
     if (!currentUser || !isOpen) return;
 
     let mounted = true;
-    socialEngine.fetchFriends(currentUser.id).then((list) => {
+    socialEngine.fetchFriends(currentUser.id, false).then((list) => {
       if (mounted) {
         setFriends(list);
         if (list.length > 0 && !activeFriend && window.innerWidth >= 640) {
@@ -72,8 +73,7 @@ export const ChatDrawer: React.FC = () => {
       }
     });
 
-    setIsSuggestLoading(true);
-    socialEngine.fetchSuggestedFriends(currentUser.id, 15).then((suggestions) => {
+    socialEngine.fetchSuggestedFriends(currentUser.id, 15, false).then((suggestions) => {
       if (mounted) {
         setSuggestedFriends(suggestions);
         setIsSuggestLoading(false);
@@ -85,6 +85,17 @@ export const ChatDrawer: React.FC = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, isOpen]);
+
+  const handleRefreshSuggestions = async () => {
+    if (!currentUser || isSuggestLoading) return;
+    setIsSuggestLoading(true);
+    try {
+      const fresh = await socialEngine.fetchSuggestedFriends(currentUser.id, 15, true);
+      setSuggestedFriends(fresh);
+    } finally {
+      setIsSuggestLoading(false);
+    }
+  };
 
   // Select a friend and load or create conversation
   const selectFriend = async (friend: FriendSummary) => {
@@ -436,9 +447,19 @@ export const ChatDrawer: React.FC = () => {
                 ) : (
                   /* Discover Mentalists Tab */
                   <div className="space-y-2 p-1">
-                    <p className="text-[11px] font-semibold text-slate-400 px-1">
-                      Follow active mentalists to connect and unlock mutual friendships!
-                    </p>
+                    <div className="flex items-center justify-between px-1">
+                      <p className="text-[11px] font-semibold text-slate-400">
+                        Follow active mentalists to connect and unlock mutual friendships!
+                      </p>
+                      <button
+                        onClick={handleRefreshSuggestions}
+                        disabled={isSuggestLoading}
+                        title="Refresh suggestions (cached for 1h)"
+                        className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors shrink-0 ml-1.5"
+                      >
+                        <RotateCcw className={`w-3.5 h-3.5 ${isSuggestLoading ? 'animate-spin text-violet-400' : ''}`} />
+                      </button>
+                    </div>
                     {isSuggestLoading ? (
                       <div className="p-8 text-center">
                         <Loader2 className="w-5 h-5 text-violet-400 animate-spin mx-auto" />

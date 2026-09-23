@@ -430,8 +430,21 @@ interface QuizState {
   isPlanActive: boolean;
   aiCoachingEnabled: boolean;
   aiCoachInsight: CoachingInsight | null;
-  isLoadingAiCoach: boolean;
   aiCoachState: AICoachState;
+  isLoadingAiCoach: boolean;
+
+  // First-Time Onboarding & Phased Feature Unlocks
+  hasCompletedInitialOnboarding: boolean;
+  declaredKnownTablesLimit: number;
+  unlockedFeatures: string[];
+  lastActiveSection: string;
+  selectedLearnTable: number;
+
+  completeInitialOnboarding: (declaredLimit: number, baselineScore?: number) => void;
+  setLastActiveSection: (section: string) => void;
+  setSelectedLearnTable: (table: number) => void;
+  unlockFeature: (featureKey: string) => void;
+  startLearnTablePractice: (tableNumber: number, questionCount?: number) => void;
 
   // Actions - Navigation & Module Selection
   setViewMode: (mode: ViewMode) => void;
@@ -524,6 +537,7 @@ interface QuizState {
     isCorrect: boolean,
     latencyMs: number
   ) => Promise<TechniqueMasteryState>;
+  forceMasterTechnique: (techniqueId: CalculationTechniqueId) => void;
 
   // Actions - Auth & Cloud Sync
   setAuthModalOpen: (open: boolean) => void;
@@ -640,6 +654,11 @@ export const useQuizStore = create<QuizState>()(
       },
       locale: defaultLocale,
       hasCompletedLanguageOnboarding: false,
+      hasCompletedInitialOnboarding: false,
+      declaredKnownTablesLimit: 10,
+      unlockedFeatures: ['tables', 'learn_table'],
+      lastActiveSection: 'learn_table',
+      selectedLearnTable: 14,
       isSettingsModalOpen: false,
       themeConfig: initialThemeConfig,
 
@@ -685,11 +704,68 @@ export const useQuizStore = create<QuizState>()(
         planSource: 'offline',
       },
 
+      completeInitialOnboarding: (declaredLimit: number, baselineScore = 80) => {
+        const unlocked = ['tables', 'learn_table'];
+        if (declaredLimit >= 12) unlocked.push('techniques');
+        if (declaredLimit >= 20) unlocked.push('squares_cubes');
+        if (declaredLimit >= 30) unlocked.push('exam_quant', 'anzan');
+
+        const newXP = get().xp + 50;
+        const newLvl = getLevelFromXP(newXP);
+
+        set({
+          hasCompletedInitialOnboarding: true,
+          declaredKnownTablesLimit: declaredLimit,
+          unlockedFeatures: unlocked,
+          activeTable: declaredLimit > 10 ? declaredLimit : 7,
+          selectedLearnTable: declaredLimit > 10 ? declaredLimit : 12,
+          xp: newXP,
+          level: newLvl,
+          lastActiveSection: 'learn_table',
+          viewMode: 'learn_table',
+        });
+      },
+
+      setLastActiveSection: (section: string) => {
+        set({ lastActiveSection: section });
+      },
+
+      setSelectedLearnTable: (table: number) => {
+        set({ selectedLearnTable: table });
+      },
+
+      unlockFeature: (featureKey: string) => {
+        const current = get().unlockedFeatures;
+        if (!current.includes(featureKey)) {
+          set({ unlockedFeatures: [...current, featureKey] });
+        }
+      },
+
+      startLearnTablePractice: (tableNumber: number, questionCount = 25) => {
+        set({
+          activeModule: 'multiplication',
+          activeTable: tableNumber,
+          viewMode: 'practice',
+          lastActiveSection: 'learn_table',
+        });
+        get().startSession({
+          goalCount: questionCount,
+          mode: 'standard',
+          isEndless: false,
+        });
+      },
+
       setViewMode: (mode: ViewMode) => {
         if (mode === 'bootcamp_11_20') {
-          set({ viewMode: mode, activeModule: 'tables_bootcamp' });
+          set({ viewMode: mode, activeModule: 'tables_bootcamp', lastActiveSection: 'bootcamp_11_20' });
         } else if (mode === 'exam_quant') {
-          set({ viewMode: mode, activeModule: 'exam_quant' });
+          set({ viewMode: mode, activeModule: 'exam_quant', lastActiveSection: 'exam_quant' });
+        } else if (mode === 'learn_table') {
+          set({ viewMode: mode, lastActiveSection: 'learn_table' });
+        } else if (mode === 'techniques') {
+          set({ viewMode: mode, lastActiveSection: 'techniques' });
+        } else if (mode === 'squares_cubes') {
+          set({ viewMode: mode, lastActiveSection: 'squares_cubes' });
         } else {
           set({ viewMode: mode });
         }
@@ -901,6 +977,37 @@ export const useQuizStore = create<QuizState>()(
           },
         }));
         return updated;
+      },
+
+      forceMasterTechnique: (techniqueId: CalculationTechniqueId) => {
+        const lesson = TECHNIQUE_CURRICULUM[techniqueId];
+        const title = lesson?.title || techniqueId;
+        const current = get().techniqueMasteryMap[techniqueId] || {
+          techniqueId,
+          title,
+          consecutiveCorrect: 10,
+          averageLatencyMs: 2000,
+          totalExposures: 20,
+          isMastered: false,
+        };
+        const updated: TechniqueMasteryState = {
+          ...current,
+          isMastered: true,
+          masteredAt: Date.now(),
+          consecutiveCorrect: Math.max(current.consecutiveCorrect, 10),
+          totalExposures: current.totalExposures + 20,
+          averageLatencyMs: current.averageLatencyMs || 2200,
+        };
+        const newXP = get().xp + 100;
+        const newLvl = getLevelFromXP(newXP);
+        set((state) => ({
+          xp: newXP,
+          level: newLvl,
+          techniqueMasteryMap: {
+            ...state.techniqueMasteryMap,
+            [techniqueId]: updated,
+          },
+        }));
       },
 
       startSession: (config?: Partial<SessionDrillConfig>) => {
@@ -2736,6 +2843,11 @@ export const useQuizStore = create<QuizState>()(
           learnerProfile: old.learnerProfile || defaultProfile,
           locale: (old as any).locale || defaultLocale,
           hasCompletedLanguageOnboarding: (old as any).hasCompletedLanguageOnboarding ?? false,
+          hasCompletedInitialOnboarding: (old as any).hasCompletedInitialOnboarding ?? false,
+          declaredKnownTablesLimit: (old as any).declaredKnownTablesLimit ?? 10,
+          unlockedFeatures: (old as any).unlockedFeatures ?? ['tables', 'learn_table'],
+          lastActiveSection: (old as any).lastActiveSection ?? 'learn_table',
+          selectedLearnTable: (old as any).selectedLearnTable ?? 14,
           isSettingsModalOpen: false,
           activeAssessment: null,
           assessmentInputBuffer: '',
@@ -2778,6 +2890,11 @@ export const useQuizStore = create<QuizState>()(
         anzanConfig: state.anzanConfig,
         locale: state.locale,
         hasCompletedLanguageOnboarding: state.hasCompletedLanguageOnboarding,
+        hasCompletedInitialOnboarding: state.hasCompletedInitialOnboarding,
+        declaredKnownTablesLimit: state.declaredKnownTablesLimit,
+        unlockedFeatures: state.unlockedFeatures,
+        lastActiveSection: state.lastActiveSection,
+        selectedLearnTable: state.selectedLearnTable,
         activeAddSubLevel: state.activeAddSubLevel,
         activeTable: state.activeTable,
         activeSquareTrack: state.activeSquareTrack,

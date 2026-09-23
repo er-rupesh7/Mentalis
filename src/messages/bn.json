@@ -42,7 +42,10 @@
     "squaresTable": "২. বর্গ নামতা",
     "cubesTable": "৩. ঘন নামতা",
     "sqrtTable": "৪. বর্গমূল নামতা",
-    "cbrtTable": "৫. ঘনমূল নামতা"
+    "cbrtTable": "৫. ঘনমূল নামতা",
+    "learnTables": "নামতা শিখুন",
+    "squaresAndCubes": "বর্গ ও ঘন",
+    "ranking": "র‌্যাঙ্কিং"
   },
   "dashboard": {
     "title": "কগনিটিভ ড্যাশবোর্ড",
@@ -162,7 +165,13 @@
     "pause": "বিরতি",
     "resume": "পুনরায় শুরু",
     "paused": "সেশন স্থগিত",
-    "pressSpaceOrEnter": "চালিয়ে যেতে স্পেস বা এন্টার চাপুন"
+    "pressSpaceOrEnter": "চালিয়ে যেতে স্পেস বা এন্টার চাপুন",
+    "sessionComplete": "অনুশীলন সম্পন্ন",
+    "congratulations": "চমৎকার কাজ! গণনার গতি ও স্মৃতিশক্তি বৃদ্ধি পেয়েছে।",
+    "avgSpeed": "গড় গতি",
+    "totalAnswered": "সম্পন্ন",
+    "practiceAgain": "আবার অনুশীলন করুন",
+    "returnDashboard": "ড্যাশবোর্ডে ফিরুন"
   },
   "anzan": {
     "title": "আনজান ফ্ল্যাশ ওয়ার্কিং মেমরি",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "নামতা শিখুন",
+    "subtitle": "দ্রুত স্মরণের জন্য এলোমেলো ক্রমে নামতা অনুশীলন করুন।",
+    "randomOrder": "এলোমেলো ক্রম",
+    "sequentialOrder": "ধারাবাহিক ক্রম",
+    "revealAll": "সব দেখান",
+    "hideAnswers": "উত্তর লুকান (ফ্ল্যাশকার্ড)",
+    "practiceTable": "নামতা অনুশীলন করুন",
+    "startDrill": "২০-৩০টি প্রশ্নের অনুশীলন শুরু করুন",
+    "selectPrompt": "নামতা নির্বাচন করুন",
+    "clickToReveal": "উত্তর দেখতে ট্যাপ করুন",
+    "factsCount": "২০টি গুণক"
+  },
+  "ranking": {
+    "title": "চ্যাম্পিয়নদের তালিকা",
+    "subtitle": "XP ও ধারাবাহিকতার ভিত্তিতে নিরপেক্ষ AI র‌্যাঙ্কিং।",
+    "topChampions": "শীর্ষ ৩ জন",
+    "rankPoints": "র‌্যাঙ্ক পয়েন্ট (RP)",
+    "liveActivity": "সক্রিয় শিক্ষার্থী",
+    "yourRank": "আপনার র‌্যাঙ্ক",
+    "unranked": "র‌্যাঙ্কবিহীন"
   }
 }

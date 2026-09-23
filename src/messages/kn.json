@@ -42,7 +42,10 @@
     "squaresTable": "2. ವರ್ಗ ಮಗ್ಗಿ",
     "cubesTable": "3. ಘನ ಮಗ್ಗಿ",
     "sqrtTable": "4. ವರ್ಗಮೂಲ ಮಗ್ಗಿ",
-    "cbrtTable": "5. ಘನಮೂಲ ಮಗ್ಗಿ"
+    "cbrtTable": "5. ಘನಮೂಲ ಮಗ್ಗಿ",
+    "learnTables": "ಮಗ್ಗಿ ಕಲಿಯಿರಿ",
+    "squaresAndCubes": "ವರ್ಗ ಮತ್ತು ಘನ",
+    "ranking": "ಶ್ರೇಯಾಂಕ"
   },
   "dashboard": {
     "title": "ಅರಿವಿನ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
@@ -162,7 +165,13 @@
     "pause": "ವಿರಾಮ",
     "resume": "ಪುನರಾರಂಭಿಸಿ",
     "paused": "ಅಧಿವೇಶನ ಸ್ಥಗಿತಗೊಂಡಿದೆ",
-    "pressSpaceOrEnter": "ಮುಂದುವರಿಯಲು ಸ್ಪೇಸ್ ಅಥವಾ ಎಂಟರ್ ಒತ್ತಿ"
+    "pressSpaceOrEnter": "ಮುಂದುವರಿಯಲು ಸ್ಪೇಸ್ ಅಥವಾ ಎಂಟರ್ ಒತ್ತಿ",
+    "sessionComplete": "ಅಭ್ಯಾಸ ಪೂರ್ಣಗೊಂಡಿದೆ",
+    "congratulations": "ಅತ್ಯುತ್ತಮ ಪ್ರದರ್ಶನ! ಸ್ಮರಣಶಕ್ತಿ ಮತ್ತು ವೇಗ ವೃದ್ಧಿಯಾಗಿದೆ.",
+    "avgSpeed": "ಸರಾಸರಿ ವೇಗ",
+    "totalAnswered": "ಪೂರ್ಣಗೊಂಡಿದೆ",
+    "practiceAgain": "ಮತ್ತೆ ಅಭ್ಯಾಸ ಮಾಡಿ",
+    "returnDashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಹಿಂತಿರುಗಿ"
   },
   "anzan": {
     "title": "ಅಂಝಾನ್ ಫ್ಲ್ಯಾಶ್ ಕಾರ್ಯಕಾರಿ ಸ್ಮೃತಿ",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "ಮಗ್ಗಿ ಕಲಿಯಿರಿ",
+    "subtitle": "ನೇರ ಸ್ಮರಣಶಕ್ತಿಗಾಗಿ ಯಾದೃಚ್ಛಿಕ ಕ್ರಮದಲ್ಲಿ ಕಲಿಯಿರಿ.",
+    "randomOrder": "ಯಾದೃಚ್ಛಿಕ ಕ್ರಮ",
+    "sequentialOrder": "ಅನುಕ್ರಮ ಕ್ರಮ",
+    "revealAll": "ಎಲ್ಲವನ್ನೂ ತೋರಿಸಿ",
+    "hideAnswers": "ಉತ್ತರ ಮರೆಮಾಡಿ (ಫ್ಲ್ಯಾಶ್‌ಕಾರ್ಡ್)",
+    "practiceTable": "ಈ ಮಗ್ಗಿಯನ್ನು ಅಭ್ಯಾಸ ಮಾಡಿ",
+    "startDrill": "20-30 ಪ್ರಶ್ನೆಗಳ ಅಭ್ಯಾಸ ಪ್ರಾರಂಭಿಸಿ",
+    "selectPrompt": "ಮಗ್ಗಿ ಆಯ್ಕೆಮಾಡಿ",
+    "clickToReveal": "ಉತ್ತರ ನೋಡಲು ಟ್ಯಾಪ್ ಮಾಡಿ",
+    "factsCount": "20 ಗುಣಕಗಳು"
+  },
+  "ranking": {
+    "title": "ಚಾಂಪಿಯನ್ಸ್ ಹಾಲ್",
+    "subtitle": "XP ಮತ್ತು ನಿಖರತೆಯ ಆಧಾರದ ಮೇಲೆ AI ಶ್ರೇಯಾಂಕ.",
+    "topChampions": "ಟಾಪ್ 3 ಶ್ರೇಯಾಂಕಗಳು",
+    "rankPoints": "ಶ್ರೇಯಾಂಕ ಅಂಕಗಳು (RP)",
+    "liveActivity": "ಸಕ್ರಿಯ ಕಲಿಯುವವರು",
+    "yourRank": "ನಿಮ್ಮ ಶ್ರೇಯಾಂಕ",
+    "unranked": "ಶ್ರೇಯಾಂಕವಿಲ್ಲ"
   }
 }

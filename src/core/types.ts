@@ -229,7 +229,9 @@ export type ViewMode =
   | 'memory_map'
   | 'bootcamp_11_20'
   | 'exam_quant'
-  | 'techniques';
+  | 'techniques'
+  | 'learn_table'
+  | 'squares_cubes';
 
 export interface ExamTransferScores {
   calculationAutomaticity: number; // 0 - 100

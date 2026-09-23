@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import {
   Brain,
   ArrowLeft,
+  ArrowRight,
   Flame,
   Zap,
   Target,
@@ -40,6 +41,7 @@ import { getEvaluatedMasteryBadges, getMasteryBadgeById } from '../../core/badge
 import { ActivityHeatmap } from '../../components/profile/ActivityHeatmap';
 import { AuthModal } from '../../components/auth/AuthModal';
 import { SettingsModal } from '../../components/SettingsModal';
+import { TECHNIQUE_CURRICULUM } from '../../core/techniques/techniqueCurriculum';
 
 function formatPercentile(raw?: string | number | null): string {
   if (!raw) return 'Top 50%';
@@ -52,7 +54,15 @@ export default function PublicProfilePage() {
   const params = useParams();
   const username = Array.isArray(params?.username) ? params.username[0] : (params?.username as string);
 
-  const { currentUser, setAuthModalOpen, dailyActivityMap, overallStats, progressMap, setIsSettingsModalOpen } = useQuizStore();
+  const {
+    currentUser,
+    setAuthModalOpen,
+    dailyActivityMap,
+    overallStats,
+    progressMap,
+    setIsSettingsModalOpen,
+    techniqueMasteryMap,
+  } = useQuizStore();
 
   const [profileView, setProfileView] = useState<PublicProfileView | null>(null);
   const [friendsList, setFriendsList] = useState<FriendSummary[]>([]);
@@ -734,6 +744,83 @@ export default function PublicProfilePage() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Mastered Calculation Techniques Showcase Shelf */}
+            <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                      Mastered Calculation Techniques
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Verified mental arithmetic algorithms and speed procedures conquered with ≥80% accuracy.
+                    </p>
+                  </div>
+                </div>
+                {(() => {
+                  const list = Object.values(techniqueMasteryMap || {}).filter((t) => t.isMastered);
+                  return (
+                    <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-emerald-400">
+                      {list.length} Mastered
+                    </span>
+                  );
+                })()}
+              </div>
+
+              {(() => {
+                const list = Object.values(techniqueMasteryMap || {}).filter((t) => t.isMastered);
+                if (list.length === 0) {
+                  return (
+                    <div className="p-6 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-center space-y-2">
+                      <p className="text-xs text-slate-400">
+                        No calculation techniques mastered yet. Complete 20-question exercise challenges in the Techniques Studio to earn mastery badges!
+                      </p>
+                      <Link
+                        href="/#techniques"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-violet-600/20 text-violet-300 border border-violet-500/30 text-xs font-semibold hover:bg-violet-600/30 transition-colors"
+                      >
+                        <span>Go to Techniques Studio</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                    {list.map((tech) => {
+                      const lesson = TECHNIQUE_CURRICULUM[tech.techniqueId as keyof typeof TECHNIQUE_CURRICULUM];
+                      return (
+                        <div
+                          key={tech.techniqueId}
+                          className="p-3.5 rounded-2xl bg-slate-950 border border-emerald-500/30 shadow-sm flex flex-col justify-between"
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <span className="text-xs font-bold text-white truncate">
+                              {tech.title || lesson?.title || tech.techniqueId}
+                            </span>
+                            <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+                              Mastered
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 font-mono mt-1 truncate">
+                            {lesson?.algebraicFormula || 'Speed Procedure'}
+                          </div>
+                          <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono mt-2 pt-2 border-t border-slate-900">
+                            <span>{tech.totalExposures} attempts</span>
+                            <span>{tech.averageLatencyMs ? `${(tech.averageLatencyMs / 1000).toFixed(1)}s` : '<2.5s'}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Matrix Status Card */}

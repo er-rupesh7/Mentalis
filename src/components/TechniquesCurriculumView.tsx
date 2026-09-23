@@ -45,7 +45,7 @@ import {
   getLocalizedTechnique,
 } from '../i18n/techniqueTranslations';
 
-type ActiveTab = 'secret' | 'mind_odometer' | 'practice';
+type ActiveTab = 'learn' | 'practice' | 'exercise';
 type PracticeMode = 'guided' | 'speed';
 
 export const TechniquesCurriculumView: React.FC = () => {
@@ -55,6 +55,7 @@ export const TechniquesCurriculumView: React.FC = () => {
   const {
     techniqueMasteryMap,
     recordTechniquePracticeResult,
+    forceMasterTechnique,
     soundEnabled,
     toggleSound,
     setViewMode,
@@ -65,7 +66,8 @@ export const TechniquesCurriculumView: React.FC = () => {
     useState<TechniqueModuleCategory>('fundamental_operations');
   const [selectedTechniqueId, setSelectedTechniqueId] =
     useState<CalculationTechniqueId>('add_l2r_place_value');
-  const [activeTab, setActiveTab] = useState<ActiveTab>('secret');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('learn');
+  const [learnSubTab, setLearnSubTab] = useState<'secret' | 'mind_odometer'>('secret');
   const [practiceMode, setPracticeMode] = useState<PracticeMode>('guided');
 
   // Practice State
@@ -78,6 +80,17 @@ export const TechniquesCurriculumView: React.FC = () => {
   const [manualGhostOverride, setManualGhostOverride] = useState(false);
   const [hesitationSeconds, setHesitationSeconds] = useState(0);
 
+  // Exercise State (20 Questions Mode)
+  const [exerciseProblems, setExerciseProblems] = useState<GeneratedTechniqueProblem[]>([]);
+  const [exerciseIndex, setExerciseIndex] = useState(0);
+  const [exerciseInputValue, setExerciseInputValue] = useState('');
+  const [exerciseCorrectCount, setExerciseCorrectCount] = useState(0);
+  const [exerciseResponseTimes, setExerciseResponseTimes] = useState<number[]>([]);
+  const [exerciseStartTime, setExerciseStartTime] = useState(Date.now());
+  const [exerciseQuestionStart, setExerciseQuestionStart] = useState(Date.now());
+  const [isExerciseComplete, setIsExerciseComplete] = useState(false);
+  const [exerciseWrongFlash, setExerciseWrongFlash] = useState(false);
+
   // Gamification State
   const [comboStreak, setComboStreak] = useState(0);
   const [bestCombo, setBestCombo] = useState(0);
@@ -88,6 +101,7 @@ export const TechniquesCurriculumView: React.FC = () => {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const exerciseInputRef = useRef<HTMLInputElement>(null);
 
   const activeLesson = TECHNIQUE_CURRICULUM[selectedTechniqueId];
   const localizedActive = getLocalizedTechnique(
@@ -106,6 +120,73 @@ export const TechniquesCurriculumView: React.FC = () => {
     totalExposures: 0,
     isMastered: false,
   };
+
+  const startExercise = useCallback(() => {
+    const list: GeneratedTechniqueProblem[] = [];
+    for (let i = 0; i < 20; i++) {
+      const tier = (Math.min(5, Math.floor(i / 4) + 1)) as 1 | 2 | 3 | 4 | 5;
+      list.push(generateTechniqueProblem(selectedTechniqueId, tier));
+    }
+    setExerciseProblems(list);
+    setExerciseIndex(0);
+    setExerciseInputValue('');
+    setExerciseCorrectCount(0);
+    setExerciseResponseTimes([]);
+    setIsExerciseComplete(false);
+    setExerciseWrongFlash(false);
+    setExerciseStartTime(Date.now());
+    setExerciseQuestionStart(Date.now());
+  }, [selectedTechniqueId]);
+
+  const handleExerciseSubmit = useCallback(() => {
+    if (exerciseProblems.length === 0 || isExerciseComplete) return;
+    const currentQ = exerciseProblems[exerciseIndex];
+    if (!currentQ) return;
+
+    const trimmed = exerciseInputValue.trim().toLowerCase();
+    if (!trimmed) return;
+
+    const elapsed = Date.now() - exerciseQuestionStart;
+    const expected = currentQ.correctAnswer.toString().toLowerCase();
+    const isCorrect = trimmed === expected;
+
+    if (isCorrect) {
+      soundEngine.playSuccess();
+      setExerciseCorrectCount((c) => c + 1);
+    } else {
+      soundEngine.playError();
+      setExerciseWrongFlash(true);
+      setTimeout(() => setExerciseWrongFlash(false), 500);
+    }
+
+    const nextTimes = [...exerciseResponseTimes, elapsed];
+    setExerciseResponseTimes(nextTimes);
+
+    if (exerciseIndex + 1 < exerciseProblems.length) {
+      setExerciseIndex((idx) => idx + 1);
+      setExerciseInputValue('');
+      setExerciseQuestionStart(Date.now());
+    } else {
+      // Completed 20Q Exercise
+      setIsExerciseComplete(true);
+      const totalCorrect = isCorrect ? exerciseCorrectCount + 1 : exerciseCorrectCount;
+
+      if (totalCorrect >= 16) {
+        soundEngine.playLevelUp();
+        forceMasterTechnique(selectedTechniqueId);
+      }
+    }
+  }, [
+    exerciseProblems,
+    exerciseIndex,
+    exerciseInputValue,
+    exerciseQuestionStart,
+    isExerciseComplete,
+    exerciseCorrectCount,
+    exerciseResponseTimes,
+    selectedTechniqueId,
+    forceMasterTechnique,
+  ]);
 
   // Switch technique and load initial problem
   const loadNewProblem = useCallback(
@@ -256,9 +337,29 @@ export const TechniquesCurriculumView: React.FC = () => {
 
   // Dual Input Mechanism: Physical Keyboard Listener (with single-dispatch guarantee)
   useEffect(() => {
-    if (activeTab !== 'practice') return;
+    if (activeTab !== 'practice' && activeTab !== 'exercise') return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (activeTab === 'exercise') {
+        if (e.key >= '0' && e.key <= '9') {
+          e.preventDefault();
+          setExerciseInputValue((prev) => prev + e.key);
+        } else if (e.key === 'Backspace') {
+          e.preventDefault();
+          setExerciseInputValue((prev) => prev.slice(0, -1));
+        } else if (e.key === '.' || e.key === '-') {
+          e.preventDefault();
+          setExerciseInputValue((prev) => (prev.includes(e.key) ? prev : prev + e.key));
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          handleExerciseSubmit();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          setExerciseInputValue('');
+        }
+        return;
+      }
+
       // If user is typing inside an input/textarea, delegate character typing to native input
       const isInputFocused =
         document.activeElement === inputRef.current ||
@@ -304,7 +405,7 @@ export const TechniquesCurriculumView: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTab, handleSubmitAnswer]);
+  }, [activeTab, handleSubmitAnswer, handleExerciseSubmit]);
 
   const handleNumpadPress = (digit: string) => {
     setIsCorrectFeedback(null);
@@ -469,45 +570,76 @@ export const TechniquesCurriculumView: React.FC = () => {
           {/* 3-Part Architecture Navigation Tabs (Responsive labels for mobile) */}
           <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-2xl border border-slate-800 text-xs font-bold w-full sm:w-auto overflow-x-auto scrollbar-none">
             <button
-              onClick={() => setActiveTab('secret')}
-              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl transition-all min-h-[44px] whitespace-nowrap ${
-                activeTab === 'secret'
+              onClick={() => setActiveTab('learn')}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl transition-all min-h-[44px] whitespace-nowrap ${
+                activeTab === 'learn'
                   ? 'bg-violet-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <BookOpen className="w-3.5 h-3.5 shrink-0" />
-              <span>{tTech('secretTab')}</span>
+              <span>1. Learn</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('mind_odometer')}
-              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl transition-all min-h-[44px] whitespace-nowrap ${
-                activeTab === 'mind_odometer'
+              onClick={() => setActiveTab('practice')}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl transition-all min-h-[44px] whitespace-nowrap ${
+                activeTab === 'practice'
                   ? 'bg-violet-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
               <Brain className="w-3.5 h-3.5 shrink-0" />
-              <span>{tTech('mindOdometerTab')}</span>
+              <span>2. Practice</span>
             </button>
 
             <button
-              onClick={() => setActiveTab('practice')}
-              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl transition-all min-h-[44px] whitespace-nowrap ${
-                activeTab === 'practice'
+              onClick={() => {
+                setActiveTab('exercise');
+                startExercise();
+              }}
+              className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl transition-all min-h-[44px] whitespace-nowrap ${
+                activeTab === 'exercise'
                   ? 'bg-emerald-600 text-white shadow-sm'
                   : 'text-emerald-400 hover:text-emerald-300'
               }`}
             >
               <Target className="w-3.5 h-3.5 shrink-0" />
-              <span>{tTech('practiceTab')}</span>
+              <span>3. Exercise (20Q)</span>
             </button>
           </div>
         </div>
 
-        {/* Tab 1: The Math Secret */}
-        {activeTab === 'secret' && activeLesson && (
+        {/* Tab 1: Learn (Secret & Formula + Mind-Odometer Accumulator) */}
+        {activeTab === 'learn' && activeLesson && (
+          <div className="space-y-5">
+            {/* Sub-toggle between Formula & Proof and Mind-Odometer */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setLearnSubTab('secret')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  learnSubTab === 'secret'
+                    ? 'bg-violet-600/30 text-violet-300 border border-violet-500/50 shadow-sm'
+                    : 'bg-slate-950/60 text-slate-400 border border-slate-800 hover:text-white'
+                }`}
+              >
+                Formula & Proof
+              </button>
+              <button
+                type="button"
+                onClick={() => setLearnSubTab('mind_odometer')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  learnSubTab === 'mind_odometer'
+                    ? 'bg-violet-600/30 text-violet-300 border border-violet-500/50 shadow-sm'
+                    : 'bg-slate-950/60 text-slate-400 border border-slate-800 hover:text-white'
+                }`}
+              >
+                Mind-Odometer Accumulator
+              </button>
+            </div>
+
+            {learnSubTab === 'secret' ? (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -591,11 +723,9 @@ export const TechniquesCurriculumView: React.FC = () => {
               </button>
             </div>
           </motion.div>
-        )}
-
-        {/* Tab 2: The Mind-Odometer Trick */}
-        {activeTab === 'mind_odometer' && activeLesson && (
+        ) : (
           <motion.div
+            key="mind_odometer"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-6"
@@ -651,6 +781,8 @@ export const TechniquesCurriculumView: React.FC = () => {
             </div>
           </motion.div>
         )}
+      </div>
+    )}
 
         {/* Tab 3: Interactive Practice & Speed Drill Studio */}
         {activeTab === 'practice' && currentProblem && (
@@ -940,6 +1072,165 @@ export const TechniquesCurriculumView: React.FC = () => {
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Tab 3: 20-Question Exam Exercise Challenge */}
+        {activeTab === 'exercise' && (
+          <div className="space-y-6">
+            {!isExerciseComplete ? (
+              exerciseProblems.length > 0 && (
+                <div className="space-y-6">
+                  {/* Progress and Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider">
+                        20-Question Technique Exercise
+                      </span>
+                    </div>
+                    <div className="text-xs font-mono text-slate-400">
+                      Question <span className="text-white font-bold">{exerciseIndex + 1}</span> / 20
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full h-1.5 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${((exerciseIndex + 1) / 20) * 100}%` }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  </div>
+
+                  {/* Question Display Card */}
+                  <div className={`p-8 sm:p-10 rounded-3xl bg-slate-950/80 border text-center space-y-4 transition-colors ${
+                    exerciseWrongFlash ? 'border-rose-500/80 bg-rose-950/20' : 'border-slate-800'
+                  }`}>
+                    <div className="text-xs text-slate-400 font-semibold tracking-wide uppercase">
+                      Apply Technique: {localizedActive.title}
+                    </div>
+
+                    <div className="text-3xl sm:text-5xl font-black font-mono text-white tracking-wide flex items-center justify-center gap-3">
+                      <span>{exerciseProblems[exerciseIndex].prompt}</span>
+                      <span className="text-slate-500">=</span>
+                      <div className={`min-w-[80px] h-14 border-b-2 flex items-center justify-center font-mono ${
+                        exerciseWrongFlash ? 'border-rose-500 text-rose-400' : 'border-emerald-500 text-emerald-400'
+                      }`}>
+                        {exerciseInputValue || <span className="text-slate-700 animate-pulse">?</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Numpad & Submit Action */}
+                  <div className="w-full max-w-xs sm:max-w-sm mx-auto space-y-2">
+                    <div className="grid grid-cols-3 gap-2">
+                      {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'clear', '0', 'backspace'].map((btn) => (
+                        <button
+                          key={btn}
+                          type="button"
+                          onClick={() => {
+                            if (btn === 'clear') {
+                              setExerciseInputValue('');
+                            } else if (btn === 'backspace') {
+                              setExerciseInputValue((prev) => prev.slice(0, -1));
+                            } else {
+                              setExerciseInputValue((prev) => prev + btn);
+                            }
+                          }}
+                          className={`h-12 rounded-2xl text-lg font-bold font-mono transition-all active:scale-95 flex items-center justify-center border ${
+                            btn === 'clear'
+                              ? 'bg-slate-900 border-slate-800 text-rose-400 text-xs uppercase'
+                              : btn === 'backspace'
+                              ? 'bg-slate-900 border-slate-800 text-amber-400'
+                              : 'bg-slate-900 border-slate-800 text-white hover:bg-slate-800'
+                          }`}
+                        >
+                          {btn === 'clear' ? 'CLR' : btn === 'backspace' ? '⌫' : btn}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleExerciseSubmit}
+                      disabled={!exerciseInputValue.trim()}
+                      className="w-full h-12 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:scale-[0.98] disabled:opacity-40 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2"
+                    >
+                      <span>Submit Answer (↵)</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )
+            ) : (
+              /* Exercise Results Card */
+              <div className="p-6 sm:p-8 rounded-3xl bg-slate-950/90 border border-slate-800 text-center space-y-6">
+                <div className="inline-flex p-4 rounded-3xl bg-gradient-to-tr from-emerald-600/20 to-teal-500/20 border border-emerald-500/30 text-emerald-400 shadow-xl shadow-emerald-500/10">
+                  <Trophy className="w-12 h-12 text-emerald-400" />
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-2xl sm:text-3xl font-black text-white">
+                    20-Question Exercise Complete!
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    {exerciseCorrectCount >= 16
+                      ? 'Congratulations! You demonstrated high automaticity and accuracy with this technique.'
+                      : 'Good effort! Score at least 80% (16/20) to permanently unlock the Mastered badge.'}
+                  </p>
+                </div>
+
+                {/* Stat Grid */}
+                <div className="grid grid-cols-3 gap-3 font-mono">
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
+                    <div className="text-[10px] text-slate-500 uppercase font-semibold">Accuracy</div>
+                    <div className="text-xl font-bold text-emerald-400 mt-0.5">
+                      {Math.round((exerciseCorrectCount / 20) * 100)}%
+                    </div>
+                    <div className="text-[10px] text-slate-500">{exerciseCorrectCount}/20 Correct</div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
+                    <div className="text-[10px] text-slate-500 uppercase font-semibold">Avg Latency</div>
+                    <div className="text-xl font-bold text-sky-400 mt-0.5">
+                      {exerciseResponseTimes.length > 0
+                        ? (exerciseResponseTimes.reduce((a, b) => a + b, 0) / exerciseResponseTimes.length / 1000).toFixed(1)
+                        : '–'}s
+                    </div>
+                    <div className="text-[10px] text-slate-500">Per Calculation</div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800">
+                    <div className="text-[10px] text-slate-500 uppercase font-semibold">Status</div>
+                    <div className="text-xl font-bold text-amber-400 mt-0.5">
+                      {exerciseCorrectCount >= 16 ? 'Mastered' : 'Progressing'}
+                    </div>
+                    <div className="text-[10px] text-slate-500">{exerciseCorrectCount >= 16 ? '+100 XP' : 'Keep practicing'}</div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={startExercise}
+                    className="py-3 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/30 transition-all flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Retake 20Q Exercise</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('practice')}
+                    className="py-3 px-6 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
+                  >
+                    <span>Return to Practice</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

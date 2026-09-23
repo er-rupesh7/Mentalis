@@ -42,7 +42,10 @@
     "squaresTable": "2. वर्ग पहाड़े",
     "cubesTable": "3. घन पहाड़े",
     "sqrtTable": "4. वर्गमूल पहाड़े",
-    "cbrtTable": "5. घनमूल पहाड़े"
+    "cbrtTable": "5. घनमूल पहाड़े",
+    "learnTables": "पहाड़े सीखें",
+    "squaresAndCubes": "वर्ग और घन",
+    "ranking": "रैंकिंग"
   },
   "dashboard": {
     "title": "संज्ञानात्मक डैशबोर्ड",
@@ -215,7 +218,13 @@
     "pause": "रोकें",
     "resume": "पुनः शुरू करें",
     "paused": "सत्र रुका हुआ है",
-    "pressSpaceOrEnter": "जारी रखने के लिए स्पेस या एंटर दबाएं"
+    "pressSpaceOrEnter": "जारी रखने के लिए स्पेस या एंटर दबाएं",
+    "sessionComplete": "सत्र संपन्न",
+    "congratulations": "शानदार प्रदर्शन! स्वचालितता और स्मृति सुदृढ़ हुई।",
+    "avgSpeed": "औसत गति",
+    "totalAnswered": "पूर्ण प्रश्न",
+    "practiceAgain": "पुनः अभ्यास करें",
+    "returnDashboard": "डैशबोर्ड पर लौटें"
   },
   "anzan": {
     "title": "अंजन फ्लैश कार्यशील स्मृति",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "पहाड़े सीखें (Table Studio)",
+    "subtitle": "यादृच्छिक क्रम में पहाड़ों का अध्ययन करें ताकि प्रत्यक्ष संज्ञानात्मक स्मृति बने।",
+    "randomOrder": "यादृच्छिक क्रम (स्मृति विस्तार)",
+    "sequentialOrder": "क्रमिक व्यवस्था",
+    "revealAll": "सभी दिखाएं",
+    "hideAnswers": "उत्तर छिपाएं (फ्लैशकार्ड मोड)",
+    "practiceTable": "इस पहाड़े का अभ्यास करें",
+    "startDrill": "20-30 प्रश्नों का अभ्यास शुरू करें",
+    "selectPrompt": "पहाड़ा चुनें",
+    "clickToReveal": "उत्तर देखने के लिए टैप करें",
+    "factsCount": "20 मुख्य गुणक"
+  },
+  "ranking": {
+    "title": "चैंपियंस हॉल",
+    "subtitle": "XP, दैनिक निरंतरता, सटीकता और तकनीक निपुणता पर आधारित निष्पक्ष AI रैंकिंग।",
+    "topChampions": "शीर्ष 3 रैंक धारक",
+    "rankPoints": "रैंक अंक (RP)",
+    "liveActivity": "सक्रिय शिक्षार्थी",
+    "yourRank": "आपकी रैंक",
+    "unranked": "अरैंक"
   }
 }

@@ -42,7 +42,10 @@
     "squaresTable": "2. વર્ગ ઘડિયા",
     "cubesTable": "3. ઘન ઘડિયા",
     "sqrtTable": "4. વર્ગમૂળ ઘડિયા",
-    "cbrtTable": "5. ઘનમૂળ ઘડિયા"
+    "cbrtTable": "5. ઘનમૂળ ઘડિયા",
+    "learnTables": "ઘડિયા શીખો",
+    "squaresAndCubes": "વર્ગ અને ઘન",
+    "ranking": "ક્રમ"
   },
   "dashboard": {
     "title": "કોગ્નિટિવ ડેશબોર્ડ",
@@ -162,7 +165,13 @@
     "pause": "રોકો",
     "resume": "ફરી શરૂ કરો",
     "paused": "સત્ર અટકાવેલ છે",
-    "pressSpaceOrEnter": "ચાલુ રાખવા માટે સ્પેસ અથવા એન્ટર દબાવો"
+    "pressSpaceOrEnter": "ચાલુ રાખવા માટે સ્પેસ અથવા એન્ટર દબાવો",
+    "sessionComplete": "સત્ર પૂર્ણ",
+    "congratulations": "ઉત્કૃષ્ટ પ્રદર્શન! ગણતરીની ઝડપ અને સ્મૃતિ સુદ્રઢ થઈ.",
+    "avgSpeed": "સરેરાશ ઝડપ",
+    "totalAnswered": "પૂર્ણ પ્રશ્નો",
+    "practiceAgain": "ફરીથી અભ્યાસ કરો",
+    "returnDashboard": "ડેશબોર્ડ પર પાછા જાઓ"
   },
   "anzan": {
     "title": "અંઝાન ફ્લેશ વર્કિંગ મેમરી",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "ઘડિયા શીખો",
+    "subtitle": "ત્વરિત સ્મૃતિ માટે અનિયમિત ક્રમમાં ઘડિયા શીખો.",
+    "randomOrder": "અનિયમિત ક્રમ",
+    "sequentialOrder": "ક્રમિક ક્રમ",
+    "revealAll": "બધા બતાવો",
+    "hideAnswers": "જવાબ છુપાવો (ફ્લેશકાર્ડ મોડ)",
+    "practiceTable": "આ ઘડિયાનો અભ્યાસ કરો",
+    "startDrill": "૨૦-૩૦ પ્રશ્નોની પ્રેક્ટિસ શરૂ કરો",
+    "selectPrompt": "ઘડિયું પસંદ કરો",
+    "clickToReveal": "જવાબ જોવા માટે ટૅપ કરો",
+    "factsCount": "૨૦ મુખ્ય ગુણક"
+  },
+  "ranking": {
+    "title": "ચેમ્પિયન્સ હોલ",
+    "subtitle": "XP અને સાતત્ય પર આધારિત AI રેન્કિંગ.",
+    "topChampions": "ટોચના ૩ રેન્કર્સ",
+    "rankPoints": "રેન્ક પોઈન્ટ્સ (RP)",
+    "liveActivity": "સક્રિય વિદ્યાર્થીઓ",
+    "yourRank": "તમારો રેન્ક",
+    "unranked": "અનરેન્ક્ડ"
   }
 }

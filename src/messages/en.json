@@ -42,7 +42,10 @@
     "squaresTable": "2. Squares Table",
     "cubesTable": "3. Cube Table",
     "sqrtTable": "4. Square Root Table",
-    "cbrtTable": "5. Cuberoot Table"
+    "cbrtTable": "5. Cuberoot Table",
+    "learnTables": "Learn Tables",
+    "squaresAndCubes": "Squares & Cubes",
+    "ranking": "Rankings"
   },
   "dashboard": {
     "title": "Cognitive Dashboard",
@@ -215,7 +218,13 @@
     "pause": "Pause",
     "resume": "Resume",
     "paused": "Session Paused",
-    "pressSpaceOrEnter": "Press Space or Enter to continue"
+    "pressSpaceOrEnter": "Press Space or Enter to continue",
+    "sessionComplete": "Session Complete",
+    "congratulations": "Great work! Automaticity and working memory reinforced.",
+    "avgSpeed": "Avg Speed",
+    "totalAnswered": "Completed",
+    "practiceAgain": "Practice Again",
+    "returnDashboard": "Return to Dashboard"
   },
   "anzan": {
     "title": "Anzan Flash Working Memory",
@@ -427,5 +436,27 @@
     "fatigueHigh": "High Fatigue Detected",
     "requestFeedback": "Ask Coach",
     "cooldownNotice": "Next analysis available in {time}"
+  },
+  "learnTable": {
+    "title": "Learn Multiplication Tables",
+    "subtitle": "Study multiples in randomized order to foster direct associative recall.",
+    "randomOrder": "Random Associative Order",
+    "sequentialOrder": "Sequential Order",
+    "revealAll": "Reveal All",
+    "hideAnswers": "Hide Products (Flashcard Mode)",
+    "practiceTable": "Practice This Table",
+    "startDrill": "Start 20–30 Question Practice Drill",
+    "selectPrompt": "Choose a Table to Master",
+    "clickToReveal": "Tap to reveal product",
+    "factsCount": "20 Core Multipliers"
+  },
+  "ranking": {
+    "title": "Hall of Champions",
+    "subtitle": "Unbiased AI ranking calculated from XP, daily streak, accuracy & technique diversity.",
+    "topChampions": "Top 3 Rank Holders",
+    "rankPoints": "Rank Points (RP)",
+    "liveActivity": "Live Performers",
+    "yourRank": "Your Rank",
+    "unranked": "Unranked"
   }
 }

@@ -1607,18 +1607,18 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
               </div>
 
               {/* Actions */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <button
                   onClick={() => {
                     restartCurrentSession();
                   }}
-                  className="py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98]"
+                  className="py-3 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98] flex items-center justify-center text-center"
                 >
                   {tPractice('practiceAgain')}
                 </button>
                 <button
                   onClick={dismissSessionSummary}
-                  className="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition-colors active:scale-[0.98]"
+                  className="py-3 px-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs sm:text-sm transition-colors active:scale-[0.98] flex items-center justify-center text-center"
                 >
                   {tPractice('returnDashboard')}
                 </button>

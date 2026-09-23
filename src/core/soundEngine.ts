@@ -97,6 +97,36 @@ class SoundEngine {
   }
 
   /**
+   * Triumphant harmonic fanfare chime for level ups and technique mastery
+   */
+  public playLevelUp() {
+    if (!this.enabled) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    // Ascending arpeggio: C5, E5, G5, C6 with long sustain
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+      gain.gain.setValueAtTime(0, now + idx * 0.08);
+      gain.gain.linearRampToValueAtTime(0.18, now + idx * 0.08 + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.6);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + idx * 0.08);
+      osc.stop(now + idx * 0.08 + 0.65);
+    });
+  }
+
+  /**
    * Gentle, non-punitive low thud for incorrect answers
    */
   public playError() {

@@ -90,7 +90,71 @@ export interface ChatMessageItem {
   createdAt: string;
 }
 
+export const SOCIAL_CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+export interface CachedSocialEnvelope<T> {
+  timestamp: number;
+  data: T;
+}
+
+export function getSocialStorageCache<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed: CachedSocialEnvelope<T> = JSON.parse(raw);
+    if (parsed && typeof parsed.timestamp === 'number') {
+      const isFresh = Date.now() - parsed.timestamp < SOCIAL_CACHE_TTL_MS;
+      if (isFresh) {
+        return parsed.data;
+      }
+    }
+  } catch (err) {
+    console.warn('[SocialEngine] Cache read error for ' + key, err);
+  }
+  return null;
+}
+
+export function getExpiredSocialStorageFallback<T>(key: string): T | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed: CachedSocialEnvelope<T> = JSON.parse(raw);
+    return parsed?.data ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function setSocialStorageCache<T>(key: string, data: T): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const payload: CachedSocialEnvelope<T> = {
+      timestamp: Date.now(),
+      data,
+    };
+    localStorage.setItem(key, JSON.stringify(payload));
+  } catch (err) {
+    console.warn('[SocialEngine] Cache write error for ' + key, err);
+  }
+}
+
+export function removeSocialStorageCache(key: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(key);
+  } catch {}
+}
+
 class SocialEngine {
+  /**
+   * Invalidate local social cache for a user
+   */
+  public invalidateSocialCache(userId: string): void {
+    removeSocialStorageCache(`mentalis_suggested_mentalists_${userId}`);
+    removeSocialStorageCache(`mentalis_friends_cache_${userId}`);
+  }
   /**
    * Fetch complete public profile data by username
    */
@@ -234,6 +298,7 @@ class SocialEngine {
         .eq('follower_id', viewerId)
         .eq('following_id', targetUserId);
       if (error) return { isFollowing: true, error: error.message };
+      this.invalidateSocialCache(viewerId);
       return { isFollowing: false };
     } else {
       // Follow
@@ -272,16 +337,29 @@ class SocialEngine {
         console.warn('[SocialEngine] Notification insert note:', notifErr);
       }
 
+      this.invalidateSocialCache(viewerId);
       return { isFollowing: true };
     }
   }
 
   /**
-   * Fetch mutual friends for a user (follower + following = friend)
+   * Fetch mutual friends for a user (follower + following = friend, cached 1 hour)
    */
-  public async fetchFriends(userId: string): Promise<FriendSummary[]> {
+  public async fetchFriends(userId: string, forceRefresh: boolean = false): Promise<FriendSummary[]> {
+    const cacheKey = `mentalis_friends_cache_${userId}`;
+
+    if (!forceRefresh) {
+      const cached = getSocialStorageCache<FriendSummary[]>(cacheKey);
+      if (cached && Array.isArray(cached)) {
+        return cached;
+      }
+    }
+
     const supabase = getSupabase();
-    if (!supabase) return [];
+    if (!supabase) {
+      const fallback = getExpiredSocialStorageFallback<FriendSummary[]>(cacheKey);
+      return fallback || [];
+    }
 
     const friendMap = new Map<string, FriendSummary>();
 
@@ -394,7 +472,9 @@ class SocialEngine {
       console.warn('[SocialEngine] Note loading chat partners in fetchFriends:', chatErr);
     }
 
-    return Array.from(friendMap.values());
+    const friendList = Array.from(friendMap.values());
+    setSocialStorageCache(cacheKey, friendList);
+    return friendList;
   }
 
   // Rate Limiting Map: userId -> { recentMinuteTimestamps, recentHourTimestamps }
@@ -672,45 +752,75 @@ class SocialEngine {
   }
 
   /**
-   * Fetch suggested active mentalists to follow
+   * Fetch suggested active mentalists to follow (Cached for 1 hour in localStorage)
    */
-  public async fetchSuggestedFriends(currentUserId: string, limit: number = 10): Promise<FriendSummary[]> {
+  public async fetchSuggestedFriends(
+    currentUserId: string,
+    limit: number = 10,
+    forceRefresh: boolean = false
+  ): Promise<FriendSummary[]> {
+    const cacheKey = `mentalis_suggested_mentalists_${currentUserId || 'anon'}`;
+
+    if (!forceRefresh) {
+      const cached = getSocialStorageCache<FriendSummary[]>(cacheKey);
+      if (cached && Array.isArray(cached) && cached.length > 0) {
+        return cached.slice(0, limit);
+      }
+    }
+
     const supabase = getSupabase();
-    if (!supabase) return [];
+    if (!supabase) {
+      const fallback = getExpiredSocialStorageFallback<FriendSummary[]>(cacheKey);
+      return fallback ? fallback.slice(0, limit) : [];
+    }
 
-    // Get who the user already follows
-    const { data: myFollows } = await supabase
-      .from('follows')
-      .select('following_id')
-      .eq('follower_id', currentUserId);
+    try {
+      // Get who the user already follows
+      const { data: myFollows } = await supabase
+        .from('follows')
+        .select('following_id')
+        .eq('follower_id', currentUserId);
 
-    const followingIds = new Set(myFollows?.map((f) => f.following_id) || []);
-    followingIds.add(currentUserId);
+      const followingIds = new Set(myFollows?.map((f) => f.following_id) || []);
+      followingIds.add(currentUserId);
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, username, display_name, avatar_url, avatar_type, selected_badge_level, equipped_badge_id, level, rating, last_seen_at')
-      .not('username', 'is', null)
-      .order('last_seen_at', { ascending: false })
-      .limit(limit + followingIds.size);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, display_name, avatar_url, avatar_type, selected_badge_level, equipped_badge_id, level, rating, last_seen_at')
+        .not('username', 'is', null)
+        .order('last_seen_at', { ascending: false })
+        .limit(limit + followingIds.size);
 
-    if (error || !data) return [];
+      if (error || !data) {
+        const fallback = getExpiredSocialStorageFallback<FriendSummary[]>(cacheKey);
+        return fallback ? fallback.slice(0, limit) : [];
+      }
 
-    return data
-      .filter((p) => !followingIds.has(p.id))
-      .slice(0, limit)
-      .map((p) => ({
-        userId: p.id,
-        username: p.username || 'learner',
-        displayName: p.display_name || p.username || 'Learner',
-        avatarUrl: p.avatar_url,
-        avatarType: p.avatar_type || 'google',
-        selectedBadgeLevel: p.selected_badge_level || 1,
-        equippedMasteryBadgeId: p.equipped_badge_id || null,
-        level: p.level || 1,
-        rating: p.rating || 1200,
-        lastSeenAt: p.last_seen_at || new Date().toISOString(),
-      }));
+      const results = data
+        .filter((p) => !followingIds.has(p.id))
+        .slice(0, limit)
+        .map((p) => ({
+          userId: p.id,
+          username: p.username || 'learner',
+          displayName: p.display_name || p.username || 'Learner',
+          avatarUrl: p.avatar_url,
+          avatarType: p.avatar_type || 'google',
+          selectedBadgeLevel: p.selected_badge_level || 1,
+          equippedMasteryBadgeId: p.equipped_badge_id || null,
+          level: p.level || 1,
+          rating: p.rating || 1200,
+          lastSeenAt: p.last_seen_at || new Date().toISOString(),
+        }));
+
+      if (results.length > 0) {
+        setSocialStorageCache(cacheKey, results);
+      }
+
+      return results;
+    } catch {
+      const fallback = getExpiredSocialStorageFallback<FriendSummary[]>(cacheKey);
+      return fallback ? fallback.slice(0, limit) : [];
+    }
   }
 
   /**

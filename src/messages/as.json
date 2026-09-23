@@ -42,7 +42,10 @@
     "squaresTable": "২. বৰ্গ নেওতা",
     "cubesTable": "৩. ঘন নেওতা",
     "sqrtTable": "৪. বৰ্গমূল নেওতা",
-    "cbrtTable": "৫. ঘনমূল নেওতা"
+    "cbrtTable": "৫. ঘনমূল নেওতা",
+    "learnTables": "নেওতা শিকক",
+    "squaresAndCubes": "বৰ্গ আৰু ঘন",
+    "ranking": "ৰেংকিং"
   },
   "dashboard": {
     "title": "সংজ্ঞানাত্মক ডেচব'ৰ্ড",
@@ -162,7 +165,13 @@
     "pause": "ৰখাওক",
     "resume": "পুনৰাৰম্ভ",
     "paused": "ছেছন স্থগিত কৰা হৈছে",
-    "pressSpaceOrEnter": "অব্যাহত ৰাখিবলৈ স্পেচ বা এন্টাৰ টিপক"
+    "pressSpaceOrEnter": "অব্যাহত ৰাখিবলৈ স্পেচ বা এন্টাৰ টিপক",
+    "sessionComplete": "অনুশীলন সমাপ্ত",
+    "congratulations": "চমৎকাৰ প্ৰদৰ্শন! স্মৃতিশক্তি আৰু গতি বৃদ্ধি পাইছে।",
+    "avgSpeed": "গড় গতি",
+    "totalAnswered": "সমাপ্ত",
+    "practiceAgain": "পুনৰ অনুশীলন কৰক",
+    "returnDashboard": "ডেশ্ববৰ্ডলৈ উভতি যাওক"
   },
   "anzan": {
     "title": "আনজান ফ্লেছ কাৰ্যক্ষম স্মৃতি",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "নেওতা শিকক",
+    "subtitle": "দ্ৰুত স্মৰণৰ বাবে অপৰিকল্পিত ক্ৰমত অধ্যয়ন কৰক।",
+    "randomOrder": "অপৰিকল্পিত ক্ৰম",
+    "sequentialOrder": "ক্ৰমিক ক্ৰম",
+    "revealAll": "সকলো দেখুৱাওক",
+    "hideAnswers": "উত্তৰ লুকুৱাওক",
+    "practiceTable": "অনুশীলন কৰক",
+    "startDrill": "২০-৩০টা প্ৰশ্নৰ অনুশীলন আৰম্ভ কৰক",
+    "selectPrompt": "নেওতা বাছক",
+    "clickToReveal": "উত্তৰ চাবলৈ স্পৰ্শ কৰক",
+    "factsCount": "২০টা গুণক"
+  },
+  "ranking": {
+    "title": "বিজয়ীৰ মঞ্চ",
+    "subtitle": "XP আৰু অবিৰত অনুশীলনৰ ওপৰত ভিত্তি কৰি AI ৰেংকিং।",
+    "topChampions": "শীৰ্ষ ৩ গৰাকী",
+    "rankPoints": "ৰেংক পইণ্ট (RP)",
+    "liveActivity": "সক্ৰিয় শিক্ষাৰ্থী",
+    "yourRank": "আপোনাৰ ৰেংক",
+    "unranked": "ৰেংকবিহীন"
   }
 }

@@ -111,27 +111,15 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </button>
 
           <button
-            onClick={() => setViewMode('bootcamp_11_20')}
+            onClick={() => setViewMode('learn_table')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
-              viewMode === 'bootcamp_11_20'
-                ? 'bg-amber-600 text-white shadow-sm font-semibold'
-                : 'text-amber-400 hover:text-amber-200 hover:bg-slate-800'
+              viewMode === 'learn_table'
+                ? 'bg-violet-600 text-white shadow-sm font-semibold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
             }`}
           >
-            <Flame className="w-3.5 h-3.5" />
-            {tNav('bootcamp')}
-          </button>
-
-          <button
-            onClick={() => setViewMode('exam_quant')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
-              viewMode === 'exam_quant'
-                ? 'bg-emerald-600 text-white shadow-sm font-semibold'
-                : 'text-emerald-400 hover:text-emerald-200 hover:bg-slate-800'
-            }`}
-          >
-            <Target className="w-3.5 h-3.5" />
-            {tNav('examQuant')}
+            <BookOpen className="w-3.5 h-3.5" />
+            {tNav('learnTables')}
           </button>
 
           <button
@@ -144,6 +132,30 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           >
             <Sparkles className="w-3.5 h-3.5" />
             {tNav('techniques')}
+          </button>
+
+          <button
+            onClick={() => setViewMode('squares_cubes')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
+              viewMode === 'squares_cubes'
+                ? 'bg-amber-600 text-white shadow-sm font-semibold'
+                : 'text-amber-400 hover:text-amber-200 hover:bg-slate-800'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            {tNav('squaresAndCubes')}
+          </button>
+
+          <button
+            onClick={() => setViewMode('exam_quant')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
+              viewMode === 'exam_quant'
+                ? 'bg-emerald-600 text-white shadow-sm font-semibold'
+                : 'text-emerald-400 hover:text-emerald-200 hover:bg-slate-800'
+            }`}
+          >
+            <Target className="w-3.5 h-3.5" />
+            {tNav('examQuant')}
           </button>
 
           <button

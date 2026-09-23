@@ -82,6 +82,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
     setIsChatDrawerOpen,
     setAuthModalOpen,
     getCognitiveTrainingState,
+    lastActiveSection,
+    selectedLearnTable,
   } = useQuizStore();
 
   const cognitiveState = getCognitiveTrainingState();
@@ -313,6 +315,50 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
 
       {/* Main content area — full-bleed on mobile, centered on desktop */}
       <div className="flex-1 w-full md:max-w-4xl md:mx-auto px-4 py-4 sm:py-6 space-y-6 sm:space-y-8">
+        {/* Smart Resume Focus Card: Instant continuation of last deliberate activity */}
+        {lastActiveSection && (
+          <section className="p-4 sm:p-5 rounded-3xl bg-slate-900/90 border border-violet-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white shadow-lg shadow-violet-600/30 shrink-0">
+                <Play className="w-5 h-5 fill-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                    Smart Resume
+                  </span>
+                  <span className="text-xs text-slate-400">Continue your deliberate practice</span>
+                </div>
+                <h3 className="text-base sm:text-lg font-black text-white mt-0.5">
+                  {lastActiveSection === 'learn_table'
+                    ? `Table Studio: Master Table ×${selectedLearnTable || 14}`
+                    : lastActiveSection === 'techniques'
+                    ? 'Techniques Curriculum Studio'
+                    : lastActiveSection === 'squares_cubes'
+                    ? 'Squares & Cubes Exponents Studio'
+                    : lastActiveSection === 'exam_quant'
+                    ? 'Exam Quant Speed Fluency'
+                    : 'Deliberate Practice Drill'}
+                </h3>
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                if (lastActiveSection === 'learn_table') setViewMode('learn_table');
+                else if (lastActiveSection === 'techniques') setViewMode('techniques');
+                else if (lastActiveSection === 'squares_cubes') setViewMode('squares_cubes');
+                else if (lastActiveSection === 'exam_quant') setViewMode('exam_quant');
+                else setViewMode('practice');
+              }}
+              className="py-2.5 px-5 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-violet-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all shrink-0"
+            >
+              <span>Resume Activity</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </section>
+        )}
+
         {/* Cognitive AI Brain & Ongoing Training Mission Card */}
         <section className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-indigo-950/60 border border-violet-500/30 shadow-2xl space-y-6 relative overflow-hidden card-3d">
           <div className="absolute top-0 right-0 w-80 h-80 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />

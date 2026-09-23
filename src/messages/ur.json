@@ -42,7 +42,10 @@
     "squaresTable": "2. مربع کے پہاڑے",
     "cubesTable": "3. مکعب کے پہاڑے",
     "sqrtTable": "4. جزر المربع",
-    "cbrtTable": "5. جزر المکعب"
+    "cbrtTable": "5. جزر المکعب",
+    "learnTables": "پہاڑے سیکھیں",
+    "squaresAndCubes": "مربع اور مکعب",
+    "ranking": "درجہ بندی"
   },
   "dashboard": {
     "title": "شعوری ڈیش بورڈ",
@@ -162,7 +165,13 @@
     "pause": "روکیں",
     "resume": "دوبارہ شروع کریں",
     "paused": "سیشن موقوف ہے",
-    "pressSpaceOrEnter": "جاری رکھنے کے لیے اسپیس یا انٹر دبائیں"
+    "pressSpaceOrEnter": "جاری رکھنے کے لیے اسپیس یا انٹر دبائیں",
+    "sessionComplete": "مشق مکمل",
+    "congratulations": "شاندار کارکردگی! ذہنی حساب اور یادداشت میں اضافہ ہوا۔",
+    "avgSpeed": "اوسط رفتار",
+    "totalAnswered": "مکمل سوالات",
+    "practiceAgain": "دوبارہ مشق کریں",
+    "returnDashboard": "ڈیش بورڈ پر واپس جائیں"
   },
   "anzan": {
     "title": "انزان فلیش ورکنگ میموری",
@@ -427,5 +436,27 @@
     "fatigueHigh": "उच्च मानसिक थकान का संकेत",
     "requestFeedback": "कोच से सलाह लें",
     "cooldownNotice": "अगला विश्लेषण {time} में उपलब्ध होगा"
+  },
+  "learnTable": {
+    "title": "پہاڑے سیکھیں",
+    "subtitle": "ذہنی اضطرار کے لیے بے ترتیب ترتیب میں پہاڑوں کا مطالعہ کریں۔",
+    "randomOrder": "بے ترتیب ترتیب",
+    "sequentialOrder": "مسلسل ترتیب",
+    "revealAll": "سب دکھائیں",
+    "hideAnswers": "جوابات چھپائیں",
+    "practiceTable": "مشق کریں",
+    "startDrill": "20-30 سوالات کی مشق شروع کریں",
+    "selectPrompt": "پہاڑا منتخب کریں",
+    "clickToReveal": "جواب دیکھنے کے لیے ٹیپ کریں",
+    "factsCount": "20 ضربی ارکان"
+  },
+  "ranking": {
+    "title": "فاتحین کا ایوان",
+    "subtitle": "XP اور تسلسل پر مبنی شفاف AI درجہ بندی۔",
+    "topChampions": "پہلے 3 پوزیشن ہولڈرز",
+    "rankPoints": "رینک پوائنٹس (RP)",
+    "liveActivity": "فعال صارفین",
+    "yourRank": "آپ کا رینک",
+    "unranked": "غیر درجہ بند"
   }
 }

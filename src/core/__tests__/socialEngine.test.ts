@@ -2,12 +2,32 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { socialEngine } from '../social/socialEngine';
 import * as supabaseClient from '../../lib/supabase/client';
 
+const mockLocalStorage = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: vi.fn((key: string) => store[key] || null),
+    setItem: vi.fn((key: string, value: string) => {
+      store[key] = value.toString();
+    }),
+    removeItem: vi.fn((key: string) => {
+      delete store[key];
+    }),
+    clear: vi.fn(() => {
+      store = {};
+    }),
+  };
+})();
+
+(global as any).window = global;
+(global as any).localStorage = mockLocalStorage;
+
 describe('Social Engine - Username Rate Limiting & Cooldowns', () => {
   const testUserId = 'test_user_rate_limit_123';
 
   beforeEach(() => {
     // Reset rate limiter internals for fresh tests
     (socialEngine as any).availabilityRateLimits.clear();
+    mockLocalStorage.clear();
     vi.restoreAllMocks();
   });
 
@@ -199,5 +219,61 @@ describe('Social Engine - Username Rate Limiting & Cooldowns', () => {
 
     const res = await socialEngine.updateUsername('e509a080-f745-405b-a9f8-663fc850ca12', 'boss');
     expect(res.success).toBe(true);
+  });
+
+  it('caches suggested mentalists in localStorage for 1 hour', async () => {
+    localStorage.clear();
+    const userId = 'user_abc_123';
+    const mockProfiles = [
+      { id: 'u1', username: 'priyanka', display_name: 'Priyanka Jogdand', level: 2 },
+      { id: 'u2', username: 'keshav', display_name: 'Keshav Bavane', level: 1 },
+    ];
+
+    const mockSupabase = {
+      from: vi.fn((table: string) => {
+        if (table === 'follows') {
+          return {
+            select: vi.fn().mockReturnValue({
+              eq: vi.fn().mockResolvedValue({ data: [], error: null }),
+            }),
+          };
+        }
+        if (table === 'profiles') {
+          return {
+            select: vi.fn().mockReturnValue({
+              not: vi.fn().mockReturnValue({
+                order: vi.fn().mockReturnValue({
+                  limit: vi.fn().mockResolvedValue({ data: mockProfiles, error: null }),
+                }),
+              }),
+            }),
+          };
+        }
+        return {};
+      }),
+    };
+
+    vi.spyOn(supabaseClient, 'getSupabase').mockReturnValue(mockSupabase as any);
+
+    // 1. First fetch: queries supabase and stores in localStorage
+    const firstRes = await socialEngine.fetchSuggestedFriends(userId, 10);
+    expect(firstRes).toHaveLength(2);
+    expect(firstRes[0].displayName).toBe('Priyanka Jogdand');
+
+    const cacheKey = `mentalis_suggested_mentalists_${userId}`;
+    const rawCache = localStorage.getItem(cacheKey);
+    expect(rawCache).toBeTruthy();
+    const parsedCache = JSON.parse(rawCache!);
+    expect(parsedCache.data).toHaveLength(2);
+
+    // 2. Second fetch: should come from localStorage cache without calling supabase again
+    mockSupabase.from.mockClear();
+    const secondRes = await socialEngine.fetchSuggestedFriends(userId, 10);
+    expect(secondRes).toHaveLength(2);
+    expect(mockSupabase.from).not.toHaveBeenCalled();
+
+    // 3. Cache invalidation
+    socialEngine.invalidateSocialCache(userId);
+    expect(localStorage.getItem(cacheKey)).toBeNull();
   });
 });
