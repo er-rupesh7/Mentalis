@@ -572,7 +572,8 @@ export function getCandidateFactKeysForTarget(
   if (module === 'tables_bootcamp' || module === 'multiplication') {
     const table = activeTable && activeTable >= 1 && activeTable <= 100 ? activeTable : 13;
     const keys: FactKey[] = [];
-    for (let m = 1; m <= 20; m++) {
+    // Strict non-trivial multiplier: Never generate n x 1
+    for (let m = 2; m <= 20; m++) {
       keys.push(`mul:${table}:${m}`);
     }
     return keys;

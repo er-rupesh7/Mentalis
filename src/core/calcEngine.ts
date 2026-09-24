@@ -505,11 +505,16 @@ export function generateMultiplicationQuestion(
       : randomInt(21, 100);
 
   let multiplier =
-    targetMultiplier && targetMultiplier >= 1 && targetMultiplier <= 20
+    targetMultiplier && targetMultiplier >= 2 && targetMultiplier <= 20
       ? targetMultiplier
       : isHighLevel
       ? randomInt(7, 20)
-      : randomInt(1, 20);
+      : randomInt(2, 20);
+
+  // Fallback guard: never ask n x 1
+  if (multiplier <= 1) {
+    multiplier = randomInt(2, 12);
+  }
 
   // Single-digit anti-repetition guard:
   // If single digit is forbidden OR high-level user is practicing a table < 10 (e.g. Table 7),

@@ -488,9 +488,9 @@ export function getNextTableMasteryMultiplier(
     };
   }
 
-  // 2. Stage 1: Facts 1 to 10
+  // 2. Stage 1: Facts 2 to 10 (exclude trivial ×1)
   if (state.stage === 'stage_1_to_10') {
-    const candidates = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const candidates = [2, 3, 4, 5, 6, 7, 8, 9, 10];
     const unmastered = candidates.filter((m) => state.facts[m]?.status !== 'mastered');
     const pool = unmastered.length > 0 ? unmastered : candidates;
     const lastMult = recentMultipliers[recentMultipliers.length - 1];
@@ -498,7 +498,7 @@ export function getNextTableMasteryMultiplier(
     const chosen = filteredPool[Math.floor(Math.random() * filteredPool.length)];
     return {
       multiplier: chosen,
-      reason: `Stage 1: Foundation drill (×1–×10)`,
+      reason: `Stage 1: Foundation drill (×2–×10)`,
     };
   }
 
@@ -507,7 +507,7 @@ export function getNextTableMasteryMultiplier(
     const candidates = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
     // 15% chance to interleave a Stage 1 fact for retention
     if (Math.random() < 0.15) {
-      const stage1Choice = Math.floor(Math.random() * 10) + 1;
+      const stage1Choice = Math.floor(Math.random() * 9) + 2;
       return {
         multiplier: stage1Choice,
         reason: `Interleaved retention review of Foundation ×${stage1Choice}`,
@@ -524,15 +524,15 @@ export function getNextTableMasteryMultiplier(
     };
   }
 
-  // 4. Stage 3 (Sprint or Completed): Random across all 1 to 20
+  // 4. Stage 3 (Sprint or Completed): Random across all 2 to 20
   const allCandidates: number[] = [];
-  for (let m = 1; m <= 20; m++) allCandidates.push(m);
+  for (let m = 2; m <= 20; m++) allCandidates.push(m);
   const lastMult = recentMultipliers[recentMultipliers.length - 1];
   const pool = allCandidates.filter((m) => m !== lastMult);
   const chosen = pool[Math.floor(Math.random() * pool.length)];
   return {
     multiplier: chosen,
-    reason: `Final Sprint: Instant automaticity test (×1–×20)`,
+    reason: `Final Sprint: Instant automaticity test (×2–×20)`,
   };
 }
 
@@ -874,9 +874,12 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       // 65% of the time: pick a multiple for this table (preferring unmastered multiples if factMemoryMap exists)
       if (roll < 0.65 || !cfg.interleavePreviousLearned || t <= 2) {
         const auto = checkTableAutomaticity(t, factMemoryMap);
-        let m = randomInt(1, 12);
+        let m = randomInt(2, 20);
         if (auto.unmasteredMultiples.length > 0 && Math.random() < 0.8) {
-          m = auto.unmasteredMultiples[Math.floor(Math.random() * auto.unmasteredMultiples.length)];
+          const eligible = auto.unmasteredMultiples.filter((x) => x >= 2);
+          if (eligible.length > 0) {
+            m = eligible[Math.floor(Math.random() * eligible.length)];
+          }
         }
         return generateTableModeQuestion(t, m, tableMode);
       }
@@ -884,14 +887,14 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       // 25% of the time: interleave previously learned tables (e.g. 2 to t - 1) to retain automaticity!
       if (roll < 0.90) {
         const prevTable = randomInt(2, Math.max(2, t - 1));
-        const prevMult = randomInt(1, 12);
+        const prevMult = randomInt(2, 20);
         const q = generateMultiplicationQuestion(prevTable, prevMult);
         q.selectionReason = `Interleaved retention review of Table ${prevTable}`;
         return q;
       }
 
       // 10% of the time: practice related / decomposition anchors
-      const anchorMult = randomInt(1, 12);
+      const anchorMult = randomInt(2, 20);
       const q = generateTableModeQuestion(t, anchorMult, 'decomposition');
       q.selectionReason = `Decomposition accumulator practice for Table ${t}`;
       return q;
@@ -911,7 +914,7 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
 
       if (chosenPool === 'table') {
         const t = cfg.selectedTables[Math.floor(Math.random() * cfg.selectedTables.length)];
-        const m = randomInt(1, 12);
+        const m = randomInt(2, 20);
         return generateTableModeQuestion(t, m, tableMode);
       }
 
@@ -940,9 +943,9 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
     // Safety fallback for custom drill: if pools was somehow empty, respect any selected tables
     if (cfg.selectedTables && cfg.selectedTables.length > 0) {
       const t = cfg.selectedTables[Math.floor(Math.random() * cfg.selectedTables.length)];
-      return generateTableModeQuestion(t, randomInt(1, 12), tableMode);
+      return generateTableModeQuestion(t, randomInt(2, 20), tableMode);
     }
-    return generateTableModeQuestion(13, randomInt(1, 12), tableMode);
+    return generateTableModeQuestion(13, randomInt(2, 20), tableMode);
   }
 
   const analysis = analyzeProgress(progressMap);
@@ -969,7 +972,7 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       if (module === 'tables_bootcamp' && matchedKey.startsWith('mul:')) {
         const parts = matchedKey.split(':');
         const tbl = parseInt(parts[1], 10) || activeTable || 13;
-        const m = parseInt(parts[2], 10) || Math.floor(Math.random() * 12) + 1;
+        const m = parseInt(parts[2], 10) || Math.floor(Math.random() * 19) + 2;
         const q = generateTableModeQuestion(tbl, m, tableMode);
         if (mode === 'speed') {
           q.targetTimeSeconds = Math.min(q.targetTimeSeconds || 3, 2.0);
@@ -992,7 +995,7 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       analysis.decayedSkills.find((s) => s.module === module) || analysis.decayedSkills[0];
     if (candidate.module === 'tables_bootcamp') {
       const t = parseInt(candidate.itemId.replace('table_', ''), 10) || activeTable || 13;
-      const m = Math.floor(Math.random() * 12) + 1;
+      const m = Math.floor(Math.random() * 19) + 2;
       return generateTableModeQuestion(t, m, tableMode);
     } else if (candidate.module === 'multiplication') {
       const t = parseInt(candidate.itemId.replace('table_', ''), 10);
@@ -1009,7 +1012,7 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       analysis.weakSkills.find((s) => s.module === module) || analysis.weakSkills[0];
     if (candidate.module === 'tables_bootcamp') {
       const t = parseInt(candidate.itemId.replace('table_', ''), 10) || activeTable || 13;
-      const m = Math.floor(Math.random() * 12) + 1;
+      const m = Math.floor(Math.random() * 19) + 2;
       return generateTableModeQuestion(t, m, tableMode);
     } else if (candidate.module === 'multiplication') {
       const t = parseInt(candidate.itemId.replace('table_', ''), 10);
@@ -1027,7 +1030,7 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       if (weakItem.module === module) {
         if (module === 'tables_bootcamp') {
           const t = parseInt(weakItem.itemId.replace('table_', ''), 10) || activeTable || 13;
-          const m = Math.floor(Math.random() * 12) + 1;
+          const m = Math.floor(Math.random() * 19) + 2;
           return generateTableModeQuestion(t, m, tableMode);
         } else if (module === 'multiplication') {
           const t = parseInt(weakItem.itemId.replace('table_', ''), 10);
@@ -1055,7 +1058,7 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
       });
       break;
     case 'tables_bootcamp': {
-      const m = isHighLevel && wasPrevSingleDigit ? Math.floor(Math.random() * 8) + 12 : Math.floor(Math.random() * 12) + 1;
+      const m = isHighLevel && wasPrevSingleDigit ? Math.floor(Math.random() * 9) + 12 : Math.floor(Math.random() * 19) + 2;
       q = generateTableModeQuestion(activeTable || 13, m, tableMode);
       break;
     }

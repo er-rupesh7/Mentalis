@@ -48,6 +48,31 @@ import {
 type ActiveTab = 'learn' | 'practice' | 'exercise';
 type PracticeMode = 'guided' | 'speed';
 
+function formatMentalMathBlueprint(raw?: string): string {
+  if (!raw) return '';
+  return raw
+    .replace(/\\times/g, '×')
+    .replace(/\\div/g, '÷')
+    .replace(/\\cdot/g, '·')
+    .replace(/\\pm/g, '±')
+    .replace(/\\approx/g, '≈')
+    .replace(/\\le/g, '≤')
+    .replace(/\\ge/g, '≥')
+    .replace(/\\equiv/g, '≡')
+    .replace(/\\pmod\{([^}]+)\}/g, '(mod $1)')
+    .replace(/\\sqrt\[3\]\{([^}]+)\}/g, '∛$1')
+    .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
+    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1 ÷ $2)')
+    .replace(/\\text\{([^}]+)\}/g, '$1')
+    .replace(/\\implies/g, '➔')
+    .replace(/\\iff/g, '⟺')
+    .replace(/\\quad/g, '  ')
+    .replace(/\\;/g, ' ')
+    .replace(/\\,/g, ' ')
+    .replace(/\\/g, '')
+    .trim();
+}
+
 export const TechniquesCurriculumView: React.FC = () => {
   const tTech = useTranslations('techniques');
   const tCommon = useTranslations('common');
@@ -653,7 +678,7 @@ export const TechniquesCurriculumView: React.FC = () => {
                   <span>{tTech('algebraicFormula')}</span>
                 </div>
                 <div className="p-4 rounded-xl bg-slate-900 border border-violet-900/40 text-violet-200 font-mono text-base font-bold text-center">
-                  {activeLesson.algebraicFormula}
+                  {formatMentalMathBlueprint(activeLesson.algebraicFormula)}
                 </div>
                 <h4 className="text-sm font-bold text-white pt-2">
                   {localizedActive.mathSecretTitle || activeLesson.mathSecret.title}
@@ -665,7 +690,7 @@ export const TechniquesCurriculumView: React.FC = () => {
                   <span className="text-slate-500 font-semibold block mb-1">
                     {tTech('algebraicProof')}
                   </span>
-                  {activeLesson.mathSecret.algebraicProof}
+                  {formatMentalMathBlueprint(activeLesson.mathSecret.algebraicProof)}
                 </div>
               </div>
 

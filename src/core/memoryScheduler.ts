@@ -558,9 +558,16 @@ export function selectNextFact(
   const now = Date.now();
   const scoredCandidates: CandidateScore[] = [];
 
-  for (const key of candidateFactKeys) {
-    // Strictly prevent immediate repeat (never repeat same fact in last 2 questions)
-    if (recentAskedKeys.slice(-2).includes(key)) continue;
+  // Anti-Repetition Guard: Prioritize candidates not yet asked in this session
+  const unaskedCandidates = candidateFactKeys.filter((k) => !recentAskedKeys.includes(k));
+  const candidatePool = unaskedCandidates.length > 0 ? unaskedCandidates : candidateFactKeys;
+
+  for (const key of candidatePool) {
+    // If all facts have been seen at least once, avoid repeating the last several asked facts
+    if (unaskedCandidates.length === 0) {
+      const minDistance = Math.min(8, Math.max(2, candidateFactKeys.length - 2));
+      if (recentAskedKeys.slice(-minDistance).includes(key)) continue;
+    }
 
     const state = factMemoryMap[key] || createInitialFactMemoryState(key);
     const scored = calculateFactPriority(state, now, fatigue, recentAskedKeys);
@@ -568,10 +575,11 @@ export function selectNextFact(
   }
 
   if (scoredCandidates.length === 0) {
-    const fallback = candidateFactKeys[0] || 'mul:7:8';
+    const unasked = candidateFactKeys.filter((k) => !recentAskedKeys.slice(-2).includes(k));
+    const fallback = unasked[Math.floor(Math.random() * unasked.length)] || candidateFactKeys[0] || 'mul:7:8';
     return {
       factKey: fallback,
-      selectionReason: 'Default candidate fallback',
+      selectionReason: 'Dynamic candidate fallback',
       category: 'new_fact',
     };
   }
@@ -595,7 +603,8 @@ export function selectNextFact(
     const pick = interleaved[Math.floor(Math.random() * Math.min(3, interleaved.length))];
     return { factKey: pick.factKey, selectionReason: pick.reason, category: 'interleaved_strong' };
   } else if (newFacts.length > 0) {
-    const pick = newFacts[0];
+    // Non-linear randomization: Never ask new facts in predictable sequential table order!
+    const pick = newFacts[Math.floor(Math.random() * newFacts.length)];
     return { factKey: pick.factKey, selectionReason: pick.reason, category: 'new_fact' };
   }
 

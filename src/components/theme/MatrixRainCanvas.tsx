@@ -11,8 +11,8 @@ const MATH_GLYPHS = [
 export const MatrixRainCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const { themeConfig, reducedMotion } = useQuizStore();
-  // Default to enabled if themeConfig is undefined
-  const enabled = (themeConfig?.matrixRainEnabled ?? true) && !reducedMotion;
+  // Default to disabled unless explicitly enabled
+  const enabled = (themeConfig?.matrixRainEnabled ?? false) && !reducedMotion;
 
   useEffect(() => {
     if (!enabled) return;

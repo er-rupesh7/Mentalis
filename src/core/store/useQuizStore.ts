@@ -124,11 +124,12 @@ export const initialThemeConfig: ThemeConfig = {
   fontFamily: 'inter',
   accentColor: 'violet',
   fontSize: 'standard',
-  matrixRainEnabled: true,
+  matrixRainEnabled: false,
   tactile3DEnabled: true,
 };
 
 let profileRealtimeUnsub: (() => void) | null = null;
+let settingsRealtimeUnsub: (() => void) | null = null;
 
 export function resolveActiveDimension(
   module: ModuleId,
@@ -1024,6 +1025,7 @@ export const useQuizStore = create<QuizState>()(
           isPlanActive: false,
           activeRepairCard: null,
           delayedReviewQueue: [],
+          recentAskedKeys: [],
           showStrategy: false,
         });
         get().loadNextQuestion();
@@ -1151,7 +1153,15 @@ export const useQuizStore = create<QuizState>()(
           const selectedTable = state.isAdaptiveBootcampActive
             ? selectAdaptiveBandTable(state.activeBootcampTable)
             : state.activeBootcampTable;
-          const mult = Math.floor(Math.random() * 12) + 1;
+          // Non-trivial multiplier 2 to 20, anti-repetition guard across drill
+          const candidates: number[] = [];
+          for (let m = 2; m <= 20; m++) candidates.push(m);
+          const askedMults = state.recentAskedKeys
+            .filter((k) => k.startsWith(`mul:${selectedTable}:`))
+            .map((k) => parseInt(k.split(':')[2], 10));
+          const unasked = candidates.filter((m) => !askedMults.includes(m));
+          const pool = unasked.length > 0 ? unasked : candidates.filter((m) => m !== askedMults[askedMults.length - 1]);
+          const mult = pool[Math.floor(Math.random() * pool.length)] || (Math.floor(Math.random() * 19) + 2);
           const q = generateTableModeQuestion(selectedTable, mult, state.currentTableMode);
           q.selectionReason = state.isAdaptiveBootcampActive
             ? `Adaptive Table ×${selectedTable} (${state.currentTableMode} mode)`
@@ -1167,6 +1177,7 @@ export const useQuizStore = create<QuizState>()(
             lastCorrectAnswer: null,
             showStrategy: false,
             isPaused: false,
+            recentAskedKeys: [...state.recentAskedKeys.slice(-35), q.factKey || `mul:${selectedTable}:${mult}`],
           });
           return;
         }
@@ -1255,7 +1266,7 @@ export const useQuizStore = create<QuizState>()(
             showStrategy: false,
             isPaused: false,
             delayedReviewQueue: updatedDelayedQueue,
-            recentAskedKeys: [...state.recentAskedKeys.slice(-12), selection.factKey],
+            recentAskedKeys: [...state.recentAskedKeys.slice(-35), selection.factKey],
           });
           return;
         }
@@ -1843,6 +1854,30 @@ export const useQuizStore = create<QuizState>()(
           } catch {}
         }
 
+        const currentUser = get().currentUser;
+        if (currentUser?.id) {
+          const supabase = getSupabase();
+          if (supabase) {
+            const currentCoachState = (get().aiCoachState || {}) as Record<string, any>;
+            supabase
+              .from('user_settings')
+              .upsert(
+                {
+                  user_id: currentUser.id,
+                  ai_coach_state: {
+                    ...currentCoachState,
+                    theme_config: updated,
+                  },
+                  updated_at: new Date().toISOString(),
+                },
+                { onConflict: 'user_id' }
+              )
+              .then(({ error }) => {
+                if (error) console.warn('[useQuizStore] Immediate theme sync notice:', error.message);
+              });
+          }
+        }
+
         get().triggerSync();
       },
 
@@ -2416,11 +2451,33 @@ export const useQuizStore = create<QuizState>()(
             level: currentState.level,
           });
 
-          // Clean up any previous profile realtime listener before re-subscribing
+          // Clean up any previous profile and settings realtime listener before re-subscribing
           if (profileRealtimeUnsub) {
             profileRealtimeUnsub();
             profileRealtimeUnsub = null;
           }
+          if (settingsRealtimeUnsub) {
+            settingsRealtimeUnsub();
+            settingsRealtimeUnsub = null;
+          }
+
+          // Live database listener on public.user_settings for dynamic cross-device theme & preferences sync
+          settingsRealtimeUnsub = syncEngine.subscribeToSettingsChanges(user.id, (updatedSettings) => {
+            if (!updatedSettings) return;
+            const coachState = updatedSettings.ai_coach_state as Record<string, any> | null;
+            if (coachState?.theme_config) {
+              const currentTheme = get().themeConfig;
+              const newTheme = coachState.theme_config;
+              if (JSON.stringify(currentTheme) !== JSON.stringify(newTheme)) {
+                set({ themeConfig: newTheme });
+                if (typeof document !== 'undefined') {
+                  document.documentElement.setAttribute('data-theme-font', newTheme.fontFamily || 'inter');
+                  document.documentElement.setAttribute('data-theme-accent', newTheme.accentColor || 'violet');
+                  document.documentElement.setAttribute('data-theme-size', newTheme.fontSize || 'standard');
+                }
+              }
+            }
+          });
 
           // Live database listener on public.profiles for dynamic cross-device sync
           profileRealtimeUnsub = syncEngine.subscribeToProfileChanges(user.id, (updatedProfile) => {
@@ -2497,6 +2554,10 @@ export const useQuizStore = create<QuizState>()(
               profileRealtimeUnsub();
               profileRealtimeUnsub = null;
             }
+            if (settingsRealtimeUnsub) {
+              settingsRealtimeUnsub();
+              settingsRealtimeUnsub = null;
+            }
             presenceEngine.untrack();
             get().setAuthUser(null);
             set({ syncStatus: 'idle', syncError: null });
@@ -2508,6 +2569,10 @@ export const useQuizStore = create<QuizState>()(
         if (profileRealtimeUnsub) {
           profileRealtimeUnsub();
           profileRealtimeUnsub = null;
+        }
+        if (settingsRealtimeUnsub) {
+          settingsRealtimeUnsub();
+          settingsRealtimeUnsub = null;
         }
         presenceEngine.untrack();
         await signOutUser();
@@ -2522,6 +2587,10 @@ export const useQuizStore = create<QuizState>()(
         if (profileRealtimeUnsub) {
           profileRealtimeUnsub();
           profileRealtimeUnsub = null;
+        }
+        if (settingsRealtimeUnsub) {
+          settingsRealtimeUnsub();
+          settingsRealtimeUnsub = null;
         }
 
         const res = await syncEngine.deleteUserAccount(currentUser.id);

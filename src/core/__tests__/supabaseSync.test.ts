@@ -113,4 +113,10 @@ describe('Supabase Offline Sync & Auth Architecture', () => {
     expect(typeof unsub).toBe('function');
     expect(() => unsub()).not.toThrow();
   });
+
+  it('subscribeToSettingsChanges returns a cleanup unsubscribe function for real-time cross-device theme sync', () => {
+    const unsub = syncEngine.subscribeToSettingsChanges('user_123', () => {});
+    expect(typeof unsub).toBe('function');
+    expect(() => unsub()).not.toThrow();
+  });
 });

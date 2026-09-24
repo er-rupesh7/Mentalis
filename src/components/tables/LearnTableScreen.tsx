@@ -50,7 +50,7 @@ export function LearnTableScreen() {
   } = useQuizStore();
 
   const currentTable = selectedLearnTable || 14;
-  const [isRandomOrder, setIsRandomOrder] = useState<boolean>(true);
+  const [isRandomOrder, setIsRandomOrder] = useState<boolean>(false);
   const [flashcardMode, setFlashcardMode] = useState<boolean>(false);
   const [revealedCards, setRevealedCards] = useState<Record<number, boolean>>({});
   const [drillCount, setDrillCount] = useState<number>(25);

@@ -108,13 +108,13 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Left-to-Right Place-Value Addition',
     subtitle: 'Add 2-digit to 5-digit numbers from largest place value to smallest',
     difficultyTier: 2,
-    algebraicFormula: '(A_k \\cdot 10^k + \\dots) + (B_k \\cdot 10^k + \\dots) = \\sum (A_i + B_i)10^i',
+    algebraicFormula: '(Hundreds + Hundreds) ➔ (+ Tens) ➔ (+ Units)',
     mathSecret: {
       title: 'The Most-Significant-Digit Priority Rule',
       description:
         'Standard school arithmetic computes right-to-left, which requires storing silent carry digits while calculating the tens or hundreds. By accumulating Left-to-Right, you immediately anchor the magnitude of the answer.',
       algebraicProof:
-        'For two numbers A and B decomposed into place-values: A + B = (A_high + B_high) + (A_low + B_low). Maintaining a single running total ensures zero backward lookahead.',
+        'Split into place values: 456 + 278 = (400 + 200) + (50 + 70) + (6 + 8) = 600 + 120 + 14 = 734. Maintaining a single running accumulator ensures zero backward lookahead.',
       conditions: 'Universal: works for any addition of 2-digit, 3-digit, 4-digit, or 5-digit numbers.',
     },
     mindOdometer: {
@@ -142,13 +142,13 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Bridging & Chunking via Base-10 Anchors',
     subtitle: 'Hop to the clean decade before adding the remainder',
     difficultyTier: 1,
-    algebraicFormula: 'A + B = (A + \\Delta_{10}) + (B - \\Delta_{10})',
+    algebraicFormula: 'Hop to Next 10: 67 + 58 = (67 + 3) + 55 = 70 + 55 = 125',
     mathSecret: {
       title: 'Base-10 Decade Stepping',
       description:
         'Working memory easily steps forward along clean decade multiples (30, 40, 50). Split the second addend into two pieces: what is needed to hit the next decade, and whatever is left over.',
       algebraicProof:
-        'Let D = \\lceil A/10 \\rceil \\times 10. Then A + B = D + (B - (D - A)). Both additions require zero column tracking.',
+        'Round up to the nearest multiple of 10, then add the remaining part: A + B = (Next 10) + (B - difference). Both additions require zero column tracking.',
       conditions: 'Optimal when adding single or double digits across decade boundaries (e.g. 67 + 58).',
     },
     mindOdometer: {
@@ -175,12 +175,12 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Compensation Method (Over-Addition)',
     subtitle: 'Add a clean century or decade, then refund the excess',
     difficultyTier: 2,
-    algebraicFormula: 'A + (10^k - d) = (A + 10^k) - d',
+    algebraicFormula: 'Round Up & Subtract: 584 + 298 = (584 + 300) - 2 = 882',
     mathSecret: {
       title: 'The Clean Overhang Principle',
       description:
         'Adding numbers ending in 7, 8, or 9 (such as 98, 49, 197) is messy. Instead, add the nearest clean power of 10 and subtract the small overhang.',
-      algebraicProof: 'A + 98 = A + (100 - 2) = (A + 100) - 2.',
+      algebraicProof: 'Add the clean rounded anchor, then refund the surplus: A + 98 = (A + 100) - 2.',
       conditions: 'Used when one addend is within 1 to 5 units of a clean decade, hundred, or thousand.',
     },
     mindOdometer: {
@@ -205,12 +205,12 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Left-to-Right Step Subtraction',
     subtitle: 'Subtract higher place values first to anchor estimates',
     difficultyTier: 2,
-    algebraicFormula: 'A - B = (A - B_{high}) - B_{low}',
+    algebraicFormula: 'Subtract Tens First, Then Units: 84 - 36 = (84 - 30) - 6 = 48',
     mathSecret: {
       title: 'Progressive Place Stripping',
       description:
         'Traditional column subtraction requires borrowing right-to-left. Left-to-Right subtraction strips tens first, then units, keeping the estimate anchored immediately.',
-      algebraicProof: 'A - (T \\cdot 10 + U) = (A - T \\cdot 10) - U.',
+      algebraicProof: 'Strip place values sequentially: A - (Tens + Units) = (A - Tens) - Units.',
       conditions: 'Universal for all 2-digit to 4-digit mental subtractions.',
     },
     mindOdometer: {
@@ -235,7 +235,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: "Shopkeeper's Additive Method (Counting Up)",
     subtitle: 'Convert hard subtractions into easy additions along landmark anchors',
     difficultyTier: 2,
-    algebraicFormula: 'B - A = \\Delta_1 + \\Delta_2 + \\Delta_3 \\text{ where } A + \\sum \\Delta = B',
+    algebraicFormula: 'Cashier Hop to Target: 100 - 38 = 38 (+2) ➔ 40 (+60) ➔ 100 = 62',
     mathSecret: {
       title: 'The Cash Register Making-Change Algorithm',
       description:
@@ -265,7 +265,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Vedic Nikhilam: "All from 9 and Last from 10"',
     subtitle: 'Subtract any number from 1,000, 10,000, or 100,000 in one visual sweep',
     difficultyTier: 2,
-    algebraicFormula: '10^k - N = \\sum_{i=1}^{k-1} (9 - d_i)10^{k-i} + (10 - d_k)',
+    algebraicFormula: 'Subtract all from 9, last from 10: 1,000 - 357 = (9-3)(9-5)(10-7) = 643',
     mathSecret: {
       title: 'Vedic Complement Sutra',
       description:
@@ -301,11 +301,11 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base Conversion: Multiply by 5',
     subtitle: 'Multiply by 10 and divide by 2',
     difficultyTier: 1,
-    algebraicFormula: 'N \\times 5 = \\frac{N \\times 10}{2} = \\frac{N}{2} \\times 10',
+    algebraicFormula: 'N × 5 = (N ÷ 2) × 10  (e.g. 48 × 5 = 24 × 10 = 240)',
     mathSecret: {
       title: 'The Half-Decade Pivot',
       description: '5 is equal to 10 / 2. Multiplying by 10 is instantaneous (append zero), so simply cut the number in half.',
-      algebraicProof: 'N \\times 5 = N \\times \\frac{10}{2} = \\frac{10N}{2}.',
+      algebraicProof: 'N × 5 = (N / 2) × 10.',
       conditions: 'Universal for any integer.',
     },
     mindOdometer: {
@@ -330,11 +330,11 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base Conversion: Multiply by 25',
     subtitle: 'Multiply by 100 and divide by 4',
     difficultyTier: 2,
-    algebraicFormula: 'N \\times 25 = \\frac{N \\times 100}{4}',
+    algebraicFormula: 'N × 25 = (N ÷ 4) × 100  (e.g. 36 × 25 = 9 × 100 = 900)',
     mathSecret: {
       title: 'The Quarter-Century Conversion',
       description: '25 is equal to 100 / 4. Dividing by 4 is merely halving twice.',
-      algebraicProof: 'N \\times 25 = N \\times \\frac{100}{4} = \\frac{100N}{4}.',
+      algebraicProof: 'N × 25 = (N / 4) × 100.',
       conditions: 'Universal. Remainders map cleanly: R1 -> 25, R2 -> 50, R3 -> 75.',
     },
     mindOdometer: {
@@ -359,11 +359,11 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base Conversion: Multiply by 125',
     subtitle: 'Multiply by 1,000 and divide by 8',
     difficultyTier: 3,
-    algebraicFormula: 'N \\times 125 = \\frac{N \\times 1000}{8}',
+    algebraicFormula: 'N × 125 = (N ÷ 8) × 1,000  (e.g. 56 × 125 = 7 × 1,000 = 7,000)',
     mathSecret: {
       title: 'The Thousand-Eighths Rule',
       description: '125 is 1000 / 8. Halve the number three times in succession, then append three zeros.',
-      algebraicProof: 'N \\times 125 = N \\times \\frac{1000}{8} = \\frac{1000N}{8}.',
+      algebraicProof: 'N × 125 = (N / 8) × 1000.',
       conditions: 'Extremely fast for multiples of 8, or with simple 1/8 decimal mappings (125 per unit remainder).',
     },
     mindOdometer: {
@@ -388,11 +388,11 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base Conversion: Multiply by 625',
     subtitle: 'Multiply by 10,000 and divide by 16',
     difficultyTier: 4,
-    algebraicFormula: 'N \\times 625 = \\frac{N \\times 10000}{16}',
+    algebraicFormula: 'N × 625 = (N ÷ 16) × 10,000  (e.g. 32 × 625 = 2 × 10,000 = 20,000)',
     mathSecret: {
       title: 'Ten-Thousand Sixteenths Rule',
       description: '625 = 10000 / 16 = 10000 / 2^4. Halve the number 4 times and append 4 zeros.',
-      algebraicProof: 'N \\times 625 = N \\times \\frac{10000}{16} = \\frac{10000N}{16}.',
+      algebraicProof: 'N × 625 = (N / 16) × 10000.',
       conditions: 'Optimal for multiples of 16 (e.g. 32 × 625, 48 × 625).',
     },
     mindOdometer: {
@@ -417,13 +417,13 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Repunit: Multiply by 11 (Neighbor Sum Rule)',
     subtitle: 'Add adjacent neighbors with intermediate carry buffering',
     difficultyTier: 2,
-    algebraicFormula: '(d_k \\dots d_0) \\times 11 = \\sum (d_i + d_{i-1})10^i',
+    algebraicFormula: 'Sum Neighbor Digits: 52 × 11 = 5 | (5 + 2) | 2 = 572',
     mathSecret: {
       title: 'The Neighbor Sum Algorithm',
       description:
         'Multiplying any number by 11 is equivalent to adding the number to 10 times itself. Each digit in the product is simply the sum of two adjacent neighbor digits plus any carry.',
       algebraicProof:
-        'For 2-digit AB: AB × 11 = 10(AB) + AB = 100A + 10(A + B) + B. For multi-digit, each position i is (d_i + d_{i-1}).',
+        'For 2-digit AB: AB × 11 = 10(AB) + AB = 100A + 10(A + B) + B. Middle is simply (A + B).',
       conditions: 'Universal for any number multiplied by 11.',
     },
     mindOdometer: {
@@ -450,7 +450,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Repunits: Multiply by 22, 33, ..., 99',
     subtitle: 'Factorize into single-digit multiplier then apply 11-rule',
     difficultyTier: 3,
-    algebraicFormula: 'N \\times (k \\times 11) = (N \\times k) \\times 11',
+    algebraicFormula: 'Factorize into 11: N × 33 = (N × 3) × 11  (e.g. 24 × 33 = 72 × 11 = 792)',
     mathSecret: {
       title: 'Factorization Pivot',
       description:
@@ -480,7 +480,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Vedic Ekanyunena Purvena (× 9, 99, 999, 9999)',
     subtitle: '"By One Less Than the Previous": instantaneous left-to-right writing',
     difficultyTier: 3,
-    algebraicFormula: 'N \\times (10^k - 1) = (N - 1)10^k + (10^k - 1 - (N - 1))',
+    algebraicFormula: 'Left = (N - 1)  |  Right = (9 - Digits of Left)  (e.g. 63 × 99 = 62 | 37 = 6,237)',
     mathSecret: {
       title: 'The Vedic Sub-Base Complements Rule',
       description:
@@ -511,7 +511,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Consecutive Integers: N × (N + 1)',
     subtitle: 'Square the smaller number and add it: N² + N',
     difficultyTier: 2,
-    algebraicFormula: 'N \\times (N + 1) = N^2 + N',
+    algebraicFormula: 'N × (N + 1) = N² + N  (e.g. 15 × 16 = 15² + 15 = 240)',
     mathSecret: {
       title: 'The Triangular Square Identity',
       description:
@@ -541,7 +541,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Consecutive Even/Odd (Gap of 2): N × (N + 2)',
     subtitle: 'Difference of squares: (Middle)² - 1',
     difficultyTier: 2,
-    algebraicFormula: '(M - 1)(M + 1) = M^2 - 1',
+    algebraicFormula: '(Middle - 1)(Middle + 1) = Middle² - 1  (e.g. 19 × 21 = 20² - 1 = 399)',
     mathSecret: {
       title: 'Difference of Squares Identity',
       description:
@@ -571,7 +571,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Vedic Antyayor Dasakepi (Units Sum to 10, Tens Match)',
     subtitle: 'N(N+1) | (U1 × U2) for instant 2-second multiplication',
     difficultyTier: 3,
-    algebraicFormula: '(10T + U_1)(10T + U_2) = 100 T(T+1) + U_1 U_2 \\quad (U_1 + U_2 = 10)',
+    algebraicFormula: 'Prefix = Tens × (Tens + 1)  |  Suffix = U₁ × U₂  (e.g. 43 × 47 = 20 | 21 = 2,021)',
     mathSecret: {
       title: 'The Decade Complement Splitting Rule',
       description:
@@ -603,7 +603,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Reverse Antyayor (Tens Sum to 10, Units Match)',
     subtitle: '(T1 × T2 + U) | U² for numbers like 37 × 77, 46 × 66',
     difficultyTier: 3,
-    algebraicFormula: '(10T_1 + U)(10T_2 + U) = 100(T_1 T_2 + U) + U^2 \\quad (T_1 + T_2 = 10)',
+    algebraicFormula: 'Prefix = (T₁ × T₂ + U)  |  Suffix = U²  (e.g. 37 × 77 = 28 | 49 = 2,849)',
     mathSecret: {
       title: 'The Dual Tens Complement Theorem',
       description:
@@ -635,7 +635,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Halving and Doubling (Even × 5-ending)',
     subtitle: 'Shift factors to create instantaneous decade multiples',
     difficultyTier: 2,
-    algebraicFormula: 'A \\times B = (A \\div 2) \\times (B \\times 2)',
+    algebraicFormula: 'A × B = (A ÷ 2) × (B × 2)  (e.g. 36 × 35 = 18 × 70 = 1,260)',
     mathSecret: {
       title: 'Associative Invariance',
       description:
@@ -666,7 +666,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Vedic Urdhva-Tiryagbhyam (Vertical & Crosswise)',
     subtitle: 'The universal matrix multiplication engine for 2x2, 3x3, and 4x4',
     difficultyTier: 4,
-    algebraicFormula: '(10a + b)(10c + d) = 100(ac) + 10(ad + bc) + bd',
+    algebraicFormula: '(Tens × Tens) ➔ (Cross-Multiply & Add) ➔ (Units × Units)  (e.g. 23 × 41 = 943)',
     mathSecret: {
       title: 'Universal Cross-Product Matrix',
       description:
@@ -699,7 +699,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Trachtenberg System (Single-Pass Direct Multipliers)',
     subtitle: 'Direct digit-by-digit rules for 5, 6, 7, 8, 9, 11, 12 without multiplication tables',
     difficultyTier: 4,
-    algebraicFormula: 'D_i = f(\\text{digit}, \\text{neighbor}) + \\text{carry}',
+    algebraicFormula: 'Digit + (Half of Right Neighbor) + Carry  (e.g. 428 × 6 = 2,568)',
     mathSecret: {
       title: 'Trachtenberg Neighbor Shift Rules',
       description:
@@ -733,7 +733,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Vedic Yavadunam Base Multiplications (Bases 100, 50, 200, 1000)',
     subtitle: 'Cross-add deviations and multiply deviations: (Base ± d1 ± d2) | (d1 × d2)',
     difficultyTier: 3,
-    algebraicFormula: '(B + d_1)(B + d_2) = B(B + d_1 + d_2) + d_1 d_2',
+    algebraicFormula: 'Prefix = (Number + Other Deviation)  |  Suffix = (Dev₁ × Dev₂)  (e.g. 104 × 107 = 111 | 28 = 11,128)',
     mathSecret: {
       title: 'Deviational Sub-Base Sutra',
       description:
@@ -769,7 +769,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base-50 Squares: (50 ± d)²',
     subtitle: '(25 ± d) | d² for instant squaring between 40 and 60',
     difficultyTier: 2,
-    algebraicFormula: '(50 \\pm d)^2 = 100(25 \\pm d) + d^2',
+    algebraicFormula: '(25 ± Deviation)  |  (Deviation)²  (e.g. 54² = [25 + 4] | 16 = 2,916; 47² = [25 - 3] | 09 = 2,209)',
     mathSecret: {
       title: 'The 25 Anchor Theorem',
       description:
@@ -799,7 +799,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base-100 Squares: (100 ± d)²',
     subtitle: '(N ± d) | d² for instant squaring between 80 and 120',
     difficultyTier: 2,
-    algebraicFormula: '(100 \\pm d)^2 = 100(N \\pm d) + d^2',
+    algebraicFormula: '(Number ± Deviation)  |  (Deviation)²  (e.g. 96² = [96 - 4] | 16 = 9,216; 107² = [107 + 7] | 49 = 11,449)',
     mathSecret: {
       title: 'Self-Deviation Base-100 Sutra',
       description:
@@ -830,7 +830,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Squaring Numbers Ending in 5 (Ekadhikena Purvena)',
     subtitle: 'N(N+1) | 25 for instant 1-second squares',
     difficultyTier: 1,
-    algebraicFormula: '(10N + 5)^2 = 100N(N+1) + 25',
+    algebraicFormula: 'N × (N + 1)  |  25  (e.g. 65² = [6 × 7] | 25 = 4,225; 85² = [8 × 9] | 25 = 7,225)',
     mathSecret: {
       title: 'The Universal 25 Termination Theorem',
       description:
@@ -860,7 +860,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Squaring Numbers Ending in 25',
     subtitle: '(X² + X/2) × 10 | 625 for 3-digit and 4-digit numbers ending in 25',
     difficultyTier: 3,
-    algebraicFormula: '(100X + 25)^2 = 10000X^2 + 5000X + 625 = 1000(10X^2 + 5X) + 625',
+    algebraicFormula: 'Prefix = 10X² + 5X  |  625  (e.g. 225² = [10(4) + 10] | 625 = 50,625)',
     mathSecret: {
       title: 'The 625 Suffix Decomposition',
       description:
@@ -892,7 +892,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Universal Duplex Method (Dwandwa Yoga)',
     subtitle: 'Mental squaring of ANY 2-digit, 3-digit, or 4-digit number',
     difficultyTier: 4,
-    algebraicFormula: 'D(a) = a^2, \\quad D(ab) = 2ab, \\quad D(abc) = 2ac + b^2',
+    algebraicFormula: 'D(a) = a²  |  D(a, b) = 2ab  |  D(b) = b²  (e.g. 73² = 4900 + 420 + 9 = 5,329)',
     mathSecret: {
       title: 'Vedic Duplex Theory (Dwandwa Yoga)',
       description:
@@ -924,7 +924,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Instant Cube Recall: 1³ through 25³',
     subtitle: 'Internalize cubes 1–25 and decimal unit bijection mappings',
     difficultyTier: 3,
-    algebraicFormula: 'N^3 \\equiv U_N \\pmod{10} \\quad (1\\to 1, 2\\to 8, 3\\to 7, 7\\to 3, 8\\to 2)',
+    algebraicFormula: 'Units Bijection: 2 ⇄ 8,  3 ⇄ 7,  all others stay unchanged (e.g. 12³ = 1,728; 25³ = 15,625)',
     mathSecret: {
       title: 'The Perfect 1-to-1 Cube Bijection',
       description:
@@ -954,7 +954,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Algebraic Binomial Cubing: (a + b)³',
     subtitle: 'a³ | 3a²b | 3ab² | b³ for mental cubing of any 2-digit number',
     difficultyTier: 4,
-    algebraicFormula: '(a + b)^3 = a^3 + 3a^2b + 3ab^2 + b^3',
+    algebraicFormula: '(Tens + Units)³ = Tens³ + 3(Tens²)(Units) + 3(Tens)(Units²) + Units³  (e.g. 21³ = 8000 + 1200 + 60 + 1 = 9,261)',
     mathSecret: {
       title: 'Binomial Ratio Expansion',
       description:
@@ -990,7 +990,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Perfect Square Roots (Up to 6 Digits)',
     subtitle: 'Extract exact roots in 3 seconds via Unit Elimination & Range Bounding',
     difficultyTier: 3,
-    algebraicFormula: '\\sqrt{N} \\implies \\text{Prefix bounded by } k^2 \\le \\text{Prefix} < (k+1)^2, \\quad \\text{Unit from } U^2',
+    algebraicFormula: 'Prefix from Nearest Lower Square  |  Unit from 1-to-1 Endings & Bounding Comparator (e.g. √7056 ➔ 84)',
     mathSecret: {
       title: 'The Grouping & Unit Bounding Algorithm',
       description:
@@ -1023,7 +1023,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Non-Perfect Square Root Approximation (First-Order Differential)',
     subtitle: '√{x ± y} ≈ √x ± y / (2√x) for precision square root approximations',
     difficultyTier: 4,
-    algebraicFormula: '\\sqrt{x \\pm y} \\approx \\sqrt{x} \\pm \\frac{y}{2\\sqrt{x}}',
+    algebraicFormula: '√Approx = √NearestSquare ± Remainder ÷ (2 × √NearestSquare)  (e.g. √53 ≈ 7 + 4/14 = 7.29)',
     mathSecret: {
       title: 'First-Order Taylor Series Expansion',
       description:
@@ -1054,7 +1054,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Perfect Cube Roots (Up to 6 Digits)',
     subtitle: 'Extract 2-digit cube roots instantly using 1-to-1 unit mapping & prefix bounding',
     difficultyTier: 3,
-    algebraicFormula: '\\sqrt[3]{N} \\implies \\text{Units } U \\text{ is unique 1-to-1}, \\quad \\text{Prefix bounded by } k^3 \\le \\text{Prefix} < (k+1)^3',
+    algebraicFormula: 'Strip Last 3 Digits: Prefix gives Tens from Cube Table  |  Last Digit gives Units directly (e.g. ∛175616 ➔ 56)',
     mathSecret: {
       title: 'The Deterministic Cube Root Principle',
       description:
@@ -1089,7 +1089,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Vedic Flag Method (Dhvajanka Straight Division)',
     subtitle: 'Divide multi-digit numbers mentally in a single forward pass',
     difficultyTier: 5,
-    algebraicFormula: '\\text{Gross Remainder} - (\\text{Quotient Digit} \\times \\text{Flag}) = \\text{Adjusted Dividend}',
+    algebraicFormula: 'Gross Remainder - (Quotient × Flag) = Adjusted Next Dividend (e.g. 1892 ÷ 43 = 44)',
     mathSecret: {
       title: 'The Flag and Main Divisor Partition',
       description:
@@ -1122,7 +1122,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Vedic Osculators (Ekadhika Divisibility Tests)',
     subtitle: 'Lightning divisibility testing for primes 7, 13, 17, 19, 23, 29',
     difficultyTier: 4,
-    algebraicFormula: 'N = 10a + b \\implies a + P \\cdot b \\equiv 0 \\pmod{D}',
+    algebraicFormula: 'Prefix + (Units × Osculator P)  (e.g. For 19: P = +2; 361 ➔ 36 + 1(2) = 38 ➔ Divisible!)',
     mathSecret: {
       title: 'The Ekadhika Positive & Negative Osculators',
       description:
@@ -1153,7 +1153,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Reversible Percentage Law',
     subtitle: 'x% of y = y% of x for effortless mental flips',
     difficultyTier: 1,
-    algebraicFormula: 'x\\% \\times y = \\frac{x \\cdot y}{100} = y\\% \\times x',
+    algebraicFormula: 'X% of Y = Y% of X  (e.g. 16% of 75 = 75% of 16 = 3/4 × 16 = 12)',
     mathSecret: {
       title: 'Commutativity of Percentage Multiplication',
       description:
@@ -1184,7 +1184,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Fractional Base Pivots (1/2 through 1/16)',
     subtitle: 'Instant speed recall for decimal, percentage, and fraction conversions',
     difficultyTier: 2,
-    algebraicFormula: '\\frac{1}{n} \\iff \\text{Percentage equivalents } (1/8 = 12.5\\%, \\; 1/16 = 6.25\\%)',
+    algebraicFormula: 'Fraction Substitutions: 1/8 = 12.5%,  1/6 = 16.67%,  1/7 = 14.28%,  3/8 = 37.5%',
     mathSecret: {
       title: 'The Competitive Fraction Matrix',
       description:
@@ -1218,7 +1218,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Decade Bridging (8+7 = 8+2+5)',
     subtitle: 'Bridge to the decade',
     difficultyTier: 1,
-    algebraicFormula: 'A + B = (A + \\Delta) + (B - \\Delta)',
+    algebraicFormula: 'Hop to Decade: A + B = (A + Step) + (B - Step)  (e.g. 8 + 7 = 10 + 5 = 15)',
     mathSecret: {
       title: 'Decade Step',
       description: 'Step forward to the nearest decade.',
@@ -1244,7 +1244,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'L2R Decade Striding (47+38 = 77+8)',
     subtitle: 'Tens then units',
     difficultyTier: 2,
-    algebraicFormula: 'A + B = (A + 10T) + U',
+    algebraicFormula: 'Add Tens Chunk Then Units: 47 + 38 = (47 + 30) + 8 = 85',
     mathSecret: {
       title: 'Striding',
       description: 'Add tens chunk first.',
@@ -1270,7 +1270,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Century Crossing (345+87 = 425+7)',
     subtitle: 'Cross hundreds',
     difficultyTier: 2,
-    algebraicFormula: 'A + B',
+    algebraicFormula: 'Step Across 100: 345 + 87 = (345 + 80) + 7 = 432',
     mathSecret: {
       title: 'Cross Century',
       description: 'Step across 100.',
@@ -1296,7 +1296,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: '3D Accumulation (H -> T -> U)',
     subtitle: 'L2R 3-digit',
     difficultyTier: 3,
-    algebraicFormula: 'A + B',
+    algebraicFormula: 'Left-to-Right: Hundreds ➔ Tens ➔ Units  (e.g. 456 + 278 = 600 + 120 + 14 = 734)',
     mathSecret: {
       title: 'Accumulate',
       description: 'Hundreds -> tens -> units.',
@@ -1322,7 +1322,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Compensation Jump (x - 29 = x - 30 + 1)',
     subtitle: 'Over-subtraction',
     difficultyTier: 2,
-    algebraicFormula: 'x - (10k - 1) = x - 10k + 1',
+    algebraicFormula: 'Over-Subtract & Refund: 74 - 29 = (74 - 30) + 1 = 45',
     mathSecret: {
       title: 'Jump',
       description: 'Subtract decade, add 1.',
@@ -1348,7 +1348,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: '100 Complements (100 - 37 = 63)',
     subtitle: 'Complements of 100',
     difficultyTier: 1,
-    algebraicFormula: '100 - x = (9 - T)10 + (10 - U)',
+    algebraicFormula: 'Complements of 100: All from 9, Last from 10  (e.g. 100 - 37 = 63)',
     mathSecret: {
       title: 'Complements',
       description: 'Tens from 9, units from 10.',
@@ -1374,7 +1374,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Doubling & Halving',
     subtitle: 'Double and halve',
     difficultyTier: 2,
-    algebraicFormula: 'A × B = (A/2) × (2B)',
+    algebraicFormula: 'Halve Even & Double 5s: 18 × 35 = 9 × 70 = 630',
     mathSecret: {
       title: 'Double-Halve',
       description: 'Even × 5.',
@@ -1400,7 +1400,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Tens & Units Split',
     subtitle: 'Split and add',
     difficultyTier: 2,
-    algebraicFormula: 'A × (T + U)',
+    algebraicFormula: 'Split into Tens & Units: 17 × 6 = (10 × 6) + (7 × 6) = 60 + 42 = 102',
     mathSecret: {
       title: 'Split',
       description: 'Multiply tens and units separately.',
@@ -1426,7 +1426,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Proximity Anchoring (19×n = 20n - n)',
     subtitle: 'Near decade multiplication',
     difficultyTier: 2,
-    algebraicFormula: '(10k - 1)n = 10kn - n',
+    algebraicFormula: 'Near-Decade Multiply: 19 × 7 = (20 × 7) - 7 = 140 - 7 = 133',
     mathSecret: {
       title: 'Anchor',
       description: 'Multiply by 20 and subtract n.',
@@ -1452,7 +1452,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Ekadhikena (65² = 6×7 | 25)',
     subtitle: 'Squares ending in 5',
     difficultyTier: 1,
-    algebraicFormula: 'N(N+1) | 25',
+    algebraicFormula: 'N × (N + 1)  |  25  (e.g. 65² = [6 × 7] | 25 = 4,225)',
     mathSecret: {
       title: 'Ekadhikena',
       description: 'Multiply prefix by next integer, append 25.',
@@ -1478,7 +1478,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base-50 Squares (54² = 2916)',
     subtitle: 'Near 50',
     difficultyTier: 2,
-    algebraicFormula: '(25 ± d) | d²',
+    algebraicFormula: '(25 ± d)  |  d²  (e.g. 54² = [25 + 4] | 16 = 2,916)',
     mathSecret: {
       title: 'Base 50',
       description: '25 ± d | d².',
@@ -1504,7 +1504,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Base-100 Squares (96² = 9216)',
     subtitle: 'Near 100',
     difficultyTier: 2,
-    algebraicFormula: '(N ± d) | d²',
+    algebraicFormula: '(N ± d)  |  d²  (e.g. 96² = [96 - 4] | 16 = 9,216)',
     mathSecret: {
       title: 'Base 100',
       description: 'N ± d | d².',
@@ -1530,7 +1530,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Algebraic Duplex Squares',
     subtitle: 'Universal duplex',
     difficultyTier: 4,
-    algebraicFormula: 'D(a) | D(ab) | D(b)',
+    algebraicFormula: 'D(a) | D(ab) | D(b)  (e.g. 73² = 49 | 42 | 9 = 5,329)',
     mathSecret: {
       title: 'Duplex',
       description: 'Duplex method.',
@@ -1556,7 +1556,7 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     title: 'Cube Unit & Magnitude Anchors',
     subtitle: 'Unit cube bijection',
     difficultyTier: 3,
-    algebraicFormula: 'N³ mod 10',
+    algebraicFormula: 'Cube Unit Map: 2 ⇄ 8,  3 ⇄ 7  (e.g. 12³ ends in 8 ➔ 1,728)',
     mathSecret: {
       title: 'Cube Units',
       description: '1-to-1 bijection of cube endings.',

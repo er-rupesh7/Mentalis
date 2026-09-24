@@ -708,6 +708,36 @@ class SupabaseSyncEngine {
   }
 
   /**
+   * Subscribe to realtime user_settings updates (for instant cross-device theme & preferences sync)
+   */
+  public subscribeToSettingsChanges(userId: string, onUpdate: (settings: any) => void): () => void {
+    const supabase = getSupabase();
+    if (!supabase) return () => {};
+
+    const channel = supabase
+      .channel(`settings_realtime_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_settings',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          if (payload.new) {
+            onUpdate(payload.new);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }
+
+  /**
    * Permanently delete user profile, learner stats, and wipe data while anonymizing chats
    */
   public async deleteUserAccount(userId: string): Promise<{ success: boolean; error?: string }> {

@@ -140,6 +140,7 @@ export function InitialAssessmentFlow() {
 
       if (parsed === expected) {
         playCorrectSound();
+        setInputVal('');
         advanceToNext({
           question: currentQ,
           userAnswer: parsed,
@@ -169,6 +170,7 @@ export function InitialAssessmentFlow() {
         setIsAnswerWrong(true);
         setTimeout(() => {
           setIsAnswerWrong(false);
+          setInputVal('');
           advanceToNext({
             question: currentQ,
             userAnswer: parsed,
@@ -183,6 +185,12 @@ export function InitialAssessmentFlow() {
     [questions, currentIdx, questionStartTime, advanceToNext]
   );
 
+  // Failsafe: always clear input buffer when current question index advances
+  useEffect(() => {
+    setInputVal('');
+    setLastSlipMessage(null);
+  }, [currentIdx]);
+
   const handleSkipQuestion = useCallback(() => {
     if (step !== 'quiz' || questions.length === 0) return;
     playClickSound();
@@ -190,6 +198,7 @@ export function InitialAssessmentFlow() {
     if (!currentQ) return;
 
     const elapsed = Date.now() - questionStartTime;
+    setInputVal('');
     advanceToNext({
       question: currentQ,
       userAnswer: 'pass',
@@ -204,13 +213,11 @@ export function InitialAssessmentFlow() {
     (digit: string) => {
       if (step !== 'quiz' || questions.length === 0 || isAnswerWrong) return;
       playClickSound();
-      setInputVal((prev) => {
-        const next = prev + digit;
-        checkAnswer(next);
-        return next;
-      });
+      const next = inputVal + digit;
+      setInputVal(next);
+      checkAnswer(next);
     },
-    [step, questions.length, isAnswerWrong, checkAnswer]
+    [step, questions.length, isAnswerWrong, inputVal, checkAnswer]
   );
 
   const handleBackspace = useCallback(() => {
@@ -264,17 +271,12 @@ export function InitialAssessmentFlow() {
   }, [currentQ]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/95 backdrop-blur-xl overflow-y-auto">
-      {/* Flutter style elevated dialog */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.96, y: 15 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className="w-full max-w-xl bg-slate-900/90 border border-slate-800/80 rounded-3xl p-5 sm:p-8 shadow-2xl shadow-indigo-950/40 relative overflow-hidden my-auto max-h-[92vh] overflow-y-auto"
-      >
+    <div className="fixed inset-0 z-50 min-h-screen w-full bg-slate-950/98 backdrop-blur-2xl overflow-y-auto flex flex-col items-center justify-start pt-4 sm:pt-8 pb-48 sm:pb-36 px-4">
+      {/* Edge-to-edge container covering full mobile space without cramped windowed frame */}
+      <div className="w-full max-w-xl flex flex-col space-y-6 relative z-10 my-auto">
         {/* Subtle decorative background gradient orbs */}
-        <div className="absolute -top-24 -right-24 w-60 h-60 bg-violet-600/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 w-60 h-60 bg-emerald-600/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-72 h-72 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-72 h-72 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
 
         <AnimatePresence mode="wait">
           {/* ========================================================================= */}
@@ -642,7 +644,7 @@ export function InitialAssessmentFlow() {
             </motion.div>
           )}
         </AnimatePresence>
-      </motion.div>
+      </div>
     </div>
   );
 }

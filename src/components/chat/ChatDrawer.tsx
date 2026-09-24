@@ -24,6 +24,7 @@ import { presenceEngine } from '../../core/social/presenceEngine';
 import { getSupabase } from '../../lib/supabase/client';
 import { UserAvatar } from '../auth/UserAvatar';
 import { BadgeEmblem } from '../badges/BadgeEmblem';
+import { DraggableChatFab } from './DraggableChatFab';
 
 export const ChatDrawer: React.FC = () => {
   const {
@@ -211,19 +212,13 @@ export const ChatDrawer: React.FC = () => {
   if (!currentUser) {
     return (
       <>
-        {/* Floating Trigger Button for Mobile & Desktop — elevated above mobile navigation bar */}
+        {/* Draggable & Edge-Snapped Floating Trigger Button */}
         {!isOpen && !isDrillMode && (
-          <button
+          <DraggableChatFab
             onClick={() => setAuthModalOpen(true)}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-2 px-3.5 py-2.5 rounded-full bg-gradient-to-tr from-violet-600 via-indigo-600 to-emerald-600 hover:from-violet-500 hover:to-emerald-500 text-white shadow-xl shadow-violet-600/30 border border-violet-400/30 hover:scale-105 active:scale-95 transition-all group min-h-[44px]"
-            title="Open Friends & 1v1 Chat"
-            aria-label="Open Friends and Chat"
-          >
-            <div className="relative flex items-center justify-center">
-              <MessageCircle className="w-5 h-5 group-hover:rotate-6 transition-transform text-white" />
-            </div>
-            <span className="text-xs font-bold font-sans tracking-wide">Chat</span>
-          </button>
+            badgeCount={0}
+            hasUnread={false}
+          />
         )}
 
         {/* Unauthenticated Drawer Screen */}
@@ -274,24 +269,13 @@ export const ChatDrawer: React.FC = () => {
 
   return (
     <>
-      {/* Floating Trigger Button in Bottom Right — elevated above mobile bottom tab bar */}
+      {/* Draggable & Edge-Snapped Floating Trigger Button */}
       {!isOpen && !isDrillMode && (
-        <button
+        <DraggableChatFab
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center gap-2 px-3.5 py-2.5 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-tr from-violet-600 via-indigo-600 to-emerald-600 hover:from-violet-500 hover:to-emerald-500 text-white shadow-xl shadow-violet-600/30 border border-violet-400/30 hover:scale-105 active:scale-95 transition-all group min-h-[44px]"
-          title="Open Friends & 1v1 Chat"
-          aria-label="Open Friends and Chat"
-        >
-          <div className="relative flex items-center justify-center">
-            <MessageCircle className="w-5 h-5 group-hover:rotate-6 transition-transform text-white" />
-            {(friends.length > 0 || onlineUserIds.size > 0) && (
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 rounded-full ring-2 ring-slate-950 animate-pulse" />
-            )}
-          </div>
-          <span className="text-xs font-bold font-sans tracking-wide">
-            {friends.length > 0 ? `Chat (${friends.length})` : 'Chat'}
-          </span>
-        </button>
+          badgeCount={friends.length}
+          hasUnread={onlineUserIds.size > 0}
+        />
       )}
 
       {/* Slide-out / Mobile Fullscreen Drawer */}
