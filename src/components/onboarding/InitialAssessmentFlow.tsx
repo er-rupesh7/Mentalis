@@ -77,7 +77,7 @@ const TABLE_OPTIONS = [
 export function InitialAssessmentFlow() {
   const { completeInitialOnboarding } = useQuizStore();
 
-  const [step, setStep] = useState<'declaration' | 'quiz' | 'completed'>('declaration');
+  const [step, setStep] = useState<'opt_in' | 'declaration' | 'quiz' | 'completed'>('opt_in');
   const [selectedLimit, setSelectedLimit] = useState<number>(20);
   const [targetQuestionCount, setTargetQuestionCount] = useState<number>(25);
 
@@ -92,6 +92,12 @@ export function InitialAssessmentFlow() {
 
   // Final Computed Report
   const [report, setReport] = useState<CognitiveMindReport | null>(null);
+
+  // Skip assessment completely and explore app immediately
+  const handleSkipEntireAssessment = () => {
+    playClickSound();
+    completeInitialOnboarding(selectedLimit || 20, 75);
+  };
 
   // Initialize and start the diagnostic quiz
   const handleStartQuiz = () => {
@@ -280,6 +286,103 @@ export function InitialAssessmentFlow() {
 
         <AnimatePresence mode="wait">
           {/* ========================================================================= */}
+          {/* STEP 0: OPT-IN PROMPT - WOULD YOU LIKE ME TO ANALYSE YOUR TABLES?         */}
+          {/* ========================================================================= */}
+          {step === 'opt_in' && (
+            <motion.div
+              key="opt_in"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              className="space-y-6"
+            >
+              {/* AI Agent Avatar & Badge */}
+              <div className="text-center space-y-3">
+                <div className="relative inline-block">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-tr from-violet-600 via-indigo-500 to-cyan-400 p-[2px] shadow-xl shadow-violet-600/30 mx-auto">
+                    <div className="w-full h-full bg-slate-950 rounded-[22px] flex items-center justify-center">
+                      <Brain className="w-8 h-8 sm:w-10 sm:h-10 text-violet-300 animate-pulse" />
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 border-2 border-slate-950 flex items-center justify-center">
+                    <Sparkles className="w-3 h-3 text-white" />
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 text-xs font-semibold">
+                  <Activity className="w-3.5 h-3.5 text-violet-400" />
+                  <span>Cognitive Diagnostic Engine • Optional Setup</span>
+                </div>
+
+                <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
+                  Would you like me to analyse how much table you know?
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+                  I can benchmark your genuine mental latency, detect calculation hesitations, and tailor your daily drills. Or if you prefer, skip directly to start learning tables, squares, cubes, and shortcuts freely.
+                </p>
+              </div>
+
+              {/* Cognitive Highlights Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+                  <div className="w-7 h-7 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs font-bold text-white">Speed Latency</div>
+                  <p className="text-[11px] text-slate-400 leading-normal">
+                    Measures milliseconds without rote song recitation.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+                  <div className="w-7 h-7 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs font-bold text-white">Slip Detection</div>
+                  <p className="text-[11px] text-slate-400 leading-normal">
+                    Distinguishes typing slips from genuine recall gaps.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-1.5">
+                  <div className="w-7 h-7 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                    <Target className="w-4 h-4" />
+                  </div>
+                  <div className="text-xs font-bold text-white">Custom Roadmap</div>
+                  <p className="text-[11px] text-slate-400 leading-normal">
+                    Unlocks targeted Vedic shortcuts and progressive drills.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons: Opt-in vs Skip */}
+              <div className="space-y-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    playClickSound();
+                    setStep('declaration');
+                  }}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-violet-600/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Yes, Analyse My Tables (2 Min)</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSkipEntireAssessment}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                >
+                  <SkipForward className="w-4 h-4 text-slate-400" />
+                  <span>Skip Assessment & Start Exploring Directly</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ========================================================================= */}
           {/* STEP 1: SELF DECLARATION & TEST CALIBRATION                               */}
           {/* ========================================================================= */}
           {step === 'declaration' && (
@@ -371,15 +474,26 @@ export function InitialAssessmentFlow() {
                 </div>
               </div>
 
-              {/* Primary Launch CTA */}
-              <button
-                type="button"
-                onClick={handleStartQuiz}
-                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-violet-600/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-              >
-                <span>Begin Mental Capability Assessment</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              {/* Action Buttons: Launch vs Skip */}
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={handleStartQuiz}
+                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-violet-600/30 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                >
+                  <span>Begin Mental Capability Assessment</span>
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSkipEntireAssessment}
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 text-slate-400 hover:text-slate-200 border border-slate-800 text-xs font-medium transition-colors flex items-center justify-center gap-2"
+                >
+                  <SkipForward className="w-3.5 h-3.5" />
+                  <span>Skip Assessment for Now</span>
+                </button>
+              </div>
             </motion.div>
           )}
 

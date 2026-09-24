@@ -23,6 +23,7 @@ export const MobileTabBar: React.FC = () => {
     streak,
     currentUser,
     setAuthModalOpen,
+    setIsArcadeHubOpen,
   } = useQuizStore();
 
   // Hide during focused full-screen drill modes or when custom drill builder modal is open
@@ -76,11 +77,13 @@ export const MobileTabBar: React.FC = () => {
             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] rounded-full bg-violet-500 transition-all duration-300 ${isHomeActive ? 'w-6 opacity-100' : 'w-0 opacity-0'}`} />
           </button>
 
-          {/* LEARN TABLES */}
+          {/* LEARN TABLES & FOUNDATIONS HUB (GRID ICON) */}
           <button
-            onClick={() => setViewMode('learn_table')}
+            onClick={() => {
+              setIsArcadeHubOpen(true);
+            }}
             className="flex flex-col items-center justify-end gap-1 flex-1 pb-0.5 group relative active:scale-95 transition-transform duration-100"
-            aria-label="Learn Tables"
+            aria-label="Disciplines Hub"
           >
             <Grid
               className={`w-[22px] h-[22px] transition-colors duration-200 ${
@@ -89,7 +92,7 @@ export const MobileTabBar: React.FC = () => {
               strokeWidth={isTablesActive ? 2.5 : 2}
             />
             <span className={`text-[10px] font-semibold leading-none tracking-tight transition-colors duration-200 ${isTablesActive ? 'text-emerald-300' : 'text-slate-500'}`}>
-              Tables
+              Tables+
             </span>
             <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-[2px] rounded-full bg-emerald-500 transition-all duration-300 ${isTablesActive ? 'w-6 opacity-100' : 'w-0 opacity-0'}`} />
           </button>

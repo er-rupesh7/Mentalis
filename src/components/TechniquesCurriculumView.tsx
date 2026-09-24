@@ -25,6 +25,7 @@ import {
   Trophy,
   Layers,
   ArrowUpRight,
+  Lock,
 } from 'lucide-react';
 import { useQuizStore } from '../core/store/useQuizStore';
 import {
@@ -36,6 +37,9 @@ import {
 import {
   MODULE_METADATA,
   TECHNIQUE_CURRICULUM,
+  isTechniqueUnlocked,
+  getTechniquePrerequisite,
+  MIN_MASTERY_POINTS_TO_UNLOCK,
 } from '../core/techniques/techniqueCurriculum';
 import { useTranslations } from 'next-intl';
 import { generateTechniqueProblem } from '../core/techniques/techniqueGenerators';
@@ -544,23 +548,37 @@ export const TechniquesCurriculumView: React.FC = () => {
           const locTech = getLocalizedTechnique(tId, locale, lesson?.title);
           const mastery = techniqueMasteryMap[tId];
           const isSelected = selectedTechniqueId === tId;
+          const isUnlocked = isTechniqueUnlocked(tId, techniqueMasteryMap);
+          const points = mastery?.masteryPoints || 0;
 
           return (
             <button
               key={tId}
-              onClick={() => setSelectedTechniqueId(tId)}
+              onClick={() => {
+                soundEngine.playClick();
+                setSelectedTechniqueId(tId);
+              }}
               className={`flex-shrink-0 flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all ${
                 isSelected
                   ? 'bg-violet-600 text-white border-violet-500 shadow-md shadow-violet-600/25'
-                  : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800'
+                  : isUnlocked
+                  ? 'bg-slate-900/80 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800'
+                  : 'bg-slate-950/40 text-slate-600 border-slate-900 hover:text-slate-400'
               }`}
             >
-              {mastery?.isMastered ? (
+              {!isUnlocked ? (
+                <Lock className="w-3.5 h-3.5 text-amber-500" />
+              ) : mastery?.isMastered ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
               ) : (
                 <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
               )}
               <span>{locTech.title}</span>
+              {isUnlocked && points > 0 && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-violet-950/80 text-violet-300 border border-violet-800 font-mono">
+                  {points} MP
+                </span>
+              )}
               {mastery?.isMastered && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-950/80 text-emerald-300 border border-emerald-800 font-mono">
                   {tTech('mastered')}
@@ -580,6 +598,11 @@ export const TechniquesCurriculumView: React.FC = () => {
               <h2 className="text-xl sm:text-2xl font-black text-white">
                 {localizedActive.title}
               </h2>
+              {activeMastery.masteryPoints ? (
+                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                  {activeMastery.masteryPoints} MP
+                </span>
+              ) : null}
               {activeMastery.isMastered && (
                 <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   <Trophy className="w-3 h-3 text-emerald-400" />
@@ -634,6 +657,38 @@ export const TechniquesCurriculumView: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Locked Overlay if active technique is not yet unlocked */}
+        {!isTechniqueUnlocked(selectedTechniqueId, techniqueMasteryMap) && (
+          <div className="p-6 sm:p-8 rounded-2xl bg-slate-950/80 border border-amber-500/30 text-center space-y-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mx-auto">
+              <Lock className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-white">Technique Strategy Locked</h3>
+              <p className="text-xs text-slate-400 max-w-md mx-auto">
+                Earn at least {MIN_MASTERY_POINTS_TO_UNLOCK} Mastery Points in practice on previous techniques to unlock this strategy.
+              </p>
+            </div>
+            {(() => {
+              const { prerequisiteId } = getTechniquePrerequisite(selectedTechniqueId);
+              const prereqLesson = prerequisiteId ? TECHNIQUE_CURRICULUM[prerequisiteId] : null;
+              const prereqPoints = prerequisiteId ? (techniqueMasteryMap[prerequisiteId]?.masteryPoints || 0) : 0;
+              return prerequisiteId ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    soundEngine.playClick();
+                    setSelectedTechniqueId(prerequisiteId);
+                  }}
+                  className="py-2 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold transition-all"
+                >
+                  Practice Prerequisite: {prereqLesson?.title} ({prereqPoints}/{MIN_MASTERY_POINTS_TO_UNLOCK} MP) ➔
+                </button>
+              ) : null;
+            })()}
+          </div>
+        )}
 
         {/* Tab 1: Learn (Secret & Formula + Mind-Odometer Accumulator) */}
         {activeTab === 'learn' && activeLesson && (

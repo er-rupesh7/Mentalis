@@ -4,7 +4,12 @@
  * and Worked Examples across all 5 core modules.
  */
 
-import { TechniqueLesson, TechniqueModuleCategory, CalculationTechniqueId } from '../types';
+import {
+  TechniqueLesson,
+  TechniqueModuleCategory,
+  CalculationTechniqueId,
+  TechniqueMasteryState,
+} from '../types';
 
 export interface ModuleMetadata {
   id: TechniqueModuleCategory;
@@ -1576,3 +1581,54 @@ export const TECHNIQUE_CURRICULUM: Record<CalculationTechniqueId, TechniqueLesso
     },
   },
 };
+
+export const MIN_MASTERY_POINTS_TO_UNLOCK = 40;
+
+/**
+ * Returns the prerequisite technique ID and required points for any technique.
+ * The first technique in every module has no prerequisite (unlocked by default).
+ */
+export function getTechniquePrerequisite(techniqueId: CalculationTechniqueId): {
+  prerequisiteId: CalculationTechniqueId | null;
+  requiredPoints: number;
+} {
+  for (const mod of Object.values(MODULE_METADATA)) {
+    const idx = mod.techniqueIds.indexOf(techniqueId);
+    if (idx > 0) {
+      return {
+        prerequisiteId: mod.techniqueIds[idx - 1],
+        requiredPoints: MIN_MASTERY_POINTS_TO_UNLOCK,
+      };
+    } else if (idx === 0) {
+      return {
+        prerequisiteId: null,
+        requiredPoints: 0,
+      };
+    }
+  }
+  return { prerequisiteId: null, requiredPoints: 0 };
+}
+
+/**
+ * Determines whether a technique is unlocked given the user's technique mastery map.
+ */
+export function isTechniqueUnlocked(
+  techniqueId: CalculationTechniqueId,
+  masteryMap: Record<string, TechniqueMasteryState>
+): boolean {
+  const current = masteryMap[techniqueId];
+  if (current?.isUnlocked) return true;
+
+  const { prerequisiteId, requiredPoints } = getTechniquePrerequisite(techniqueId);
+  if (!prerequisiteId) return true; // First in category is always unlocked
+
+  const prereqState = masteryMap[prerequisiteId];
+  if (!prereqState) return false;
+
+  return (
+    prereqState.isMastered ||
+    (prereqState.masteryPoints || 0) >= requiredPoints ||
+    (prereqState.consecutiveCorrect || 0) >= 3
+  );
+}
+

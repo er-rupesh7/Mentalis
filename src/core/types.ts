@@ -11,6 +11,7 @@ export type ModuleId =
   | 'tables_bootcamp'
   | 'exam_quant'
   | 'fractions_percentages'
+  | 'algebra_bodmas'
   | 'custom_drill';
 
 export type Operator = '+' | '-' | '×' | '÷' | '^2' | '^3' | '²' | '³' | '∛' | '√' | '%' | '≈' | ':';
@@ -395,6 +396,9 @@ export interface TechniqueMasteryState {
   averageLatencyMs: number;
   totalExposures: number;
   isMastered: boolean;
+  masteryPoints: number;
+  isUnlocked: boolean;
+  prerequisiteId?: CalculationTechniqueId;
   unlockedAt?: number;
   masteredAt?: number;
 }

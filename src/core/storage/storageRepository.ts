@@ -172,15 +172,22 @@ export class LocalStorageRepository implements IStorageRepository {
               newExposures
           );
 
-    // Automaticity rule: 5 consecutive correct answers with average latency <= 3500ms
+    // Automaticity rule: 5 consecutive correct answers with average latency <= 3500ms OR >= 80 points
+    const pointsGained = isCorrect
+      ? 10 + (latencyMs <= 3500 ? 5 : 0) + Math.min(newConsecutive * 2, 8)
+      : 1;
+    const newMasteryPoints = (existing.masteryPoints || 0) + pointsGained;
+
     const isNowMastered =
-      existing.isMastered || (newConsecutive >= 5 && newAvgLatency <= 3500);
+      existing.isMastered || (newConsecutive >= 5 && newAvgLatency <= 3500) || newMasteryPoints >= 80;
 
     const updated: TechniqueMasteryState = {
       ...existing,
       consecutiveCorrect: newConsecutive,
       totalExposures: newExposures,
       averageLatencyMs: newAvgLatency,
+      masteryPoints: newMasteryPoints,
+      isUnlocked: true,
       isMastered: isNowMastered,
       masteredAt: isNowMastered ? existing.masteredAt || Date.now() : undefined,
     };

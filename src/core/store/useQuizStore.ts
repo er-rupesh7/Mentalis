@@ -176,12 +176,13 @@ export function resolveActiveDimension(
 }
 
 import { storageService } from '../storage/storageRepository';
-import { TECHNIQUE_CURRICULUM } from '../techniques/techniqueCurriculum';
+import { TECHNIQUE_CURRICULUM, getTechniquePrerequisite } from '../techniques/techniqueCurriculum';
 
 export const INITIAL_TECHNIQUE_MASTERY_MAP: Record<CalculationTechniqueId, TechniqueMasteryState> =
   Object.keys(TECHNIQUE_CURRICULUM).reduce((acc, key) => {
     const tId = key as CalculationTechniqueId;
     const lesson = TECHNIQUE_CURRICULUM[tId];
+    const { prerequisiteId } = getTechniquePrerequisite(tId);
     acc[tId] = {
       techniqueId: tId,
       title: lesson?.title || tId,
@@ -189,6 +190,9 @@ export const INITIAL_TECHNIQUE_MASTERY_MAP: Record<CalculationTechniqueId, Techn
       averageLatencyMs: 0,
       totalExposures: 0,
       isMastered: false,
+      masteryPoints: 0,
+      isUnlocked: !prerequisiteId,
+      prerequisiteId: prerequisiteId || undefined,
     };
     return acc;
   }, {} as Record<CalculationTechniqueId, TechniqueMasteryState>);
@@ -440,12 +444,19 @@ interface QuizState {
   unlockedFeatures: string[];
   lastActiveSection: string;
   selectedLearnTable: number;
+  foundationsStudioTab: 'tables' | 'squares' | 'cubes' | 'shortcuts' | 'bodmas';
+  isArcadeHubOpen: boolean;
 
   completeInitialOnboarding: (declaredLimit: number, baselineScore?: number) => void;
   setLastActiveSection: (section: string) => void;
   setSelectedLearnTable: (table: number) => void;
+  setFoundationsStudioTab: (tab: 'tables' | 'squares' | 'cubes' | 'shortcuts' | 'bodmas') => void;
+  setIsArcadeHubOpen: (open: boolean) => void;
   unlockFeature: (featureKey: string) => void;
   startLearnTablePractice: (tableNumber: number, questionCount?: number) => void;
+  startBodmasPractice: (questionCount?: number) => void;
+  startSquaresPractice: (questionCount?: number) => void;
+  startCubesPractice: (questionCount?: number) => void;
 
   // Actions - Navigation & Module Selection
   setViewMode: (mode: ViewMode) => void;
@@ -642,6 +653,8 @@ export const useQuizStore = create<QuizState>()(
       techniqueMasteryMap: INITIAL_TECHNIQUE_MASTERY_MAP,
       tableMasteryAlert: null,
       isCustomDrillModalOpen: false,
+      isArcadeHubOpen: false,
+      foundationsStudioTab: 'tables',
 
       soundEnabled: true,
       reducedMotion: false,
@@ -746,6 +759,55 @@ export const useQuizStore = create<QuizState>()(
         set({
           activeModule: 'multiplication',
           activeTable: tableNumber,
+          viewMode: 'practice',
+          lastActiveSection: 'learn_table',
+        });
+        get().startSession({
+          goalCount: questionCount,
+          mode: 'standard',
+          isEndless: false,
+        });
+      },
+
+      setFoundationsStudioTab: (tab) => {
+        set({ foundationsStudioTab: tab });
+      },
+
+      setIsArcadeHubOpen: (open) => {
+        set({ isArcadeHubOpen: open });
+      },
+
+      startBodmasPractice: (questionCount = 20) => {
+        set({
+          activeModule: 'algebra_bodmas',
+          viewMode: 'practice',
+          lastActiveSection: 'learn_table',
+        });
+        get().startSession({
+          goalCount: questionCount,
+          mode: 'standard',
+          isEndless: false,
+        });
+      },
+
+      startSquaresPractice: (questionCount = 20) => {
+        set({
+          activeModule: 'squares_cubes',
+          activeSquareTrack: 'near_50',
+          viewMode: 'practice',
+          lastActiveSection: 'learn_table',
+        });
+        get().startSession({
+          goalCount: questionCount,
+          mode: 'standard',
+          isEndless: false,
+        });
+      },
+
+      startCubesPractice: (questionCount = 20) => {
+        set({
+          activeModule: 'squares_cubes',
+          activeSquareTrack: 'cubes_anchor',
           viewMode: 'practice',
           lastActiveSection: 'learn_table',
         });
@@ -990,10 +1052,14 @@ export const useQuizStore = create<QuizState>()(
           averageLatencyMs: 2000,
           totalExposures: 20,
           isMastered: false,
+          masteryPoints: 0,
+          isUnlocked: true,
         };
         const updated: TechniqueMasteryState = {
           ...current,
           isMastered: true,
+          isUnlocked: true,
+          masteryPoints: Math.max(current.masteryPoints || 0, 100),
           masteredAt: Date.now(),
           consecutiveCorrect: Math.max(current.consecutiveCorrect, 10),
           totalExposures: current.totalExposures + 20,

@@ -281,6 +281,8 @@ export const PracticeScreen: React.FC<PracticeScreenProps> = ({ onOpenTutorial }
     } else {
       trackTitle = 'Custom Workout';
     }
+  } else if (activeModule === 'algebra_bodmas') {
+    trackTitle = 'ALGEBRA & BODMAS';
   } else {
     trackTitle = activeSquareTrack.replace(/_/g, ' ').toUpperCase();
   }

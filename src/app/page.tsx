@@ -29,6 +29,7 @@ import { LearnTableScreen } from '../components/tables/LearnTableScreen';
 import { SquaresAndCubesHub } from '../components/powers/SquaresAndCubesHub';
 import { LiveRankTicker } from '../components/ranking/LiveRankTicker';
 import { InitialAssessmentFlow } from '../components/onboarding/InitialAssessmentFlow';
+import { ArcadeHubModal } from '../components/tables/ArcadeHubModal';
 
 export default function MentalisApp() {
   const {
@@ -47,6 +48,8 @@ export default function MentalisApp() {
     avatarType,
     setAvatarPreference,
     setAuthModalOpen,
+    isArcadeHubOpen,
+    setIsArcadeHubOpen,
   } = useQuizStore();
 
   const [isTutorialOpen, setIsTutorialOpen] = useState(false);
@@ -142,6 +145,12 @@ export default function MentalisApp() {
         <CustomDrillModal
           isOpen={isCustomDrillModalOpen}
           onClose={() => setIsCustomDrillModalOpen(false)}
+        />
+
+        {/* Arcade Quick-Select Hub Modal */}
+        <ArcadeHubModal
+          isOpen={isArcadeHubOpen}
+          onClose={() => setIsArcadeHubOpen(false)}
         />
 
         {/* First-Launch Language Onboarding Modal */}

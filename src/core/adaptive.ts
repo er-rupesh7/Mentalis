@@ -36,6 +36,7 @@ import {
   generateFractionPercentageQuestion,
 } from './examQuantGenerators';
 import { detectTypingSlip } from './typingSlipDetector';
+import { generateBodmasQuestion, adaptBodmasToUnifiedQuestion } from './algebraBodmasEngine';
 
 export interface TableAutomaticityResult {
   table: number;
@@ -1073,6 +1074,11 @@ export function getAdaptiveQuestion(options: AdaptiveQuestionOptions): Question 
     case 'squares_cubes':
       q = generateSquareCubeQuestion(activeSquareTrack);
       break;
+    case 'algebra_bodmas': {
+      const prob = generateBodmasQuestion(undefined, isHighLevel ? 3 : 2);
+      q = adaptBodmasToUnifiedQuestion(prob);
+      break;
+    }
     default:
       q = isHighLevel
         ? generateArithmeticComboQuestion('add_sub_3d_2d')

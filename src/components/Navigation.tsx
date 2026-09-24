@@ -47,6 +47,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
     currentUser,
     setIsChatDrawerOpen,
     setAuthModalOpen,
+    setIsArcadeHubOpen,
   } = useQuizStore();
 
   const [isTableDropdownOpen, setIsTableDropdownOpen] = useState(false);
@@ -164,6 +165,14 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           >
             <Sliders className="w-3.5 h-3.5" />
             {tNav('customWorkout')}
+          </button>
+
+          <button
+            onClick={() => setIsArcadeHubOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-300 hover:text-white hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/30 transition-all font-bold shrink-0 whitespace-nowrap"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+            <span>Arena</span>
           </button>
 
           <button

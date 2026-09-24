@@ -127,6 +127,36 @@ class SoundEngine {
   }
 
   /**
+   * Sparkling high-resonance ascending shimmer for technique & item unlocks
+   */
+  public playUnlock() {
+    if (!this.enabled) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+    // Sparkling ethereal pentatonic chime: F5, A5, C6, E6, G6
+    const freqs = [698.46, 880.0, 1046.5, 1318.51, 1567.98];
+    freqs.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+
+      gain.gain.setValueAtTime(0, now + idx * 0.05);
+      gain.gain.linearRampToValueAtTime(0.15, now + idx * 0.05 + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.45);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + idx * 0.05);
+      osc.stop(now + idx * 0.05 + 0.48);
+    });
+  }
+
+  /**
    * Gentle, non-punitive low thud for incorrect answers
    */
   public playError() {
