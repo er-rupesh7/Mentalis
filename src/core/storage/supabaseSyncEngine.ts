@@ -6,7 +6,7 @@
 
 import { getSupabase, isSupabaseConfigured } from '../../lib/supabase/client';
 import { Database } from '../../lib/supabase/types';
-import { calculateUserRank } from '../mastery';
+import { calculateUserRank, calculateActivityStreaks } from '../mastery';
 
 export type SyncStatus = 'unconfigured' | 'offline' | 'idle' | 'syncing' | 'synced' | 'error';
 
@@ -203,18 +203,30 @@ class SupabaseSyncEngine {
           }
         }
 
+        const remoteDailyActivity = (remoteStats.progress_map as any)?._dailyActivityMap || localState?.dailyActivityMap || {};
+        const calculatedStreaks = calculateActivityStreaks(remoteDailyActivity);
+
+        const rawLongest = remoteStats.longest_streak || 0;
+        const safeLongest = (rawLongest > 0 && rawLongest <= Math.max(1, calculatedStreaks.totalActiveDays))
+          ? Math.max(rawLongest, calculatedStreaks.longestDailyStreak)
+          : calculatedStreaks.longestDailyStreak;
+
+        const safeDailyStreak = (remoteStats.current_streak > 0 && remoteStats.current_streak <= Math.max(1, calculatedStreaks.totalActiveDays))
+          ? remoteStats.current_streak
+          : (calculatedStreaks.currentDailyStreak || localState?.overallStats?.dailyActiveStreak || 1);
+
         const hydratedState: any = {
           overallStats: {
             totalCalculations: remoteStats.total_questions_answered,
             totalCorrect: remoteStats.total_correct,
-            currentStreak: remoteStats.current_streak,
-            bestStreak: remoteStats.longest_streak,
+            currentStreak: localState?.overallStats?.currentStreak || 0,
+            bestStreak: (remoteStats.progress_map as any)?._bestQuestionStreak || localState?.overallStats?.bestStreak || 0,
             lastActiveDate: remoteStats.last_active_date,
-            dailyActiveStreak: localState?.overallStats?.dailyActiveStreak || 1,
+            dailyActiveStreak: safeDailyStreak,
             totalTimeSpentSeconds: remoteStats.total_time_spent_seconds || localState?.overallStats?.totalTimeSpentSeconds || 0,
           },
           progressMap: remoteStats.progress_map || {},
-          dailyActivityMap: (remoteStats.progress_map as any)?._dailyActivityMap || localState?.dailyActivityMap || {},
+          dailyActivityMap: remoteDailyActivity,
           anzanStats: remoteStats.anzan_stats || {},
           xp: remoteXP,
           level: remoteLevel,
@@ -367,12 +379,19 @@ class SupabaseSyncEngine {
       // 1. User Stats & Rank Calculation
       const totalCalcs = state.overallStats?.totalCalculations || state.overallStats?.totalQuestions || 0;
       const totalCorrect = state.overallStats?.totalCorrect || 0;
-      const currentStreak = state.overallStats?.currentStreak || 0;
-      const bestStreak = state.overallStats?.bestStreak || state.overallStats?.longestStreak || 0;
       const timeSpent = state.overallStats?.totalTimeSpentSeconds || 0;
       const cpm = timeSpent > 0 ? Number(((totalCorrect / timeSpent) * 60).toFixed(1)) : 0;
       const accuracy = totalCalcs > 0 ? Math.round((totalCorrect / totalCalcs) * 100) : 0;
-      const rankInfo = calculateUserRank(totalCalcs, totalCorrect, bestStreak, timeSpent);
+
+      // Compute true daily streaks
+      const streakStats = calculateActivityStreaks(state.dailyActivityMap || {});
+      const currentDailyStreak = state.overallStats?.dailyActiveStreak || streakStats.currentDailyStreak || 0;
+      const longestDailyStreak = Math.max(
+        streakStats.longestDailyStreak,
+        Math.min(currentDailyStreak, Math.max(1, streakStats.totalActiveDays))
+      );
+
+      const rankInfo = calculateUserRank(totalCalcs, totalCorrect, longestDailyStreak, timeSpent);
 
       const profileUpsertPayload: any = {
         id: activeUserId,
@@ -404,8 +423,8 @@ class SupabaseSyncEngine {
           user_id: activeUserId,
           total_questions_answered: totalCalcs,
           total_correct: totalCorrect,
-          current_streak: currentStreak,
-          longest_streak: bestStreak,
+          current_streak: currentDailyStreak,
+          longest_streak: longestDailyStreak,
           total_time_spent_seconds: timeSpent,
           last_active_date: state.overallStats?.lastActiveDate || null,
           overall_cpm: cpm,
@@ -413,6 +432,7 @@ class SupabaseSyncEngine {
           progress_map: {
             ...(state.progressMap || {}),
             _dailyActivityMap: state.dailyActivityMap || {},
+            _bestQuestionStreak: state.overallStats?.bestStreak || 0,
           },
           anzan_stats: state.anzanStats || {},
           updated_at: new Date().toISOString(),
@@ -428,8 +448,8 @@ class SupabaseSyncEngine {
         const { error: rpcErr } = await (supabase as any).rpc('sync_user_stats', {
           p_total_questions_answered: totalCalcs,
           p_total_correct: totalCorrect,
-          p_current_streak: currentStreak,
-          p_longest_streak: bestStreak,
+          p_current_streak: currentDailyStreak,
+          p_longest_streak: longestDailyStreak,
           p_total_time_spent_seconds: timeSpent,
           p_last_active_date: state.overallStats?.lastActiveDate || null,
           p_overall_cpm: cpm,
@@ -437,6 +457,7 @@ class SupabaseSyncEngine {
           p_progress_map: {
             ...(state.progressMap || {}),
             _dailyActivityMap: state.dailyActivityMap || {},
+            _bestQuestionStreak: state.overallStats?.bestStreak || 0,
           },
           p_anzan_stats: state.anzanStats || {},
         });

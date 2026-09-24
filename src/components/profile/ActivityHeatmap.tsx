@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Flame, Calendar, CheckCircle2, TrendingUp, Zap } from 'lucide-react';
+import { calculateActivityStreaks } from '@/core/mastery';
 
 interface ActivityDay {
   date: string; // YYYY-MM-DD
@@ -36,7 +37,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
   const [hoveredDay, setHoveredDay] = useState<ActivityDay | null>(null);
 
   // Generate the 30-day timeline ending today
-  const { days, total30DayCalculations, activeDaysCount, total30DayTimeSeconds } = useMemo(() => {
+  const { days, total30DayCalculations, activeDaysCount, total30DayTimeSeconds, combinedMap } = useMemo(() => {
     const today = new Date();
     const result: ActivityDay[] = [];
     let sum30 = 0;
@@ -123,8 +124,28 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
       total30DayCalculations: sum30,
       total30DayTimeSeconds: sum30Seconds,
       activeDaysCount: activeDays,
+      combinedMap,
     };
   }, [activityMap, currentStreak, lastActiveDate]);
+
+  // Accurately compute calendar-day streaks from activity map
+  const streakStats = useMemo(() => {
+    return calculateActivityStreaks(combinedMap);
+  }, [combinedMap]);
+
+  // Current Streak: prefer true daily streak from activity history, or valid currentStreak prop
+  const effectiveCurrentStreak = Math.max(
+    streakStats.currentDailyStreak,
+    (currentStreak && currentStreak <= Math.max(1, activeDaysCount)) ? currentStreak : 0
+  );
+
+  // Longest Streak: cannot exceed total active days (e.g. 74 days when active days is 4 was a question-streak bug)
+  let effectiveLongestStreak = streakStats.longestDailyStreak;
+  if (longestStreak && longestStreak > 0 && longestStreak <= Math.max(1, activeDaysCount)) {
+    effectiveLongestStreak = Math.max(effectiveLongestStreak, longestStreak);
+  }
+  // Ensure longest streak is at least as large as current streak
+  effectiveLongestStreak = Math.max(effectiveLongestStreak, effectiveCurrentStreak);
 
   // Color mapper for rich multi-tier heat intensity
   const getCellColor = (level: number) => {
@@ -198,7 +219,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
         <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80">
           <span className="text-slate-400 text-[11px] block mb-0.5">Current Streak</span>
           <div className="text-xl font-black text-amber-400 font-mono flex items-center gap-1">
-            <span>{currentStreak}</span>
+            <span>{effectiveCurrentStreak}</span>
             <span className="text-xs text-slate-500 font-normal">days</span>
           </div>
           <span className="text-[10px] text-slate-500 block mt-0.5">Continuous training</span>
@@ -217,7 +238,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({
         <div className="p-3 rounded-2xl bg-slate-950/70 border border-slate-800/80">
           <span className="text-slate-400 text-[11px] block mb-0.5">Longest Streak</span>
           <div className="text-xl font-black text-indigo-400 font-mono flex items-center gap-1">
-            <span>{longestStreak}</span>
+            <span>{effectiveLongestStreak}</span>
             <span className="text-xs text-slate-500 font-normal">days</span>
           </div>
           <span className="text-[10px] text-slate-500 block mt-0.5">All-time personal record</span>

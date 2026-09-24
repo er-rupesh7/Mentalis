@@ -5,7 +5,7 @@
  */
 
 import { getSupabase } from '../../lib/supabase/client';
-import { calculateUserRank, UserRank } from '../mastery';
+import { calculateUserRank, calculateActivityStreaks, UserRank } from '../mastery';
 
 export interface UserProfileData {
   id: string;
@@ -226,10 +226,24 @@ class SocialEngine {
 
     const totalQuestions = statsRow?.total_questions_answered || 0;
     const totalCorrect = statsRow?.total_correct || 0;
-    const longestStreak = statsRow?.longest_streak || 0;
     const totalTimeSpentSeconds = Number(statsRow?.total_time_spent_seconds || 0);
 
-    const rankInfo = calculateUserRank(totalQuestions, totalCorrect, longestStreak, totalTimeSpentSeconds);
+    const dailyActivityMap = (statsRow?.progress_map as any)?._dailyActivityMap || {};
+    const streakStats = calculateActivityStreaks(dailyActivityMap);
+
+    // Sanitize longest_streak: if it was mistakenly set to in-session question streak (e.g. 74 when active days is 4),
+    // clamp it to the true daily streak or max possible active days.
+    const rawLongestStreak = statsRow?.longest_streak || 0;
+    const sanitizedLongestStreak = (rawLongestStreak > 0 && rawLongestStreak <= Math.max(1, streakStats.totalActiveDays))
+      ? Math.max(rawLongestStreak, streakStats.longestDailyStreak)
+      : streakStats.longestDailyStreak;
+
+    const rawCurrentStreak = statsRow?.current_streak || 0;
+    const sanitizedCurrentStreak = (rawCurrentStreak > 0 && rawCurrentStreak <= Math.max(1, streakStats.totalActiveDays))
+      ? rawCurrentStreak
+      : streakStats.currentDailyStreak;
+
+    const rankInfo = calculateUserRank(totalQuestions, totalCorrect, sanitizedLongestStreak, totalTimeSpentSeconds);
 
     return {
       profile: {
@@ -253,14 +267,14 @@ class SocialEngine {
       stats: {
         totalQuestions,
         totalCorrect,
-        currentStreak: statsRow?.current_streak || 0,
-        longestStreak,
+        currentStreak: sanitizedCurrentStreak,
+        longestStreak: sanitizedLongestStreak,
         overallCPM: Number(statsRow?.overall_cpm || 0),
         overallAccuracy: Number(statsRow?.overall_accuracy || 0),
         totalTimeSpentSeconds,
         lastActiveDate: statsRow?.last_active_date || null,
         progressMap: (statsRow?.progress_map as any) || {},
-        dailyActivityMap: (statsRow?.progress_map as any)?._dailyActivityMap || {},
+        dailyActivityMap,
       },
       rankInfo,
       followersCount: followersRes.count || 0,

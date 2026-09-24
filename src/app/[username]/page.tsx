@@ -36,7 +36,7 @@ import { UserAvatar } from '../../components/auth/UserAvatar';
 import { BadgeEmblem } from '../../components/badges/BadgeEmblem';
 import { MasteryBadgeEmblem } from '../../components/badges/MasteryBadgeEmblem';
 import { getLevelProgress } from '../../core/levelEngine';
-import { formatInvestedTime, calculateUserRank } from '../../core/mastery';
+import { formatInvestedTime, calculateUserRank, calculateActivityStreaks } from '../../core/mastery';
 import { getEvaluatedMasteryBadges, getMasteryBadgeById } from '../../core/badges/masteryBadges';
 import { ActivityHeatmap } from '../../components/profile/ActivityHeatmap';
 import { AuthModal } from '../../components/auth/AuthModal';
@@ -194,37 +194,61 @@ export default function PublicProfilePage() {
   const stats = React.useMemo(() => {
     const remoteStats = profileView?.stats;
     if (!remoteStats) {
+      const effectiveMap = isOwnProfile ? (dailyActivityMap || {}) : {};
+      const streakStats = calculateActivityStreaks(effectiveMap);
       return {
         totalQuestions: 0,
         totalCorrect: 0,
-        currentStreak: 0,
-        longestStreak: 0,
+        currentStreak: isOwnProfile ? (overallStats?.dailyActiveStreak || streakStats.currentDailyStreak || 0) : 0,
+        longestStreak: streakStats.longestDailyStreak || 0,
         overallCPM: 0,
         overallAccuracy: 0,
         totalTimeSpentSeconds: 0,
         lastActiveDate: null,
         progressMap: {},
-        dailyActivityMap: {},
+        dailyActivityMap: effectiveMap,
       };
     }
+
+    const effectiveMap = remoteStats.dailyActivityMap || (remoteStats.progressMap as any)?._dailyActivityMap || (isOwnProfile ? (dailyActivityMap || {}) : {}) || {};
+    const streakStats = calculateActivityStreaks(effectiveMap);
+
     if (isOwnProfile && (!remoteStats.totalQuestions || remoteStats.totalQuestions === 0) && (overallStats?.totalCalculations || 0) > 0) {
       const totalQ = overallStats.totalCalculations || 0;
       const totalC = overallStats.totalCorrect || 0;
       const timeS = overallStats.totalTimeSpentSeconds || 0;
+      const localDailyStreak = overallStats.dailyActiveStreak || streakStats.currentDailyStreak || 1;
       return {
         totalQuestions: totalQ,
         totalCorrect: totalC,
-        currentStreak: overallStats.currentStreak || 0,
-        longestStreak: overallStats.bestStreak || 0,
+        currentStreak: localDailyStreak,
+        longestStreak: Math.max(streakStats.longestDailyStreak, Math.min(localDailyStreak, Math.max(1, streakStats.totalActiveDays))),
         overallCPM: timeS > 0 ? Number(((totalC / timeS) * 60).toFixed(1)) : 0,
         overallAccuracy: totalQ > 0 ? Math.round((totalC / totalQ) * 100) : 0,
         totalTimeSpentSeconds: timeS,
         lastActiveDate: overallStats.lastActiveDate || null,
         progressMap: progressMap || {},
-        dailyActivityMap: dailyActivityMap || {},
+        dailyActivityMap: dailyActivityMap || effectiveMap,
       };
     }
-    return remoteStats;
+
+    // Sanitize remote streaks so longestStreak can never exceed total active days
+    const rawLongest = remoteStats.longestStreak || 0;
+    const sanitizedLongest = (rawLongest > 0 && rawLongest <= Math.max(1, streakStats.totalActiveDays))
+      ? Math.max(rawLongest, streakStats.longestDailyStreak)
+      : streakStats.longestDailyStreak;
+
+    const rawCurrent = remoteStats.currentStreak || 0;
+    const sanitizedCurrent = (rawCurrent > 0 && rawCurrent <= Math.max(1, streakStats.totalActiveDays))
+      ? rawCurrent
+      : (isOwnProfile ? (overallStats?.dailyActiveStreak || streakStats.currentDailyStreak || 0) : streakStats.currentDailyStreak);
+
+    return {
+      ...remoteStats,
+      currentStreak: sanitizedCurrent,
+      longestStreak: sanitizedLongest,
+      dailyActivityMap: effectiveMap,
+    };
   }, [isOwnProfile, profileView?.stats, overallStats, progressMap, dailyActivityMap]);
 
   const rankInfo = React.useMemo(() => {
@@ -543,11 +567,12 @@ export default function PublicProfilePage() {
               <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/70 border border-slate-800 min-w-0">
                 <div className="flex items-center gap-2 text-slate-400 text-xs mb-1 truncate">
                   <Flame className="w-4 h-4 text-orange-400 shrink-0" />
-                  <span className="truncate">Best Streak</span>
+                  <span className="truncate">Daily Streak</span>
                 </div>
-                <p className="text-lg sm:text-xl md:text-2xl font-black text-white font-mono truncate">
-                  {stats.longestStreak || 0}
-                </p>
+                <div className="text-lg sm:text-xl md:text-2xl font-black text-white font-mono truncate flex items-baseline gap-1">
+                  <span>{stats.currentStreak || 0}</span>
+                  <span className="text-xs font-normal text-amber-400 font-sans">days</span>
+                </div>
               </div>
 
               <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-900/70 border border-slate-800 min-w-0">

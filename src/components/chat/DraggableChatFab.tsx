@@ -10,13 +10,13 @@ interface DraggableChatFabProps {
   hasUnread?: boolean;
 }
 
-const STORAGE_KEY = 'mentalis_floating_chat_pos_v1';
+const STORAGE_KEY = 'mentalis_floating_chat_pos_v2';
 const BUTTON_WIDTH = 105;
 const BUTTON_HEIGHT = 44;
 const PADDING_EDGE = 16;
-const TOP_MIN = 68; // Below top navigation bar
-const BOTTOM_PAD_MOBILE = 90; // Above mobile bottom navigation bar (64px + padding)
-const BOTTOM_PAD_DESKTOP = 30;
+const TOP_MIN = 72; // Well below top navigation bar
+const BOTTOM_PAD_MOBILE = 90; // Above mobile bottom navigation bar
+const BOTTOM_PAD_DESKTOP = 32;
 
 export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
   onClick,
@@ -24,7 +24,7 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
   hasUnread = false,
 }) => {
   const controls = useAnimation();
-  const [mounted, setMounted] = useState(false);
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [snappedSide, setSnappedSide] = useState<'left' | 'right'>('right');
   const isDraggingRef = useRef(false);
   const currentPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -38,7 +38,7 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
       const bottomLimit = windowHeight - BUTTON_HEIGHT - (isMobile ? BOTTOM_PAD_MOBILE : BOTTOM_PAD_DESKTOP);
 
       const clampedY = Math.min(Math.max(targetY, TOP_MIN), Math.max(TOP_MIN, bottomLimit));
-      const targetX = side === 'left' ? PADDING_EDGE : windowWidth - BUTTON_WIDTH - PADDING_EDGE;
+      const targetX = side === 'left' ? PADDING_EDGE : Math.max(PADDING_EDGE, windowWidth - BUTTON_WIDTH - PADDING_EDGE);
 
       return { x: targetX, y: clampedY };
     },
@@ -47,7 +47,6 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
 
   // Initialize position from localStorage or default to bottom-right
   useEffect(() => {
-    setMounted(true);
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
     const isMobile = windowWidth < 640;
@@ -62,7 +61,9 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
         if (parsed.side === 'left' || parsed.side === 'right') {
           initialSide = parsed.side;
         }
-        if (typeof parsed.topRatio === 'number') {
+        // Only accept if strictly inside viewport safe zone (>= 0.2 and <= 0.85)
+        // This ensures stale top-left coordinates never stick to the top navigation header
+        if (typeof parsed.topRatio === 'number' && parsed.topRatio >= 0.2 && parsed.topRatio <= 0.85) {
           initialY = parsed.topRatio * windowHeight;
         }
       }
@@ -73,12 +74,30 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
     setSnappedSide(initialSide);
     const initialPos = computeSnappedPosition(initialSide, initialY);
     currentPosRef.current = initialPos;
-    controls.set(initialPos);
+    setPos(initialPos);
+  }, [computeSnappedPosition]);
 
-    // Keep clamped on window resize
+  // Animate into place on mount and keep controls synchronized
+  useEffect(() => {
+    if (pos) {
+      controls.start({
+        x: pos.x,
+        y: pos.y,
+        opacity: 1,
+        scale: 1,
+        transition: { duration: 0.22, ease: 'easeOut' },
+      });
+    }
+  }, [pos, controls]);
+
+  // Keep clamped on window resize
+  useEffect(() => {
+    if (!pos) return;
+
     const handleResize = () => {
       const nextPos = computeSnappedPosition(snappedSide, currentPosRef.current.y);
       currentPosRef.current = nextPos;
+      setPos(nextPos);
       controls.start({
         x: nextPos.x,
         y: nextPos.y,
@@ -88,7 +107,7 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [computeSnappedPosition, controls, snappedSide]);
+  }, [computeSnappedPosition, controls, pos, snappedSide]);
 
   const handleDragStart = () => {
     isDraggingRef.current = true;
@@ -118,6 +137,7 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
 
     const snapped = computeSnappedPosition(newSide, releaseY - BUTTON_HEIGHT / 2);
     currentPosRef.current = snapped;
+    setPos(snapped);
 
     // Save to localStorage for seamless persistence
     try {
@@ -125,7 +145,7 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
         STORAGE_KEY,
         JSON.stringify({
           side: newSide,
-          topRatio: snapped.y / windowHeight,
+          topRatio: Math.max(0.2, Math.min(0.85, snapped.y / windowHeight)),
         })
       );
     } catch {
@@ -151,13 +171,14 @@ export const DraggableChatFab: React.FC<DraggableChatFabProps> = ({
     }
   };
 
-  if (!mounted) return null;
+  if (!pos) return null;
 
   return (
     <motion.div
       drag
       dragMomentum={false}
       dragElastic={0.12}
+      initial={{ x: pos.x, y: pos.y, opacity: 0, scale: 0.9 }}
       animate={controls}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}

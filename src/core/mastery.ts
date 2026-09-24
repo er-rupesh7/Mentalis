@@ -136,6 +136,109 @@ export function updateDailyStreak(
   }
 }
 
+/**
+ * Accurately calculates daily streak statistics from an activity map (YYYY-MM-DD -> count).
+ * Correctly accounts for timezone midnight calendar days, consecutive streaks, and active totals.
+ */
+export function calculateActivityStreaks(
+  activityMap: Record<string, number> = {},
+  todayStrOverride?: string
+): {
+  currentDailyStreak: number;
+  longestDailyStreak: number;
+  totalActiveDays: number;
+  activeDates: string[];
+} {
+  const now = new Date();
+  const todayStr =
+    todayStrOverride ||
+    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  // 1. Get all unique dates with valid calculation activity (> 0)
+  const activeDates = Object.entries(activityMap || {})
+    .filter(([dateKey, count]) => typeof count === 'number' && count > 0 && /^\d{4}-\d{2}-\d{2}$/.test(dateKey))
+    .map(([dateKey]) => dateKey)
+    .sort();
+
+  const totalActiveDays = activeDates.length;
+
+  if (totalActiveDays === 0) {
+    return {
+      currentDailyStreak: 0,
+      longestDailyStreak: 0,
+      totalActiveDays: 0,
+      activeDates: [],
+    };
+  }
+
+  // 2. Calculate longest contiguous calendar-day streak
+  let maxStreak = 0;
+  let runningStreak = 0;
+  let prevTimestamp: number | null = null;
+
+  for (const dateKey of activeDates) {
+    const [y, m, d] = dateKey.split('-').map(Number);
+    const midnightUtc = Date.UTC(y, m - 1, d);
+
+    if (prevTimestamp === null) {
+      runningStreak = 1;
+    } else {
+      const diffDays = Math.round((midnightUtc - prevTimestamp) / (24 * 60 * 60 * 1000));
+      if (diffDays === 1) {
+        runningStreak += 1;
+      } else if (diffDays > 1) {
+        runningStreak = 1;
+      }
+    }
+
+    prevTimestamp = midnightUtc;
+    if (runningStreak > maxStreak) {
+      maxStreak = runningStreak;
+    }
+  }
+
+  // 3. Calculate current daily streak ending today (or preserved from yesterday if not practiced yet today)
+  const activeDateSet = new Set(activeDates);
+  let currentStreak = 0;
+
+  const [tY, tM, tD] = todayStr.split('-').map(Number);
+  const todayUtc = Date.UTC(tY, tM - 1, tD);
+
+  // Check if practiced today
+  let checkUtc = todayUtc;
+  if (!activeDateSet.has(todayStr)) {
+    // If not practiced today, check if practiced yesterday to preserve streak for the current day
+    const yesterdayUtc = todayUtc - (24 * 60 * 60 * 1000);
+    const yDate = new Date(yesterdayUtc);
+    const yesterdayStr = `${yDate.getUTCFullYear()}-${String(yDate.getUTCMonth() + 1).padStart(2, '0')}-${String(yDate.getUTCDate()).padStart(2, '0')}`;
+    if (activeDateSet.has(yesterdayStr)) {
+      checkUtc = yesterdayUtc;
+    } else {
+      checkUtc = 0;
+    }
+  }
+
+  if (checkUtc > 0) {
+    while (true) {
+      const d = new Date(checkUtc);
+      const dStr = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+      if (activeDateSet.has(dStr)) {
+        currentStreak += 1;
+        checkUtc -= 24 * 60 * 60 * 1000;
+      } else {
+        break;
+      }
+    }
+  }
+
+  return {
+    currentDailyStreak: currentStreak,
+    longestDailyStreak: Math.min(maxStreak, totalActiveDays),
+    totalActiveDays,
+    activeDates,
+  };
+}
+
 export interface FormattedTimeSpent {
   hours: number;
   minutes: number;

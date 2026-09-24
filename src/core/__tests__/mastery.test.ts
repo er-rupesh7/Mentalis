@@ -3,6 +3,7 @@ import {
   calculateMedian,
   evaluateMasteryStatus,
   updateDailyStreak,
+  calculateActivityStreaks,
   calculateUserRank,
   calculateCPM,
   formatInvestedTime,
@@ -103,6 +104,54 @@ describe('mastery: Metrics, Decay, Streaks & Ranks', () => {
       const res = updateDailyStreak('2026-09-07', 8, '2026-09-10');
       expect(res.dailyActiveStreak).toBe(1);
       expect(res.isNewDay).toBe(true);
+    });
+  });
+
+  describe('calculateActivityStreaks from DailyActivityMap', () => {
+    it('handles empty activity map gracefully', () => {
+      const res = calculateActivityStreaks({});
+      expect(res.currentDailyStreak).toBe(0);
+      expect(res.longestDailyStreak).toBe(0);
+      expect(res.totalActiveDays).toBe(0);
+    });
+
+    it('accurately computes 3-day longest streak and 1-day current streak matching user scenario', () => {
+      // User active on Sep 15, 16, 17 and Sep 23; evaluated on Sep 24
+      const activityMap = {
+        '2026-09-15': 30,
+        '2026-09-16': 45,
+        '2026-09-17': 20,
+        '2026-09-23': 15,
+      };
+      const res = calculateActivityStreaks(activityMap, '2026-09-24');
+      expect(res.totalActiveDays).toBe(4);
+      expect(res.longestDailyStreak).toBe(3); // 15, 16, 17 Sep
+      expect(res.currentDailyStreak).toBe(1); // 23 Sep (preserved for 24 Sep)
+    });
+
+    it('advances current streak to 2 when practicing today', () => {
+      const activityMap = {
+        '2026-09-15': 30,
+        '2026-09-16': 45,
+        '2026-09-17': 20,
+        '2026-09-23': 15,
+        '2026-09-24': 10,
+      };
+      const res = calculateActivityStreaks(activityMap, '2026-09-24');
+      expect(res.totalActiveDays).toBe(5);
+      expect(res.longestDailyStreak).toBe(3);
+      expect(res.currentDailyStreak).toBe(2); // 23 and 24 Sep consecutive
+    });
+
+    it('resets current streak to 0 if 2 or more days were missed', () => {
+      const activityMap = {
+        '2026-09-15': 30,
+        '2026-09-16': 45,
+      };
+      const res = calculateActivityStreaks(activityMap, '2026-09-24');
+      expect(res.totalActiveDays).toBe(2);
+      expect(res.longestDailyStreak).toBe(2);
+      expect(res.currentDailyStreak).toBe(0);
     });
   });
 

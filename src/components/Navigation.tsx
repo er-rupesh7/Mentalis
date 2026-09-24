@@ -38,6 +38,7 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
     viewMode,
     setViewMode,
     streak,
+    overallStats,
     soundEnabled,
     toggleSound,
     activeTableChartTab,
@@ -324,18 +325,23 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
             <span className="hidden lg:inline">{tNav('theory')}</span>
           </button>
 
-          {/* Active Streak — visible on all sizes */}
-          <div
-            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
-              streak > 0
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                : 'bg-slate-900 text-slate-500 border border-slate-800'
-            }`}
-            title={`${tCommon('streak')}: ${streak}`}
-          >
-            <Flame className={`w-3.5 h-3.5 ${streak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
-            <span className="text-[11px]">{streak}</span>
-          </div>
+          {/* Active Daily Streak — visible on all sizes */}
+          {(() => {
+            const effectiveStreak = overallStats?.dailyActiveStreak || streak || 0;
+            return (
+              <div
+                className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
+                  effectiveStreak > 0
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    : 'bg-slate-900 text-slate-500 border border-slate-800'
+                }`}
+                title={`${tCommon('streak')}: ${effectiveStreak} ${effectiveStreak === 1 ? 'day' : 'days'}`}
+              >
+                <Flame className={`w-3.5 h-3.5 ${effectiveStreak > 0 ? 'text-amber-400' : 'text-slate-600'}`} />
+                <span className="text-[11px]">{effectiveStreak}</span>
+              </div>
+            );
+          })()}
 
           {/* Audio Toggle (Desktop only) */}
           <button
