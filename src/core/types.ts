@@ -232,7 +232,8 @@ export type ViewMode =
   | 'exam_quant'
   | 'techniques'
   | 'learn_table'
-  | 'squares_cubes';
+  | 'squares_cubes'
+  | 'mind';
 
 export interface ExamTransferScores {
   calculationAutomaticity: number; // 0 - 100

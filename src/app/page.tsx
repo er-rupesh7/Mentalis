@@ -30,10 +30,13 @@ import { SquaresAndCubesHub } from '../components/powers/SquaresAndCubesHub';
 import { LiveRankTicker } from '../components/ranking/LiveRankTicker';
 import { InitialAssessmentFlow } from '../components/onboarding/InitialAssessmentFlow';
 import { ArcadeHubModal } from '../components/tables/ArcadeHubModal';
+import { MentalabMindView } from '../components/mind/MentalabMindView';
+import { getCategorySlugForTopic } from '../core/mind/mindSeo';
 
 export default function MentalisApp() {
   const {
     viewMode,
+    setViewMode,
     hasCompletedInitialOnboarding,
     isCustomDrillModalOpen,
     setIsCustomDrillModalOpen,
@@ -59,6 +62,32 @@ export default function MentalisApp() {
     setIsMounted(true);
     initializeAuthAndSync();
   }, [initializeAuthAndSync]);
+
+  // Handle URL query parameters (e.g. ?tab=mind&topic=<slug>&lang=<lang>)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tab = searchParams.get('tab') || searchParams.get('view');
+      const topic = searchParams.get('topic');
+      const lang = searchParams.get('lang');
+
+      if (tab === 'mind' || topic) {
+        if (topic) {
+          const categorySlug = getCategorySlugForTopic(topic);
+          const langQuery = lang && lang !== 'en' ? `?lang=${encodeURIComponent(lang)}` : '';
+          window.location.replace(`/mind/${categorySlug}/${encodeURIComponent(topic)}${langQuery}`);
+          return;
+        } else {
+          window.location.replace('/mind');
+          return;
+        }
+      }
+    } catch {
+      // Non-blocking fallback
+    }
+  }, [isMounted]);
 
   // First-landing login prompt for unauthenticated users so progress is monitored and maintained across devices
   useEffect(() => {
@@ -119,6 +148,7 @@ export default function MentalisApp() {
           {viewMode === 'dashboard' && (
             <Dashboard onOpenTutorial={() => setIsTutorialOpen(true)} />
           )}
+          {viewMode === 'mind' && <MentalabMindView />}
           {viewMode === 'learn_table' && <LearnTableScreen />}
           {viewMode === 'squares_cubes' && <SquaresAndCubesHub />}
           {viewMode === 'bootcamp_11_20' && <TablesBootcampView />}

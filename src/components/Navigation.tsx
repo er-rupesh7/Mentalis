@@ -113,6 +113,18 @@ export const Navigation: React.FC<NavigationProps> = ({ onOpenTutorial }) => {
           </button>
 
           <button
+            onClick={() => setViewMode('mind')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
+              viewMode === 'mind'
+                ? 'bg-gradient-to-r from-violet-600 to-cyan-600 text-white shadow-sm font-semibold'
+                : 'text-cyan-400 hover:text-cyan-200 hover:bg-slate-800'
+            }`}
+          >
+            <Brain className="w-3.5 h-3.5 text-cyan-300" />
+            <span>Mind</span>
+          </button>
+
+          <button
             onClick={() => setViewMode('learn_table')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all shrink-0 whitespace-nowrap ${
               viewMode === 'learn_table'

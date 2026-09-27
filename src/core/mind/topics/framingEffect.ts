@@ -1,0 +1,216 @@
+import { MindTopicDetail, MindLanguageCode } from '../types';
+
+/**
+ * Mentalab Mind — Cognitive Biases Track
+ * Topic: The Framing Effect: How Presentation Alters Reality
+ * Category: Cognitive Biases (cognitive_biases)
+ * 
+ * Academic Grounding:
+ * - Tversky & Kahneman (1981): The framing of decisions and the psychology of choice
+ * - Levin, Schneider & Gaeth (1998): All frames are not created equal
+ * - Kahneman (2011): Thinking, Fast and Slow (Part 4: Choices)
+ */
+
+export const TOPIC_FRAMING_EFFECT_EN: MindTopicDetail = {
+  id: 'framing_effect',
+  categoryId: 'cognitive_biases',
+  slug: 'framing-effect',
+  difficulty: 'beginner',
+  estimatedReadingMinutes: 5,
+  scientificConsensusTier: 'established',
+  sortWeight: 6,
+  viewCount: 7890,
+  shareCount: 610,
+  bookmarkCount: 1350,
+  title: 'The Framing Effect: How Presentation Alters Reality',
+  subtitle: 'The same objective facts provoke opposite human reactions depending purely on whether they are framed as gains or losses.',
+  shortDescription: 'A cognitive bias where people decide on options based on whether they are presented with positive (gains) or negative (losses) connotations.',
+  oneLineExplanation: '90% fat-free sounds like health food; 10% fat sounds like clogged arteries.',
+
+  summary30s: 'The framing effect proves that human rationality is context-dependent. When the exact same factual information is presented in terms of gains ("90% survival rate"), people become risk-averse and seek security. When presented in terms of losses ("10% mortality rate"), people become reckless gamblers to avoid the pain of a loss.',
+
+  coreConcept: 'Demonstrated in 1981 by Amos Tversky and Daniel Kahneman, the framing effect derives directly from Prospect Theory. Humans do not process information in an abstract, mathematical vacuum; we process it through emotional reference points. Because losses loom roughly twice as large psychologically as equivalent gains (loss aversion), shifting the linguistic frame from "lives saved" to "lives lost" completely reverses majority human preferences.',
+  summary60s: 'Imagine a physician presenting a surgical option to you. In Scenario A, she says: "The one-month survival rate for this surgery is 90%." Most patients agree immediately. In Scenario B, she says: "There is a 10% mortality rate within the first month." The mathematical probabilities are mathematically identical. Yet in Scenario B, rejection rates more than double. The word "mortality" activates the amygdala\'s threat circuitry, while "survival" activates relief. Marketers, politicians, and media networks exploit this constantly.',
+
+  quickTakeaways: [
+    'Gain Frames Promote Caution: When thinking about gains (lives saved, money made), humans avoid risky gambles',
+    'Loss Frames Trigger Desperation: When facing guaranteed losses, humans take irrational, high-variance risks to escape the pain',
+    'Linguistic Packaging: Words like "discount", "surcharge", "survival", and "casualty" steer decisions before logical analysis begins',
+    'The Inversion Antidote: Always invert the frame (calculate the opposite mathematical percentage) before signing or agreeing',
+  ],
+
+  whyItHappens: 'Neurobiological integration of emotion and reason. Language triggers visceral emotional reactions before our prefrontal cortex can compute mathematical equivalencies. Words with survival implications bypass analytical skepticism.',
+  evolutionaryMechanism: 'Ancestral organisms operating near subsistence thresholds could not afford losses; losing 50% of winter food supplies was fatal, whereas gaining 50% extra was merely beneficial. Hence, threats and losses received preferential neural processing.',
+
+  howItWorks: 'The brain establishes a reference point: (1) Frame Input: Information enters as a gain or a loss relative to a baseline; (2) Emotional Valence: Positive wording activates reward expectation; negative wording triggers loss aversion; (3) Choice Shift: Risk avoidance under gain frames; risk-seeking under loss frames.',
+  whereYouEncounterIt: 'Supermarket labels ("80% lean meat" vs "20% fat"), credit card processing ("cash discount" vs "card surcharge"), medical consent forms, political ballot initiatives, and climate change communications.',
+
+  visualExplanation: {
+    type: 'contrast_matrix',
+    visualConceptType: 'comparison_matrix',
+    headline: 'Gain Frame vs. Loss Frame',
+    description: 'How identical underlying math produces diametrically opposed psychological actions.',
+    analogySideA: {
+      label: 'Gain Frame (Risk-Averse)',
+      detail: '"Option A guarantees 200 out of 600 people will be saved." -> 72% choose this safe option.',
+    },
+    analogySideB: {
+      label: 'Loss Frame (Risk-Seeking)',
+      detail: '"Option B guarantees 400 out of 600 people will die." -> 78% gamble on an all-or-nothing alternative.',
+    },
+  },
+
+  researchSummary: 'In Tversky & Kahneman\'s famous "Asian Disease Problem" (1981), participants were asked to choose between two treatments for an epidemic expected to kill 600 people. When formulated in terms of lives saved, 72% chose the certain option (200 saved) over the probabilistic gamble. When formulated in terms of deaths, 78% rejected the certain option (400 die) and gambled on the risky alternative.',
+  limitationsAndControversies: 'Levin, Schneider & Gaeth (1998) categorized framing into three distinct empirical types: risky choice framing (Asian disease problem), attribute framing (beef fat content), and goal framing (mammography detection benefits vs costs). Each relies on distinct cognitive mechanisms and varies in magnitude.',
+  commonMisconceptions: 'Common myth: "Framing is just a cosmetic wording preference that intelligent decision-makers easily ignore." Reality: Controlled fMRI studies demonstrate that emotional framing activates amygdala pathways directly before analytical prefrontal cortex reasoning can engage.',
+
+  howToRecognize: [
+    'Feeling an immediate sense of relief or panic based on how a percentage or statistic is phrased in a headline',
+    'Preferring a product labeled "sugar-free" while ignoring the 400 calories of fat and chemical binders listed in the ingredients',
+    'Agreeing to a "free 30-day trial with automatic renewal" because the word "free" masks the future negative recurring subscription liability',
+    'Noticing that a sales representative describes costs as "only $3 a day" instead of "$1,100 per year"',
+  ],
+
+  scenarios: [
+    {
+      id: 'scen_frame_01',
+      scenarioType: 'indian_context',
+      title: 'The Health Food Packaging Mirage in Pune',
+      vignette: 'Anand is shopping in a Pune supermarket and sees two packages of frozen chicken breast. Brand A proudly displays a bright green banner: "95% FAT FREE!" Brand B has a plain label: "CONTAINS 5% ANIMAL FAT." Anand immediately puts Brand A in his basket, remarking to his gym partner: "Brand A is so much cleaner and healthier." His partner points out that both brands have identical fat content, but Brand A costs ₹180 more per kilogram.',
+      breakdownAnalysis: 'Anand was influenced by attribute framing. The term "fat-free" directs mental spotlighting toward fitness and wellness, completely suppressing the reality that both products are chemically identical.',
+      recommendedAction: 'Always re-frame the numbers mathematically: "95% fat-free equals 5% pure fat. Look at the absolute nutritional breakdown per 100 grams, not the packaging adjectives."',
+    },
+  ],
+
+  examples: [
+    {
+      id: 'ex_frame_01',
+      domain: 'personal_finance',
+      displayOrder: 1,
+      title: 'Gas Station Cash Discount vs Credit Surcharge',
+      description: 'A petrol pump owner who charges a "credit card surcharge of ₹2" enrages customers. When they instead list the higher price as standard and offer a "₹2 cash discount," customers feel rewarded and delighted, despite the identical net prices.',
+      takeaway: 'People hate paying penalties (losses), but love receiving discounts (gains).',
+    },
+  ],
+
+  practiceQuestions: [
+    {
+      id: 'pq_frame_01',
+      scenarioContext: 'A chief technology officer is evaluating two database backup systems. Vendor A pitches: "Our system guarantees 99.9% uptime per quarter." Vendor B pitches: "Our system has less than 8.7 hours of downtime per year." The underlying uptime mathematics are practically identical.',
+      question: 'Why might the CTO prefer Vendor A over Vendor B purely due to the framing effect?',
+      options: [
+        {
+          id: 'opt_a',
+          label: 'A',
+          text: 'Because Vendor A emphasizes reliability (a gain frame), whereas Vendor B explicitly mentions hours of downtime (a loss frame)',
+          explanation: 'Accurate: the word "downtime" triggers loss aversion and imagery of outages, while "uptime" evokes safety.',
+          isCorrect: true,
+        },
+        {
+          id: 'opt_b',
+          label: 'B',
+          text: 'Because Vendor A’s technology is inherently faster due to proprietary algorithmic compression',
+          explanation: 'This assumes unstated technical superiority when the question stipulated mathematical equivalence.',
+          isCorrect: false,
+        },
+        {
+          id: 'opt_c',
+          label: 'C',
+          text: 'Because enterprise software buyers never experience cognitive biases when evaluating numerical contracts',
+          explanation: 'Empirical studies prove senior executives are equally vulnerable to framing manipulations.',
+          isCorrect: false,
+        },
+      ],
+      correctAnswerId: 'opt_a',
+      cognitiveTakeaway: 'Always convert both gain and loss frames into a standardized, neutral objective unit before comparing options.',
+      difficulty: 'easy',
+    },
+  ],
+
+  howToRespond: 'Actively reframe proposals into their mathematical complement (e.g. translate 90% survival into 10% mortality) before deciding.',
+  psychologicalDefenses: [
+    {
+      title: 'The Dual-Frame Audit',
+      instruction: 'Whenever you see a statistic, mentally force yourself to state the exact complement. If someone says "92% satisfaction," immediately say out loud: "8% of users were dissatisfied."',
+    },
+    {
+      title: 'Standardize Units of Measurement',
+      instruction: 'Convert fragmented frames ("$2 a day", "per week", "micro-installments") into total annual cost figures to evaluate the real expenditure.',
+    },
+    {
+      title: 'Neutral Baseline Translation',
+      instruction: 'Strip adjectives and emotional framing words out of contracts or proposals; represent the choice in a plain two-column table of numbers.',
+    },
+  ],
+
+  reflectionPrompt: 'Recall a sales pitch or news headline that swayed you. How does the choice look when you reframe the numbers in reverse?',
+
+  references: [
+    {
+      id: 'ref_tversky_1981',
+      authors: 'Tversky, A., & Kahneman, D.',
+      year: 1981,
+      title: 'The framing of decisions and the psychology of choice',
+      publicationName: 'Science',
+      volumeIssue: '211(4481), 453-458',
+      doi: '10.1126/science.7455683',
+      evidenceStrength: 'landmark_paper',
+    },
+    {
+      id: 'ref_levin_1998',
+      authors: 'Levin, I. P., Schneider, S. L., & Gaeth, G. J.',
+      year: 1998,
+      title: 'All frames are not created equal: A typology and critical analysis of framing effects',
+      publicationName: 'Organizational Behavior and Human Decision Processes',
+      volumeIssue: '76(2), 149-188',
+      doi: '10.1006/obhd.1998.2804',
+      evidenceStrength: 'systematic_review',
+    },
+  ],
+
+  relatedTopics: [
+    {
+      topicId: 'loss_aversion',
+      slug: 'loss-aversion',
+      title: 'Loss Aversion',
+      relationshipType: 'prerequisite',
+    },
+    {
+      topicId: 'decoy_effect',
+      slug: 'decoy-effect',
+      title: 'The Decoy Effect',
+      relationshipType: 'amplified_by',
+    },
+  ],
+};
+
+export const TOPIC_FRAMING_EFFECT: Record<MindLanguageCode, MindTopicDetail> = {
+  en: TOPIC_FRAMING_EFFECT_EN,
+  hinglish: {
+    ...TOPIC_FRAMING_EFFECT_EN,
+    title: 'The Framing Effect: Baatchit Ka Tareeqa Decision Kaise Badal Deta Hai',
+    subtitle: 'Wahi facts alag shabdon me pesh karne se logon ki soch 180 degree ghoom jati hai.',
+    shortDescription: 'Ek aisa cognitive bias jisme log wahi decision badal dete hain agar baat ko fayde (gain) ya nuksan (loss) ke frame me bola jaye.',
+    oneLineExplanation: '90% fat-free bolne par healthy lagta hai, jabki 10% fat bolne par bimari lagti hai.',
+    summary30s: 'Framing Effect batata hai ki insaan ka dimaag sirf facts nahi dekhta, balki yeh dekhta hai ki facts ko kis packaging me pesh kiya gaya hai. Jab doctor bolta hai "90% survival rate", toh log khush hote hain. Lekin jab bolta hai "10% mortality risk", toh log darr jate hain, jabki dono ka matlab bilkul ek hi hai.',
+  },
+  hi: {
+    ...TOPIC_FRAMING_EFFECT_EN,
+    title: 'The Framing Effect (फ्रेमिंग प्रभाव)',
+    subtitle: 'प्रस्तुति का तरीका कैसे वास्तविकता और निर्णयों को बदल देता है।',
+    shortDescription: 'समान तथ्यों को लाभ (gains) या हानि (losses) के रूप में प्रस्तुत करने पर लोगों के निर्णयों में आने वाला नाटकीय बदलाव।',
+    oneLineExplanation: '90% वसा-मुक्त पौष्टिक लगता है; 10% वसा अस्वास्थ्यकर लगती है।',
+    summary30s: 'फ्रेमिंग प्रभाव (Framing Effect) के अनुसार हमारे निर्णय इस बात से प्रभावित होते हैं कि जानकारी को सकारात्मक दृष्टिकोण से प्रस्तुत किया गया है या नकारात्मक से। उदाहरण के लिए "90% जीवित रहने की दर" और "10% मृत्यु दर" सांख्यिकीय रूप से समान होने पर भी लोगों से विपरीत प्रतिक्रियाएँ प्राप्त करते हैं।',
+  },
+  gu: TOPIC_FRAMING_EFFECT_EN,
+  mr: TOPIC_FRAMING_EFFECT_EN,
+  te: TOPIC_FRAMING_EFFECT_EN,
+  ta: TOPIC_FRAMING_EFFECT_EN,
+  kn: TOPIC_FRAMING_EFFECT_EN,
+  ml: TOPIC_FRAMING_EFFECT_EN,
+  bn: TOPIC_FRAMING_EFFECT_EN,
+  pa: TOPIC_FRAMING_EFFECT_EN,
+  ur: TOPIC_FRAMING_EFFECT_EN,
+  or: TOPIC_FRAMING_EFFECT_EN,
+  as: TOPIC_FRAMING_EFFECT_EN,
+  };
