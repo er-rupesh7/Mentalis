@@ -1,7 +1,29 @@
 import { MindTopicDetail, MindLanguageCode } from '../types';
 
-export const TOPIC_RECIPROCITY_PRINCIPLE: Record<MindLanguageCode, MindTopicDetail> = {
-  en: {
+
+function createUniversalLocalizedRecord(
+  base: MindTopicDetail,
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...base,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
+export const TOPIC_RECIPROCITY_PRINCIPLE_EN: MindTopicDetail = {
+    // English record definition
+
     id: 'reciprocity_principle',
     categoryId: 'persuasion_influence',
     slug: 'reciprocity-principle-influence',
@@ -181,7 +203,10 @@ export const TOPIC_RECIPROCITY_PRINCIPLE: Record<MindLanguageCode, MindTopicDeta
     ogImageUrl: '/images/mind/reciprocity.png',
     publishedAt: '2026-09-20T00:00:00Z',
     deepExplanation: 'Reciprocity is an evolutionary cooperation mechanism based on delayed social accounting.',
-  },
+};
+
+export const TOPIC_RECIPROCITY_PRINCIPLE: Record<MindLanguageCode, MindTopicDetail> = {
+  en: TOPIC_RECIPROCITY_PRINCIPLE_EN,
   hinglish: {
     id: 'reciprocity_principle',
     categoryId: 'persuasion_influence',
@@ -193,7 +218,7 @@ export const TOPIC_RECIPROCITY_PRINCIPLE: Record<MindLanguageCode, MindTopicDeta
     viewCount: 3100,
     shareCount: 240,
     bookmarkCount: 490,
-    title: 'The Reciprocity Principle',
+    title: 'The Reciprocity Principle: Dimaag Ka Khel Aur Real-Life Truth',
     subtitle: 'Ehsan chukane ki aadat aur sales tactics',
     shortDescription: 'Insaan ki wo fitrat jisme agar koi hume koi chota gift ya favor deta hai, to hum par ehsan chukane ka mental pressure aa jata hai.',
     oneLineExplanation: 'Ehsan dabaye rakhne ki bechaini jab tak hum kuch wapas na de dein.',
@@ -334,16 +359,64 @@ export const TOPIC_RECIPROCITY_PRINCIPLE: Record<MindLanguageCode, MindTopicDeta
     publishedAt: '2026-09-20T00:00:00Z',
     deepExplanation: 'Reciprocity ek universal biological cooperation mechanism hai jo social debt par operate karta hai.',
   },
-  hi: {} as any,
-  gu: {} as any,
-  mr: {} as any,
-  te: {} as any,
-  ta: {} as any,
-  kn: {} as any,
-  ml: {} as any,
-  bn: {} as any,
-  pa: {} as any,
-  ur: {} as any,
-  or: {} as any,
-  as: {} as any,
+  hi: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'hi', "The Reciprocity Principle (पूर्वाग्रह)", "The Reciprocity Principle मानव मस्तिष्क का एक महत्वपूर्ण संज्ञानात्मक प्रभाव है जो हमारे निर्णयों को गहराई से प्रभावित करता है।", [
+    "तथ्यों का निष्पक्ष विश्लेषण करें",
+    "संज्ञानात्मक शॉर्टकट से सावधान रहें",
+    "सचेत रहकर स्वतंत्र निर्णय लें"
+  ]),
+  gu: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'gu', "The Reciprocity Principle (પૂર્વગ્રહ)", "The Reciprocity Principle એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'mr', "The Reciprocity Principle (पूर्वग्रह)", "The Reciprocity Principle हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'te', "The Reciprocity Principle (పక్షపాతం)", "The Reciprocity Principle అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'ta', "The Reciprocity Principle (சார்புநிலை)", "The Reciprocity Principle என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'kn', "The Reciprocity Principle (ಪಕ್ಷಪಾತ)", "The Reciprocity Principle ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'ml', "The Reciprocity Principle (പക്ഷപാതം)", "The Reciprocity Principle എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'bn', "The Reciprocity Principle (পক্ষপাতিত্ব)", "The Reciprocity Principle হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'pa', "The Reciprocity Principle (ਪੱਖਪਾਤ)", "The Reciprocity Principle ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'ur', "The Reciprocity Principle (جانبداری)", "The Reciprocity Principle انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'or', "The Reciprocity Principle (ପକ୍ଷପାତିତା)", "The Reciprocity Principle ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createUniversalLocalizedRecord(TOPIC_RECIPROCITY_PRINCIPLE_EN, 'as', "The Reciprocity Principle (পক্ষপাতিত্ব)", "The Reciprocity Principle সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
 };

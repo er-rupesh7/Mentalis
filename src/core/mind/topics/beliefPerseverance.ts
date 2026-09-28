@@ -293,19 +293,83 @@ export const TOPIC_BELIEF_PERSEVERANCE_HI: MindTopicDetail = {
   summary30s: '1975 में ली रॉस और मार्क लेपर द्वारा खोजा गया विश्वास हठधर्मिता (Belief Perseverance) यह दर्शाता है कि एक बार जब मस्तिष्क किसी विचार के समर्थन में कारण गढ़ लेता है, तो मूल प्रमाण झूठा साबित होने पर भी वे गढ़े हुए कारण जीवित रहते हैं।',
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_BELIEF_PERSEVERANCE_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_BELIEF_PERSEVERANCE: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_BELIEF_PERSEVERANCE_EN,
   hinglish: TOPIC_BELIEF_PERSEVERANCE_HINGLISH,
   hi: TOPIC_BELIEF_PERSEVERANCE_HI,
-  gu: TOPIC_BELIEF_PERSEVERANCE_EN,
-  mr: TOPIC_BELIEF_PERSEVERANCE_EN,
-  te: TOPIC_BELIEF_PERSEVERANCE_EN,
-  ta: TOPIC_BELIEF_PERSEVERANCE_EN,
-  kn: TOPIC_BELIEF_PERSEVERANCE_EN,
-  ml: TOPIC_BELIEF_PERSEVERANCE_EN,
-  bn: TOPIC_BELIEF_PERSEVERANCE_EN,
-  pa: TOPIC_BELIEF_PERSEVERANCE_EN,
-  ur: TOPIC_BELIEF_PERSEVERANCE_EN,
-  or: TOPIC_BELIEF_PERSEVERANCE_EN,
-  as: TOPIC_BELIEF_PERSEVERANCE_EN,
+  gu: createLocalizedRecord('gu', "Belief Perseverance: Clinging to Discredited Beliefs (પૂર્વગ્રહ)", "Belief Perseverance: Clinging to Discredited Beliefs એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Belief Perseverance: Clinging to Discredited Beliefs (पूर्वग्रह)", "Belief Perseverance: Clinging to Discredited Beliefs हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Belief Perseverance: Clinging to Discredited Beliefs (పక్షపాతం)", "Belief Perseverance: Clinging to Discredited Beliefs అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Belief Perseverance: Clinging to Discredited Beliefs (சார்புநிலை)", "Belief Perseverance: Clinging to Discredited Beliefs என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Belief Perseverance: Clinging to Discredited Beliefs (ಪಕ್ಷಪಾತ)", "Belief Perseverance: Clinging to Discredited Beliefs ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Belief Perseverance: Clinging to Discredited Beliefs (പക്ഷപാതം)", "Belief Perseverance: Clinging to Discredited Beliefs എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Belief Perseverance: Clinging to Discredited Beliefs (পক্ষপাতিত্ব)", "Belief Perseverance: Clinging to Discredited Beliefs হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Belief Perseverance: Clinging to Discredited Beliefs (ਪੱਖਪਾਤ)", "Belief Perseverance: Clinging to Discredited Beliefs ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Belief Perseverance: Clinging to Discredited Beliefs (جانبداری)", "Belief Perseverance: Clinging to Discredited Beliefs انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Belief Perseverance: Clinging to Discredited Beliefs (ପକ୍ଷପାତିତା)", "Belief Perseverance: Clinging to Discredited Beliefs ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Belief Perseverance: Clinging to Discredited Beliefs (পক্ষপাতিত্ব)", "Belief Perseverance: Clinging to Discredited Beliefs সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
 };

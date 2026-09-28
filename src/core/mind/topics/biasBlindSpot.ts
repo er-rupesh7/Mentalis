@@ -306,19 +306,83 @@ export const TOPIC_BIAS_BLIND_SPOT_HI: MindTopicDetail = {
   summary30s: '2002 में एमिली प्रोनिन और ली रॉस द्वारा खोजा गया पूर्वाग्रह अंध-बिंदु (Bias Blind Spot) यह दर्शाता है कि 85% से अधिक लोग स्वयं को औसत व्यक्ति से अधिक निष्पक्ष मानते हैं। उच्च बौद्धिक क्षमता भी इस भ्रम को कम नहीं करती, बल्कि आत्म-समर्थन को अधिक चतुर बना देती है।',
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_BIAS_BLIND_SPOT_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_BIAS_BLIND_SPOT: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_BIAS_BLIND_SPOT_EN,
   hinglish: TOPIC_BIAS_BLIND_SPOT_HINGLISH,
   hi: TOPIC_BIAS_BLIND_SPOT_HI,
-  gu: TOPIC_BIAS_BLIND_SPOT_EN,
-  mr: TOPIC_BIAS_BLIND_SPOT_EN,
-  te: TOPIC_BIAS_BLIND_SPOT_EN,
-  ta: TOPIC_BIAS_BLIND_SPOT_EN,
-  kn: TOPIC_BIAS_BLIND_SPOT_EN,
-  ml: TOPIC_BIAS_BLIND_SPOT_EN,
-  bn: TOPIC_BIAS_BLIND_SPOT_EN,
-  pa: TOPIC_BIAS_BLIND_SPOT_EN,
-  ur: TOPIC_BIAS_BLIND_SPOT_EN,
-  or: TOPIC_BIAS_BLIND_SPOT_EN,
-  as: TOPIC_BIAS_BLIND_SPOT_EN,
+  gu: createLocalizedRecord('gu', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (પૂર્વગ્રહ)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (पूर्वग्रह)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (పక్షపాతం)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (சார்புநிலை)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (ಪಕ್ಷಪಾತ)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (പക്ഷപാതം)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (পক্ষপাতিত্ব)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (ਪੱਖਪਾਤ)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (جانبداری)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (ପକ୍ଷପାତିତା)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own (পক্ষপাতিত্ব)", "The Bias Blind Spot: Seeing Everyone’s Biases Except Your Own সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
 };

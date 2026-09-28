@@ -293,19 +293,83 @@ export const TOPIC_GAMBLERS_FALLACY_HI: MindTopicDetail = {
   summary30s: '1820 में लाप्लास और 1971 में काह्नमैन-ट्वर्स्की द्वारा समझाया गया जुआरी का भ्रम (Gambler’s Fallacy) यह स्पष्ट करता है कि प्रकृति किसी छोटी श्रृंखला को संतुलित करने के लिए बाध्य नहीं है। प्रत्येक स्वतंत्र घटना की प्रायिकता सदैव समान रहती है।',
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_GAMBLERS_FALLACY_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_GAMBLERS_FALLACY: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_GAMBLERS_FALLACY_EN,
   hinglish: TOPIC_GAMBLERS_FALLACY_HINGLISH,
   hi: TOPIC_GAMBLERS_FALLACY_HI,
-  gu: TOPIC_GAMBLERS_FALLACY_EN,
-  mr: TOPIC_GAMBLERS_FALLACY_EN,
-  te: TOPIC_GAMBLERS_FALLACY_EN,
-  ta: TOPIC_GAMBLERS_FALLACY_EN,
-  kn: TOPIC_GAMBLERS_FALLACY_EN,
-  ml: TOPIC_GAMBLERS_FALLACY_EN,
-  bn: TOPIC_GAMBLERS_FALLACY_EN,
-  pa: TOPIC_GAMBLERS_FALLACY_EN,
-  ur: TOPIC_GAMBLERS_FALLACY_EN,
-  or: TOPIC_GAMBLERS_FALLACY_EN,
-  as: TOPIC_GAMBLERS_FALLACY_EN,
+  gu: createLocalizedRecord('gu', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (તર્કદોષ)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (तर्कदोष)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (తర్కదోషం)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (போலித்தர்க்கம்)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (ತರ್ಕದೋಷ)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (ന്യായദോഷം)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (যুক্তিদোষ)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (ਤਰਕਦੋਸ਼)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (مغالطہ)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (ତର୍କଦୋଷ)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "The Gambler’s Fallacy: Expecting Luck to Correct Itself (তৰ্কদোষ)", "The Gambler’s Fallacy: Expecting Luck to Correct Itself সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
 };

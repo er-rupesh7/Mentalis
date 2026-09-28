@@ -16,14 +16,12 @@ export function isTopicFullyTranslated(
   topic?: Partial<MindTopicDetail> | null
 ): topic is MindTopicDetail {
   if (!topic) return false;
-  return (
-    typeof topic.title === 'string' &&
-    topic.title.trim().length > 0 &&
-    typeof topic.coreConcept === 'string' &&
-    topic.coreConcept.trim().length > 0 &&
-    Array.isArray(topic.quickTakeaways) &&
-    topic.quickTakeaways.length > 0
-  );
+  const hasTitle = typeof topic.title === 'string' && topic.title.trim().length > 0;
+  const hasSummary =
+    (typeof topic.coreConcept === 'string' && topic.coreConcept.trim().length > 0) ||
+    (typeof topic.summary30s === 'string' && topic.summary30s.trim().length > 0) ||
+    (typeof topic.shortDescription === 'string' && topic.shortDescription.trim().length > 0);
+  return hasTitle && hasSummary;
 }
 
 /**
@@ -85,9 +83,23 @@ export function resolveTopicTranslation(
   if (topicEntry) {
     const candidate = (topicEntry as any)[requestedLang];
     if (isTopicFullyTranslated(candidate)) {
-      translationCache.set(cacheKey, candidate);
+      const baseTopic = topicEntry.en || topicEntry.hinglish || candidate;
+      const mergedTopic: MindTopicDetail = {
+        ...baseTopic,
+        ...candidate,
+        title: candidate.title || baseTopic.title,
+        subtitle: candidate.subtitle || baseTopic.subtitle,
+        summary30s: candidate.summary30s || candidate.coreConcept || baseTopic.summary30s,
+        coreConcept: candidate.coreConcept || candidate.summary30s || baseTopic.coreConcept,
+        quickTakeaways:
+          Array.isArray(candidate.quickTakeaways) && candidate.quickTakeaways.length > 0
+            ? candidate.quickTakeaways
+            : baseTopic.quickTakeaways,
+        oneLineExplanation: candidate.oneLineExplanation || baseTopic.oneLineExplanation,
+      };
+      translationCache.set(cacheKey, mergedTopic);
       return {
-        topic: candidate,
+        topic: mergedTopic,
         requestedLanguage: requestedLang,
         actualLanguage: requestedLang,
         isFallback: false,

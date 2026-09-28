@@ -184,6 +184,26 @@ export const TOPIC_CONFORMITY_ASCH_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_CONFORMITY_ASCH_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_CONFORMITY_ASCH: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_CONFORMITY_ASCH_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_CONFORMITY_ASCH: Record<MindLanguageCode, MindTopicDetail> = 
     oneLineExplanation: 'सभी के गलत उत्तर देने पर स्वयं भी गलत उत्तर चुन लेना।',
     summary30s: 'अनुरूपता (Conformity) और ऐश प्रभाव यह दर्शाता है कि 75% लोग जीवन में कम से कम एक बार समूह के सर्वसम्मत दबाव के आगे झुक जाते हैं, भले ही समूह का निर्णय आँखों के सामने गलत क्यों न हो। सामाजिक बहिष्कार का भय मस्तिष्क में शारीरिक दर्द जैसी प्रतिक्रिया उत्पन्न करता है।',
   },
-  gu: TOPIC_CONFORMITY_ASCH_EN,
-  mr: TOPIC_CONFORMITY_ASCH_EN,
-  te: TOPIC_CONFORMITY_ASCH_EN,
-  ta: TOPIC_CONFORMITY_ASCH_EN,
-  kn: TOPIC_CONFORMITY_ASCH_EN,
-  ml: TOPIC_CONFORMITY_ASCH_EN,
-  bn: TOPIC_CONFORMITY_ASCH_EN,
-  pa: TOPIC_CONFORMITY_ASCH_EN,
-  ur: TOPIC_CONFORMITY_ASCH_EN,
-  or: TOPIC_CONFORMITY_ASCH_EN,
-  as: TOPIC_CONFORMITY_ASCH_EN,
-  };
+  gu: createLocalizedRecord('gu', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (પ્રભાવ)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (प्रभाव)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (ప్రభావం)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (விளைவு)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (ಪರಿಣಾಮ)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (സ്വാധീനം)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (প্রভাব)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (ਪ੍ਰਭਾਵ)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (اثر)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (ପ୍ରଭାବ)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd (প্ৰভাৱ)", "Conformity & The Asch Effect: Why We Deny Our Eyes to Fit the Crowd সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

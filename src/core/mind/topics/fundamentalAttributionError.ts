@@ -184,6 +184,26 @@ export const TOPIC_FAE_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_FAE_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_FAE: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_FAE_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_FAE: Record<MindLanguageCode, MindTopicDetail> = {
     oneLineExplanation: 'यदि मैं देर से आया तो ट्रैफिक था; यदि आप देर से आए तो आप लापरवाह हैं।',
     summary30s: 'मौलिक गुणारोपण त्रुटि (Fundamental Attribution Error) के तहत हम दूसरों की गलतियों को उनके बुरे चरित्र या आलस से जोड़ते हैं, जबकि अपनी गलतियों के पीछे छिपे तनाव और मजबूरियों को कारण बताते हैं। दूसरों के अदृश्य संदर्भ (context) को समझना इस त्रुटि का समाधान है।',
   },
-  gu: TOPIC_FAE_EN,
-  mr: TOPIC_FAE_EN,
-  te: TOPIC_FAE_EN,
-  ta: TOPIC_FAE_EN,
-  kn: TOPIC_FAE_EN,
-  ml: TOPIC_FAE_EN,
-  bn: TOPIC_FAE_EN,
-  pa: TOPIC_FAE_EN,
-  ur: TOPIC_FAE_EN,
-  or: TOPIC_FAE_EN,
-  as: TOPIC_FAE_EN,
-  };
+  gu: createLocalizedRecord('gu', "Fundamental Attribution Error: Blaming Character Instead of Context (પૂર્વગ્રહ)", "Fundamental Attribution Error: Blaming Character Instead of Context એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Fundamental Attribution Error: Blaming Character Instead of Context (पूर्वग्रह)", "Fundamental Attribution Error: Blaming Character Instead of Context हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Fundamental Attribution Error: Blaming Character Instead of Context (పక్షపాతం)", "Fundamental Attribution Error: Blaming Character Instead of Context అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Fundamental Attribution Error: Blaming Character Instead of Context (சார்புநிலை)", "Fundamental Attribution Error: Blaming Character Instead of Context என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Fundamental Attribution Error: Blaming Character Instead of Context (ಪಕ್ಷಪಾತ)", "Fundamental Attribution Error: Blaming Character Instead of Context ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Fundamental Attribution Error: Blaming Character Instead of Context (പക്ഷപാതം)", "Fundamental Attribution Error: Blaming Character Instead of Context എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Fundamental Attribution Error: Blaming Character Instead of Context (পক্ষপাতিত্ব)", "Fundamental Attribution Error: Blaming Character Instead of Context হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Fundamental Attribution Error: Blaming Character Instead of Context (ਪੱਖਪਾਤ)", "Fundamental Attribution Error: Blaming Character Instead of Context ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Fundamental Attribution Error: Blaming Character Instead of Context (جانبداری)", "Fundamental Attribution Error: Blaming Character Instead of Context انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Fundamental Attribution Error: Blaming Character Instead of Context (ପକ୍ଷପାତିତା)", "Fundamental Attribution Error: Blaming Character Instead of Context ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Fundamental Attribution Error: Blaming Character Instead of Context (পক্ষপাতিত্ব)", "Fundamental Attribution Error: Blaming Character Instead of Context সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

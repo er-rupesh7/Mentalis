@@ -41,6 +41,7 @@ import {
 import { AICoachCard } from './AICoachCard';
 import { AICoachDrawer } from './AICoachDrawer';
 import { MyLearningPlan } from './MyLearningPlan';
+import { ContinueReadingBanner } from './mind/ContinueReadingBanner';
 
 interface DashboardProps {
   onOpenTutorial: () => void;
@@ -242,6 +243,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ onOpenTutorial }) => {
               </button>
             </div>
           </div>
+
+          {/* Mentalab Mind Continue Reading Banner — Seamless cross-device reading tracker */}
+          <ContinueReadingBanner />
 
           {/* Stat HUD — horizontal scroll on mobile, 2-col grid on tablet, 4-column grid on desktop */}
           <div className="flex gap-2.5 sm:gap-3 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-1 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-2 lg:grid-cols-4">

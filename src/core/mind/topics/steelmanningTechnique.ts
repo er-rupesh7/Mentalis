@@ -184,6 +184,26 @@ export const TOPIC_STEELMANNING_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_STEELMANNING_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_STEELMANNING: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_STEELMANNING_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_STEELMANNING: Record<MindLanguageCode, MindTopicDetail> = {
     oneLineExplanation: 'विरोधी के तर्क का उपहास उड़ाए बिना उसके सबसे मजबूत रूप को समझना।',
     summary30s: 'सुदृढ़-पक्षीय तकनीक (Steelmanning) बौद्धिक ईमानदारी का सर्वोच्च रूप है। अधिकांश लोग "स्ट्रॉ मैन" (Straw Man) का उपयोग करके विरोधी के विचार को विकृत करते हैं ताकि उसे हराना आसान हो। इसके विपरीत, स्टीलमेनिंग में विरोधी के तर्कों को सशक्त बनाकर परखा जाता है। जॉन स्टुअर्ट मिल ने कहा था कि जो केवल अपना पक्ष जानता है, वह वास्तव में कुछ नहीं जानता।',
   },
-  gu: TOPIC_STEELMANNING_EN,
-  mr: TOPIC_STEELMANNING_EN,
-  te: TOPIC_STEELMANNING_EN,
-  ta: TOPIC_STEELMANNING_EN,
-  kn: TOPIC_STEELMANNING_EN,
-  ml: TOPIC_STEELMANNING_EN,
-  bn: TOPIC_STEELMANNING_EN,
-  pa: TOPIC_STEELMANNING_EN,
-  ur: TOPIC_STEELMANNING_EN,
-  or: TOPIC_STEELMANNING_EN,
-  as: TOPIC_STEELMANNING_EN,
-  };
+  gu: createLocalizedRecord('gu', "The Steelmanning Technique: The Antidote to the Straw Man (પૂર્વગ્રહ)", "The Steelmanning Technique: The Antidote to the Straw Man એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "The Steelmanning Technique: The Antidote to the Straw Man (पूर्वग्रह)", "The Steelmanning Technique: The Antidote to the Straw Man हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "The Steelmanning Technique: The Antidote to the Straw Man (పక్షపాతం)", "The Steelmanning Technique: The Antidote to the Straw Man అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "The Steelmanning Technique: The Antidote to the Straw Man (சார்புநிலை)", "The Steelmanning Technique: The Antidote to the Straw Man என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "The Steelmanning Technique: The Antidote to the Straw Man (ಪಕ್ಷಪಾತ)", "The Steelmanning Technique: The Antidote to the Straw Man ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "The Steelmanning Technique: The Antidote to the Straw Man (പക്ഷപാതം)", "The Steelmanning Technique: The Antidote to the Straw Man എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "The Steelmanning Technique: The Antidote to the Straw Man (পক্ষপাতিত্ব)", "The Steelmanning Technique: The Antidote to the Straw Man হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "The Steelmanning Technique: The Antidote to the Straw Man (ਪੱਖਪਾਤ)", "The Steelmanning Technique: The Antidote to the Straw Man ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "The Steelmanning Technique: The Antidote to the Straw Man (جانبداری)", "The Steelmanning Technique: The Antidote to the Straw Man انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "The Steelmanning Technique: The Antidote to the Straw Man (ପକ୍ଷପାତିତା)", "The Steelmanning Technique: The Antidote to the Straw Man ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "The Steelmanning Technique: The Antidote to the Straw Man (পক্ষপাতিত্ব)", "The Steelmanning Technique: The Antidote to the Straw Man সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

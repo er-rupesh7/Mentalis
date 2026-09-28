@@ -59,6 +59,9 @@ import { MindLanguageSwitcher } from './MindLanguageSwitcher';
 import { TranslationFallbackBanner } from './TranslationFallbackBanner';
 import { ShareModal } from './ShareModal';
 import { PracticeAnalyticsModal } from './PracticeAnalyticsModal';
+import { saveLastReadTopic } from './ContinueReadingBanner';
+import { MentalabSpinner } from './MentalabLoader';
+import { getMindLanguageMeta } from '../../core/mind/mindLanguages';
 
 interface MindTopicPageViewProps {
   initialTopic: MindTopicDetail;
@@ -93,6 +96,8 @@ export const MindTopicPageView: React.FC<MindTopicPageViewProps> = ({
   const [contentLanguage, setContentLanguage] = useState<MindLanguageCode>(
     queryLang || initialLanguage
   );
+  const [isProcessingLanguage, setIsProcessingLanguage] = useState<boolean>(false);
+  const [targetLangMeta, setTargetLangMeta] = useState<{ nativeName: string; englishName: string } | null>(null);
 
   // Sync state if user navigates back/forward externally via browser history
   const prevQueryLangRef = useRef<MindLanguageCode | null>(queryLang);
@@ -159,34 +164,74 @@ export const MindTopicPageView: React.FC<MindTopicPageViewProps> = ({
     loadEngagementData();
     recordTopicView(topic.id);
 
+    // Save topic reading state for seamless cross-device & home page resume
+    saveLastReadTopic({
+      topicId: topic.id,
+      topicSlug: topic.slug || initialTopic.id,
+      title: topic.title,
+      categoryId: topic.categoryId,
+      categoryTitle: initialCategory.titleEn,
+      categorySlug: initialCategory.slug,
+      progressPercent: 25,
+      language: contentLanguage,
+    });
+
+    const handleScroll = () => {
+      if (typeof window === 'undefined') return;
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight <= 0) return;
+      const progress = Math.min(100, Math.max(10, Math.round((window.scrollY / totalHeight) * 100)));
+      saveLastReadTopic({
+        topicId: topic.id,
+        topicSlug: topic.slug || initialTopic.id,
+        title: topic.title,
+        categoryId: topic.categoryId,
+        categoryTitle: initialCategory.titleEn,
+        categorySlug: initialCategory.slug,
+        progressPercent: progress,
+        language: contentLanguage,
+      });
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
     return () => {
       mounted = false;
+      window.removeEventListener('scroll', handleScroll);
     };
-  }, [topic.id, userId]);
+  }, [topic.id, topic.title, topic.slug, topic.categoryId, initialTopic.id, initialCategory.titleEn, initialCategory.slug, contentLanguage, userId]);
 
   // Handle language switch from header switcher
   const handleLanguageChange = (newLang: MindLanguageCode) => {
-    prevQueryLangRef.current = newLang === 'en' ? null : newLang;
-    setContentLanguage(newLang);
-    const resolved = resolveTopicTranslation(initialTopic.id, newLang);
-    syncMindUrl(resolved.topic.slug || initialTopic.id, newLang);
-    applyMindSeoTagsToHead(resolved.topic, newLang);
+    if (newLang === contentLanguage) return;
+    const meta = getMindLanguageMeta(newLang);
+    setTargetLangMeta(meta);
+    setIsProcessingLanguage(true);
 
-    if (typeof window !== 'undefined') {
-      try {
-        const currentParams = new URLSearchParams(window.location.search);
-        if (newLang === 'en') {
-          currentParams.delete('lang');
-        } else {
-          currentParams.set('lang', newLang);
+    setTimeout(() => {
+      prevQueryLangRef.current = newLang === 'en' ? null : newLang;
+      setContentLanguage(newLang);
+      const resolved = resolveTopicTranslation(initialTopic.id, newLang);
+      syncMindUrl(resolved.topic.slug || initialTopic.id, newLang);
+      applyMindSeoTagsToHead(resolved.topic, newLang);
+
+      if (typeof window !== 'undefined') {
+        try {
+          const currentParams = new URLSearchParams(window.location.search);
+          if (newLang === 'en') {
+            currentParams.delete('lang');
+          } else {
+            currentParams.set('lang', newLang);
+          }
+          const qs = currentParams.toString();
+          const newPath = qs ? `${pathname}?${qs}` : pathname;
+          router.replace(newPath, { scroll: false });
+        } catch {
+          // Non-blocking fallback
         }
-        const qs = currentParams.toString();
-        const newPath = qs ? `${pathname}?${qs}` : pathname;
-        router.replace(newPath, { scroll: false });
-      } catch {
-        // Non-blocking fallback
       }
-    }
+      setIsProcessingLanguage(false);
+    }, 280);
   };
 
   // Handle reaction click
@@ -966,6 +1011,22 @@ export const MindTopicPageView: React.FC<MindTopicPageViewProps> = ({
           isOpen={isAnalyticsModalOpen}
           onClose={() => setIsAnalyticsModalOpen(false)}
         />
+      )}
+      {/* Dynamic Processing Overlay for Language & Topic Transitions */}
+      {isProcessingLanguage && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200"
+        >
+          <div className="p-8 rounded-3xl bg-slate-900/95 border border-violet-500/40 shadow-2xl shadow-violet-950/60 flex flex-col items-center">
+            <MentalabSpinner
+              size="lg"
+              label={`Translating to ${targetLangMeta?.nativeName || 'Language'}...`}
+              sublabel={`Synthesizing neural model in ${targetLangMeta?.englishName || 'selected dialect'}`}
+            />
+          </div>
+        </div>
       )}
     </article>
   );

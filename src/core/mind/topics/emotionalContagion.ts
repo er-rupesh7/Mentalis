@@ -184,6 +184,26 @@ export const TOPIC_EMOTIONAL_CONTAGION_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_EMOTIONAL_CONTAGION_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_EMOTIONAL_CONTAGION: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_EMOTIONAL_CONTAGION_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_EMOTIONAL_CONTAGION: Record<MindLanguageCode, MindTopicDetail
     oneLineExplanation: 'किसी तनावग्रस्त व्यक्ति के संपर्क में आते ही स्वयं भी अशांत महसूस करना।',
     summary30s: 'भावनात्मक संक्रामकता (Emotional Contagion) के अनुसार मानव मस्तिष्क दूसरों के चेहरे की सूक्ष्म मांसपेशियों और आवाज़ के उतार-चढ़ाव की नकल करके 20 मिलीसेकंड के भीतर उनकी भावनात्मक स्थिति को आत्मसात कर लेता है। सिगल बारसेड के व्हार्टन स्कूल के प्रयोगों ने सिद्ध किया कि एक अकेला नकारात्मक व्यक्ति पूरी टीम की उत्पादकता को नष्ट कर सकता है।',
   },
-  gu: TOPIC_EMOTIONAL_CONTAGION_EN,
-  mr: TOPIC_EMOTIONAL_CONTAGION_EN,
-  te: TOPIC_EMOTIONAL_CONTAGION_EN,
-  ta: TOPIC_EMOTIONAL_CONTAGION_EN,
-  kn: TOPIC_EMOTIONAL_CONTAGION_EN,
-  ml: TOPIC_EMOTIONAL_CONTAGION_EN,
-  bn: TOPIC_EMOTIONAL_CONTAGION_EN,
-  pa: TOPIC_EMOTIONAL_CONTAGION_EN,
-  ur: TOPIC_EMOTIONAL_CONTAGION_EN,
-  or: TOPIC_EMOTIONAL_CONTAGION_EN,
-  as: TOPIC_EMOTIONAL_CONTAGION_EN,
-  };
+  gu: createLocalizedRecord('gu', "Emotional Contagion: The Invisible Transmission of Mood (પૂર્વગ્રહ)", "Emotional Contagion: The Invisible Transmission of Mood એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Emotional Contagion: The Invisible Transmission of Mood (पूर्वग्रह)", "Emotional Contagion: The Invisible Transmission of Mood हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Emotional Contagion: The Invisible Transmission of Mood (పక్షపాతం)", "Emotional Contagion: The Invisible Transmission of Mood అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Emotional Contagion: The Invisible Transmission of Mood (சார்புநிலை)", "Emotional Contagion: The Invisible Transmission of Mood என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Emotional Contagion: The Invisible Transmission of Mood (ಪಕ್ಷಪಾತ)", "Emotional Contagion: The Invisible Transmission of Mood ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Emotional Contagion: The Invisible Transmission of Mood (പക്ഷപാതം)", "Emotional Contagion: The Invisible Transmission of Mood എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Emotional Contagion: The Invisible Transmission of Mood (পক্ষপাতিত্ব)", "Emotional Contagion: The Invisible Transmission of Mood হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Emotional Contagion: The Invisible Transmission of Mood (ਪੱਖਪਾਤ)", "Emotional Contagion: The Invisible Transmission of Mood ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Emotional Contagion: The Invisible Transmission of Mood (جانبداری)", "Emotional Contagion: The Invisible Transmission of Mood انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Emotional Contagion: The Invisible Transmission of Mood (ପକ୍ଷପାତିତା)", "Emotional Contagion: The Invisible Transmission of Mood ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Emotional Contagion: The Invisible Transmission of Mood (পক্ষপাতিত্ব)", "Emotional Contagion: The Invisible Transmission of Mood সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

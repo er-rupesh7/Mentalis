@@ -83,6 +83,7 @@ import {
 } from '../../core/mind/mindEngagementEngine';
 import { ShareModal } from './ShareModal';
 import { SavedTopicsView } from './SavedTopicsView';
+import { MentalabSpinner } from './MentalabLoader';
 
 export interface MentalabMindViewProps {
   initialTopicId?: string;
@@ -149,6 +150,7 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
   // Detailed Topic content
   const [topicDetail, setTopicDetail] = useState<MindTopicDetail>(FALLBACK_TOPIC_CONFIRMATION_BIAS_EN);
   const [isLoadingTopic, setIsLoadingTopic] = useState<boolean>(false);
+  const [isCategoryLoading, setIsCategoryLoading] = useState<boolean>(false);
 
   // User interactions
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
@@ -205,9 +207,13 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
   useEffect(() => {
     let mounted = true;
     async function loadCategoryTopics() {
+      setIsCategoryLoading(true);
       if (searchQuery.trim()) {
         const searched = await searchMindTopics(searchQuery, contentLanguage);
-        if (mounted) setCategoryTopics(searched);
+        if (mounted) {
+          setCategoryTopics(searched);
+          setIsCategoryLoading(false);
+        }
         return;
       }
 
@@ -218,6 +224,7 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
 
       if (mounted) {
         setCategoryTopics(filtered);
+        setIsCategoryLoading(false);
         if (filtered.length > 0 && !filtered.some((t) => t.id === activeTopicId)) {
           setActiveTopicId(filtered[0].id);
         }
@@ -232,8 +239,8 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
   // Load active topic detail with graceful fallback resolution and SEO synchronization
   useEffect(() => {
     let mounted = true;
-    async function loadTopic() {
-      setIsLoadingTopic(true);
+    setIsLoadingTopic(true);
+    const timer = setTimeout(async () => {
       const resolution = resolveTopicTranslation(activeTopicId, contentLanguage);
       if (mounted) {
         setTranslationResolution(resolution);
@@ -261,10 +268,11 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
       if (mounted && rx.total > 0) {
         setReactions(rx);
       }
-    }
-    loadTopic();
+    }, 180);
+
     return () => {
       mounted = false;
+      clearTimeout(timer);
     };
   }, [activeTopicId, contentLanguage, userId]);
 
@@ -491,7 +499,13 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
       {/* Search & Difficulty Filter Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-2xl border border-slate-800">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          {isCategoryLoading && searchQuery.trim() ? (
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center">
+              <MentalabSpinner size="xs" />
+            </div>
+          ) : (
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          )}
           <input
             type="text"
             value={searchQuery}
@@ -640,7 +654,16 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
 
       {curriculumViewMode === 'catalog' ? (
         /* Dedicated Track Catalog Grid */
-        <div className="space-y-6">
+        isCategoryLoading ? (
+          <div className="py-24 flex flex-col items-center justify-center animate-in fade-in">
+            <MentalabSpinner
+              size="lg"
+              label="Synthesizing Track Modules..."
+              sublabel={`Loading peer-reviewed concepts in ${activeCategoryObj.title}...`}
+            />
+          </div>
+        ) : (
+          <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {categoryTopics.map((topic, index) => {
               const isSelected = activeTopicId === topic.id;
@@ -727,7 +750,8 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
             </div>
           )}
         </div>
-      ) : (
+      )
+    ) : (
         /* Full Topic Reader Mode */
         <div className="space-y-6">
           {/* Track Sibling Navigator Strip */}
@@ -812,7 +836,16 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
           )}
 
           {/* Featured Educational Module Container */}
-          <div className="rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl overflow-hidden">
+          {isLoadingTopic ? (
+            <div className="rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl p-16 flex flex-col items-center justify-center min-h-[420px] animate-in fade-in">
+              <MentalabSpinner
+                size="lg"
+                label="Decoding Cognitive Architecture..."
+                sublabel={`Loading verified concepts for ${topicDetail.title}...`}
+              />
+            </div>
+          ) : (
+            <div className="rounded-3xl bg-slate-900/80 border border-slate-800 shadow-xl overflow-hidden">
         {/* Module Header Bar */}
         <div className="p-5 sm:p-6 border-b border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950/40">
           <div>
@@ -1588,6 +1621,7 @@ export const MentalabMindView: React.FC<MentalabMindViewProps> = ({
           </button>
         </div>
       </div>
+          )}
     </div>
   )}
   </>

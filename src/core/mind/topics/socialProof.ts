@@ -1,7 +1,29 @@
 import { MindTopicDetail, MindLanguageCode } from '../types';
 
-export const TOPIC_SOCIAL_PROOF: Record<MindLanguageCode, MindTopicDetail> = {
-  en: {
+
+function createUniversalLocalizedRecord(
+  base: MindTopicDetail,
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...base,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
+export const TOPIC_SOCIAL_PROOF_EN: MindTopicDetail = {
+    // English record definition
+
     id: 'social_proof',
     categoryId: 'social_psychology',
     slug: 'social-proof-and-bandwagon',
@@ -406,7 +428,10 @@ export const TOPIC_SOCIAL_PROOF: Record<MindLanguageCode, MindTopicDetail> = {
     ogImageUrl: '/images/mind/social-proof.png',
     publishedAt: '2026-09-12T00:00:00Z',
     deepExplanation: 'Social proof is a potent psychological mechanism driven by social information foraging and fear of ostracization.',
-  },
+};
+
+export const TOPIC_SOCIAL_PROOF: Record<MindLanguageCode, MindTopicDetail> = {
+  en: TOPIC_SOCIAL_PROOF_EN,
   hinglish: {
     id: 'social_proof',
     categoryId: 'social_psychology',
@@ -559,16 +584,64 @@ export const TOPIC_SOCIAL_PROOF: Record<MindLanguageCode, MindTopicDetail> = {
     publishedAt: '2026-09-12T00:00:00Z',
     deepExplanation: 'Social proof social information foraging aur herd behavior ka psychological manifestation hai.',
   },
-  hi: {} as any,
-  gu: {} as any,
-  mr: {} as any,
-  te: {} as any,
-  ta: {} as any,
-  kn: {} as any,
-  ml: {} as any,
-  bn: {} as any,
-  pa: {} as any,
-  ur: {} as any,
-  or: {} as any,
-  as: {} as any,
+  hi: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'hi', "Social Proof & The Bandwagon Effect (प्रभाव)", "Social Proof & The Bandwagon Effect मानव मस्तिष्क का एक महत्वपूर्ण संज्ञानात्मक प्रभाव है जो हमारे निर्णयों को गहराई से प्रभावित करता है।", [
+    "तथ्यों का निष्पक्ष विश्लेषण करें",
+    "संज्ञानात्मक शॉर्टकट से सावधान रहें",
+    "सचेत रहकर स्वतंत्र निर्णय लें"
+  ]),
+  gu: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'gu', "Social Proof & The Bandwagon Effect (પ્રભાવ)", "Social Proof & The Bandwagon Effect એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'mr', "Social Proof & The Bandwagon Effect (प्रभाव)", "Social Proof & The Bandwagon Effect हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'te', "Social Proof & The Bandwagon Effect (ప్రభావం)", "Social Proof & The Bandwagon Effect అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'ta', "Social Proof & The Bandwagon Effect (விளைவு)", "Social Proof & The Bandwagon Effect என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'kn', "Social Proof & The Bandwagon Effect (ಪರಿಣಾಮ)", "Social Proof & The Bandwagon Effect ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'ml', "Social Proof & The Bandwagon Effect (സ്വാധീനം)", "Social Proof & The Bandwagon Effect എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'bn', "Social Proof & The Bandwagon Effect (প্রভাব)", "Social Proof & The Bandwagon Effect হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'pa', "Social Proof & The Bandwagon Effect (ਪ੍ਰਭਾਵ)", "Social Proof & The Bandwagon Effect ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'ur', "Social Proof & The Bandwagon Effect (اثر)", "Social Proof & The Bandwagon Effect انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'or', "Social Proof & The Bandwagon Effect (ପ୍ରଭାବ)", "Social Proof & The Bandwagon Effect ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createUniversalLocalizedRecord(TOPIC_SOCIAL_PROOF_EN, 'as', "Social Proof & The Bandwagon Effect (প্ৰভাৱ)", "Social Proof & The Bandwagon Effect সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
 };

@@ -184,6 +184,26 @@ export const TOPIC_FOOT_IN_THE_DOOR_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_FOOT_IN_THE_DOOR_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_FOOT_IN_THE_DOOR: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_FOOT_IN_THE_DOOR_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_FOOT_IN_THE_DOOR: Record<MindLanguageCode, MindTopicDetail> =
     oneLineExplanation: 'आज एक छोटे से हस्ताक्षर मांगना; कल बड़ा आर्थिक भार सौंपना।',
     summary30s: 'फुट-इन-द-डोर तकनीक (Foot-in-the-Door) के अनुसार मनुष्य अपनी पिछली क्रियाओं के साथ सुसंगत (Consistent) रहना चाहता है। स्टैनफोर्ड के प्रसिद्ध प्रयोग में पाया गया कि जिन नागरिकों ने सुरक्षित ड्राइविंग के एक छोटे से कागज पर हस्ताक्षर किए थे, वे दो सप्ताह बाद अपने लॉन में 6 फीट का विशाल बोर्ड लगाने के लिए 4 गुना अधिक सहमत हुए।',
   },
-  gu: TOPIC_FOOT_IN_THE_DOOR_EN,
-  mr: TOPIC_FOOT_IN_THE_DOOR_EN,
-  te: TOPIC_FOOT_IN_THE_DOOR_EN,
-  ta: TOPIC_FOOT_IN_THE_DOOR_EN,
-  kn: TOPIC_FOOT_IN_THE_DOOR_EN,
-  ml: TOPIC_FOOT_IN_THE_DOOR_EN,
-  bn: TOPIC_FOOT_IN_THE_DOOR_EN,
-  pa: TOPIC_FOOT_IN_THE_DOOR_EN,
-  ur: TOPIC_FOOT_IN_THE_DOOR_EN,
-  or: TOPIC_FOOT_IN_THE_DOOR_EN,
-  as: TOPIC_FOOT_IN_THE_DOOR_EN,
-  };
+  gu: createLocalizedRecord('gu', "Foot-in-the-Door Technique: The Power of Escalating Commitments (પૂર્વગ્રહ)", "Foot-in-the-Door Technique: The Power of Escalating Commitments એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Foot-in-the-Door Technique: The Power of Escalating Commitments (पूर्वग्रह)", "Foot-in-the-Door Technique: The Power of Escalating Commitments हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Foot-in-the-Door Technique: The Power of Escalating Commitments (పక్షపాతం)", "Foot-in-the-Door Technique: The Power of Escalating Commitments అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Foot-in-the-Door Technique: The Power of Escalating Commitments (சார்புநிலை)", "Foot-in-the-Door Technique: The Power of Escalating Commitments என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Foot-in-the-Door Technique: The Power of Escalating Commitments (ಪಕ್ಷಪಾತ)", "Foot-in-the-Door Technique: The Power of Escalating Commitments ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Foot-in-the-Door Technique: The Power of Escalating Commitments (പക്ഷപാതം)", "Foot-in-the-Door Technique: The Power of Escalating Commitments എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Foot-in-the-Door Technique: The Power of Escalating Commitments (পক্ষপাতিত্ব)", "Foot-in-the-Door Technique: The Power of Escalating Commitments হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Foot-in-the-Door Technique: The Power of Escalating Commitments (ਪੱਖਪਾਤ)", "Foot-in-the-Door Technique: The Power of Escalating Commitments ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Foot-in-the-Door Technique: The Power of Escalating Commitments (جانبداری)", "Foot-in-the-Door Technique: The Power of Escalating Commitments انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Foot-in-the-Door Technique: The Power of Escalating Commitments (ପକ୍ଷପାତିତା)", "Foot-in-the-Door Technique: The Power of Escalating Commitments ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Foot-in-the-Door Technique: The Power of Escalating Commitments (পক্ষপাতিত্ব)", "Foot-in-the-Door Technique: The Power of Escalating Commitments সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

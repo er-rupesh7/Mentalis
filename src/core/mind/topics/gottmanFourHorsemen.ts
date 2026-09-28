@@ -184,6 +184,26 @@ export const TOPIC_GOTTMAN_HORSEMEN_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_GOTTMAN_HORSEMEN_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_GOTTMAN_HORSEMEN: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_GOTTMAN_HORSEMEN_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_GOTTMAN_HORSEMEN: Record<MindLanguageCode, MindTopicDetail> =
     oneLineExplanation: 'विशिष्ट व्यवहार पर चर्चा करने के स्थान पर साथी के चरित्र पर आक्रमण करना।',
     summary30s: 'गॉटमैन के चार अश्वारोही (Four Horsemen) यह दर्शाते हैं कि वैवाहिक विफलता का मुख्य कारण मतभेद नहीं, बल्कि मतभेद व्यक्त करने का तरीका है। इनमें "तिरस्कार" (Contempt—आँखें तरेरना, उपहास और व्यंग्य) संबंध विच्छेद का सबसे बड़ा भविष्यवक्ता है जो साथी की रोग प्रतिरोधक क्षमता को भी कमजोर कर देता है।',
   },
-  gu: TOPIC_GOTTMAN_HORSEMEN_EN,
-  mr: TOPIC_GOTTMAN_HORSEMEN_EN,
-  te: TOPIC_GOTTMAN_HORSEMEN_EN,
-  ta: TOPIC_GOTTMAN_HORSEMEN_EN,
-  kn: TOPIC_GOTTMAN_HORSEMEN_EN,
-  ml: TOPIC_GOTTMAN_HORSEMEN_EN,
-  bn: TOPIC_GOTTMAN_HORSEMEN_EN,
-  pa: TOPIC_GOTTMAN_HORSEMEN_EN,
-  ur: TOPIC_GOTTMAN_HORSEMEN_EN,
-  or: TOPIC_GOTTMAN_HORSEMEN_EN,
-  as: TOPIC_GOTTMAN_HORSEMEN_EN,
-  };
+  gu: createLocalizedRecord('gu', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (પૂર્વગ્રહ)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (पूर्वग्रह)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (పక్షపాతం)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (சார்புநிலை)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (ಪಕ್ಷಪಾತ)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (പക്ഷപാതം)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (পক্ষপাতিত্ব)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (ਪੱਖਪਾਤ)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (جانبداری)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (ପକ୍ଷପାତିତା)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture (পক্ষপাতিত্ব)", "Gottman\\'s Four Horsemen: The Predictors of Relational Rupture সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

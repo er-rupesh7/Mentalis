@@ -16,7 +16,7 @@ import {
   getAvailableLanguagesForTopic,
   isTopicFullyTranslated,
 } from '../mind/translationLoader';
-import { TOPIC_CONFIRMATION_BIAS } from '../mind/mindCurriculum';
+import { TOPIC_CONFIRMATION_BIAS, CURRICULUM_CATALOG } from '../mind/mindCurriculum';
 import { SUPPORTED_LANGUAGES } from '../../i18n/config';
 
 describe('Mentalab Mind Multilingual Architecture & Hinglish Reading Mode', () => {
@@ -124,7 +124,11 @@ describe('Mentalab Mind Multilingual Architecture & Hinglish Reading Mode', () =
     });
 
     it('never silently pretends English is translated when an Indic language is in review', () => {
-      const tamilRes = resolveTopicTranslation('confirmation_bias', 'ta');
+      CURRICULUM_CATALOG['_test_in_review'] = {
+        en: TOPIC_CONFIRMATION_BIAS.en,
+        ta: {} as any,
+      } as any;
+      const tamilRes = resolveTopicTranslation('_test_in_review', 'ta');
       expect(tamilRes.isFallback).toBe(true);
       expect(tamilRes.requestedLanguage).toBe('ta');
       expect(tamilRes.actualLanguage).toBe('en');
@@ -132,6 +136,7 @@ describe('Mentalab Mind Multilingual Architecture & Hinglish Reading Mode', () =
       // Content is complete and valid, not an empty or broken object
       expect(tamilRes.topic.title).toBeDefined();
       expect(tamilRes.topic.coreConcept.length).toBeGreaterThan(20);
+      delete CURRICULUM_CATALOG['_test_in_review'];
     });
 
     it('lists available verified languages per topic truthfully', () => {

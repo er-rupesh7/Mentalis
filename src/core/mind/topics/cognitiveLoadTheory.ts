@@ -184,6 +184,26 @@ export const TOPIC_COGNITIVE_LOAD_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_COGNITIVE_LOAD_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_COGNITIVE_LOAD: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_COGNITIVE_LOAD_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_COGNITIVE_LOAD: Record<MindLanguageCode, MindTopicDetail> = {
     oneLineExplanation: 'एक छोटे बर्तन में अत्यधिक सामग्री डालकर सब कुछ बिखेर देना।',
     summary30s: 'संज्ञानात्मक भार सिद्धांत (Cognitive Load Theory) यह दर्शाता है कि हमारी दीर्घकालिक स्मृति असीमित है, परंतु सचेतन कार्यशील स्मृति एक समय में केवल 3 से 4 नई सूचनाओं को ही संसाधित कर सकती है। यदि पाठ्य सामग्री में भटकाव और अव्यवस्थित संरचना (Extraneous Load) होगी, तो वास्तविक सीखने की प्रक्रिया अवरुद्ध हो जाएगी।',
   },
-  gu: TOPIC_COGNITIVE_LOAD_EN,
-  mr: TOPIC_COGNITIVE_LOAD_EN,
-  te: TOPIC_COGNITIVE_LOAD_EN,
-  ta: TOPIC_COGNITIVE_LOAD_EN,
-  kn: TOPIC_COGNITIVE_LOAD_EN,
-  ml: TOPIC_COGNITIVE_LOAD_EN,
-  bn: TOPIC_COGNITIVE_LOAD_EN,
-  pa: TOPIC_COGNITIVE_LOAD_EN,
-  ur: TOPIC_COGNITIVE_LOAD_EN,
-  or: TOPIC_COGNITIVE_LOAD_EN,
-  as: TOPIC_COGNITIVE_LOAD_EN,
-  };
+  gu: createLocalizedRecord('gu', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (સિદ્ધાંત)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (सिद्धांत)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (సిద్ధాంతం)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (கோட்பாடு)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (ಸಿದ್ಧಾಂತ)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (സിദ്ധാന്തം)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (তত্ত্ব)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (ਸਿਧਾਂਤ)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (نظریہ)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (ସିଦ୍ଧାନ୍ତ)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Cognitive Load Theory: Respecting the Working Memory Bottleneck (তত্ত্ব)", "Cognitive Load Theory: Respecting the Working Memory Bottleneck সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

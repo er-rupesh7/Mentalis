@@ -297,19 +297,83 @@ export const TOPIC_OPTIMISM_BIAS_HI: MindTopicDetail = {
   summary30s: '2011 में ताली शारोत के न्यूरोसाइंस शोध ने दिखाया कि लगभग 80% मनुष्य आशावाद पूर्वाग्रह (Optimism Bias) से ग्रस्त होते हैं। हम जानते हैं कि बड़ी संख्या में व्यापार असफल होते हैं और लोग बीमार पड़ते हैं, फिर भी हमारा मस्तिष्क हमें विश्वास दिलाता है कि यह हमारे साथ नहीं होगा।',
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_OPTIMISM_BIAS_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_OPTIMISM_BIAS: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_OPTIMISM_BIAS_EN,
   hinglish: TOPIC_OPTIMISM_BIAS_HINGLISH,
   hi: TOPIC_OPTIMISM_BIAS_HI,
-  gu: TOPIC_OPTIMISM_BIAS_EN,
-  mr: TOPIC_OPTIMISM_BIAS_EN,
-  te: TOPIC_OPTIMISM_BIAS_EN,
-  ta: TOPIC_OPTIMISM_BIAS_EN,
-  kn: TOPIC_OPTIMISM_BIAS_EN,
-  ml: TOPIC_OPTIMISM_BIAS_EN,
-  bn: TOPIC_OPTIMISM_BIAS_EN,
-  pa: TOPIC_OPTIMISM_BIAS_EN,
-  ur: TOPIC_OPTIMISM_BIAS_EN,
-  or: TOPIC_OPTIMISM_BIAS_EN,
-  as: TOPIC_OPTIMISM_BIAS_EN,
+  gu: createLocalizedRecord('gu', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (પૂર્વગ્રહ)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (पूर्वग्रह)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (పక్షపాతం)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (சார்புநிலை)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (ಪಕ್ಷಪಾತ)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (പക്ഷപാതം)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (পক্ষপাতিত্ব)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (ਪੱਖਪਾਤ)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (جانبداری)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (ପକ୍ଷପାତିତା)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove (পক্ষপাতিত্ব)", "The Optimism Bias: Believing the Future Is Safer Than Statistics Prove সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
 };

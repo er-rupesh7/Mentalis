@@ -184,6 +184,26 @@ export const TOPIC_INGROUP_OUTGROUP_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_INGROUP_OUTGROUP_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_INGROUP_OUTGROUP: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_INGROUP_OUTGROUP_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_INGROUP_OUTGROUP: Record<MindLanguageCode, MindTopicDetail> =
     oneLineExplanation: 'हमारे लोग ईमानदार हैं; उनके लोग कपटी हैं।',
     summary30s: 'अंतःसमूह-बहिःसमूह पूर्वाग्रह (Ingroup-Outgroup Bias) यह दर्शाता है कि किसी भी मनमाने आधार पर समूह बनते ही मनुष्य अपने समूह को नैतिक रूप से श्रेष्ठ मानने लगता है और दूसरे समूह के प्रति संवेदनहीन हो जाता है। हेनरी ताजफेल के प्रयोगों ने सिद्ध किया कि एक सिक्के की उछाल से भी कबिलाई विभाजन उत्पन्न हो सकता है।',
   },
-  gu: TOPIC_INGROUP_OUTGROUP_EN,
-  mr: TOPIC_INGROUP_OUTGROUP_EN,
-  te: TOPIC_INGROUP_OUTGROUP_EN,
-  ta: TOPIC_INGROUP_OUTGROUP_EN,
-  kn: TOPIC_INGROUP_OUTGROUP_EN,
-  ml: TOPIC_INGROUP_OUTGROUP_EN,
-  bn: TOPIC_INGROUP_OUTGROUP_EN,
-  pa: TOPIC_INGROUP_OUTGROUP_EN,
-  ur: TOPIC_INGROUP_OUTGROUP_EN,
-  or: TOPIC_INGROUP_OUTGROUP_EN,
-  as: TOPIC_INGROUP_OUTGROUP_EN,
-  };
+  gu: createLocalizedRecord('gu', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (પૂર્વગ્રહ)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (पूर्वग्रह)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (పక్షపాతం)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (சார்புநிலை)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (ಪಕ್ಷಪಾತ)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (പക്ഷപാതം)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (পক্ষপাতিত্ব)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (ਪੱਖਪਾਤ)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (جانبداری)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (ପକ୍ଷପାତିତା)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism (পক্ষপাতিত্ব)", "Ingroup-Outgroup Bias: The Ancient Psychology of Tribalism সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

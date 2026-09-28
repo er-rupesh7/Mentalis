@@ -184,6 +184,26 @@ export const TOPIC_SCARCITY_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_SCARCITY_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_SCARCITY: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_SCARCITY_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_SCARCITY: Record<MindLanguageCode, MindTopicDetail> = {
     oneLineExplanation: '"केवल 2 वस्तुएं शेष हैं — 14 लोग अभी इसे देख रहे हैं!"',
     summary30s: 'दुर्लभता का सिद्धांत (Scarcity Principle) यह दर्शाता है कि किसी वस्तु के छिन जाने या समाप्त हो जाने की आशंका मनुष्य में मनोवैज्ञानिक प्रतिक्रिया (Psychological Reactance) उत्पन्न करती है। स्टीफन वॉरचेल के प्रयोग में साबित हुआ कि 10 कुकीज़ वाले जार की तुलना में 2 कुकीज़ वाले जार की कुकीज़ को लोगों ने अधिक स्वादिष्ट और महंगी आंका।',
   },
-  gu: TOPIC_SCARCITY_EN,
-  mr: TOPIC_SCARCITY_EN,
-  te: TOPIC_SCARCITY_EN,
-  ta: TOPIC_SCARCITY_EN,
-  kn: TOPIC_SCARCITY_EN,
-  ml: TOPIC_SCARCITY_EN,
-  bn: TOPIC_SCARCITY_EN,
-  pa: TOPIC_SCARCITY_EN,
-  ur: TOPIC_SCARCITY_EN,
-  or: TOPIC_SCARCITY_EN,
-  as: TOPIC_SCARCITY_EN,
-  };
+  gu: createLocalizedRecord('gu', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (પૂર્વગ્રહ)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (पूर्वग्रह)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (పక్షపాతం)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (சார்புநிலை)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (ಪಕ್ಷಪಾತ)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (പക്ഷപാതം)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (পক্ষপাতিত্ব)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (ਪੱਖਪਾਤ)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (جانبداری)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (ପକ୍ଷପାତିତା)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "The Scarcity Principle: How Perceived Deprivation Triggers Urgency (পক্ষপাতিত্ব)", "The Scarcity Principle: How Perceived Deprivation Triggers Urgency সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};

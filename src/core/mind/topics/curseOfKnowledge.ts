@@ -1,336 +1,225 @@
 import { MindTopicDetail, MindLanguageCode } from '../types';
 
-/**
- * Mentalab Mind — Cognitive Biases Track
- * Topic: The Curse of Knowledge: The Impossibility of Imagining Ignorance
- * Category: Cognitive Biases (cognitive_biases)
- * 
- * Academic Grounding:
- * - Camerer, Loewenstein & Weber (1989): The curse of knowledge in economic settings: An experimental analysis. Journal of Political Economy
- * - Newton (1990): The rocky road from actions to intentions (The Stanford Tappers & Listeners study)
- * - Heath & Heath (2007): Made to Stick: Why Some Ideas Survive and Others Die
- */
-
 export const TOPIC_CURSE_OF_KNOWLEDGE_EN: MindTopicDetail = {
   id: 'curse_of_knowledge',
   categoryId: 'cognitive_biases',
   slug: 'curse-of-knowledge',
-  difficulty: 'beginner',
+  difficulty: 'intermediate',
   estimatedReadingMinutes: 5,
   scientificConsensusTier: 'established',
-  sortWeight: 22,
-  viewCount: 8120,
-  shareCount: 650,
-  bookmarkCount: 1410,
-  title: 'The Curse of Knowledge: The Impossibility of Imagining Ignorance',
-  subtitle: 'Once you understand something deeply, you can no longer accurately reconstruct what it was like not to understand it.',
-  shortDescription: 'A cognitive bias that occurs when an individual, communicating with other individuals, unknowingly assumes that the others have the background knowledge to understand.',
-  oneLineExplanation: 'The expert forgets what was once baffling to the beginner.',
+  sortWeight: 8,
+  viewCount: 3760,
+  shareCount: 300,
+  bookmarkCount: 620,
+  title: "The Curse of Knowledge: Expert Blindness in Teaching",
+  subtitle: "Elizabeth Newton’s Stanford tapper-listener experiment on why knowing something makes it impossible to imagine not knowing it.",
+  shortDescription: "A cognitive bias that occurs when an individual, communicating with other individuals, unknowingly assumes that the others have the background knowledge to understand.",
+  oneLineExplanation: "Once you know something, you literally cannot imagine what it felt like to be ignorant of it.",
 
-  summary30s: 'The curse of knowledge is the invisible barrier separating experts from novices, teachers from students, and software engineers from users. Once a concept, acronym, or process becomes second nature to your brain, your mind suffers from cognitive amnesia: you cannot imagine the confusion of someone encountering it for the first time. As a result, experts give impenetrable explanations and mistake novice confusion for stupidity.',
+  summary30s: "First proven in 1990 by Stanford PhD student Elizabeth Newton, the Curse of Knowledge is the primary reason why brilliant professors, senior engineers, and executives are often terrible teachers. Newton had subjects tap out the rhythm of famous songs (like \"Happy Birthday\") with their knuckles while listeners guessed. Tappers predicted a 50% success rate; listeners guessed correctly only 2.5% of the time!",
+  coreConcept: "When the tapper taps, they hear the rich melody, lyrics, and orchestra playing in their own mind. The listener hears only bizarre, disconnected tapping sounds on a table. In communication, an expert has rich schemas, contextual nuances, and acronyms playing in their brain, blinding them to the reality that their novice audience is hearing only incomprehensible static.",
+  summary60s: "The Curse of Knowledge poisons onboarding manuals, corporate presentations, doctor-patient conversations, and software documentation. Experts use insider jargon and skip foundational logical steps not out of arrogance, but because their prefrontal cortex cannot physically reconstruct the naive mental model of a beginner.",
+  quickTakeaways: ["Knowing a concept makes it neurologically difficult to simulate a beginner’s mind","The tapper-listener gap: you hear the symphony, the listener hears random knocks","Insiders chronically underestimate how confusing their jargon is to outsiders","The antidote is explaining concepts using tangible, concrete metaphors without acronyms"],
 
-  coreConcept: 'Coined by Colin Camerer, George Loewenstein, and Martin Weber in 1989, and famously demonstrated by Elizabeth Newton at Stanford in 1990 with the "Tapper and Listener" experiment. Tappers were asked to tap out the rhythm of well-known songs (like "Happy Birthday") with their fingers on a table; listeners had to guess the song. Tappers predicted listeners would guess 50% of the songs. In reality, listeners guessed only 2.5% (3 out of 120)! While tapping, the tapper hears the full orchestral melody in their head; the listener hears only a bizarre, disconnected series of thuds.',
-  summary60s: 'Consider an IT security specialist writing an internal corporate email: "Ensure all endpoints implement mTLS and rotate their RSA keys weekly via KMS." To the engineer, this sentence is elementary. To the human resources manager reading it, it reads like alien hieroglyphics. When the manager asks for clarification, the engineer feels exasperated: "How can anyone not know what KMS is?" The curse of knowledge turns deep expertise into communication friction, alienating customers and paralyzing teams.',
+  whyItHappens: "Egocentric anchor heuristic: the brain uses its current knowledge state as the default baseline, failing to sufficiently adjust downward for others.",
+  evolutionaryMechanism: "In ancestral tribes, shared knowledge was universally assumed because everyone lived in the exact same physical and cultural reality.",
 
-  quickTakeaways: [
-    'The Tapper Syndrome: You hear the full melody in your head; your listener hears only random thuds',
-    'Jargon Blindness: Technical vocabulary becomes so intuitive that you treat it as common conversational English',
-    'The Beginner Mind: Mastery requires deliberately unlearning your fluency to explain things to an intelligent 10-year-old',
-    'The Concrete Analogy Antidote: Never introduce an abstract system without anchoring it to a tangible physical metaphor',
-  ],
-
-  whyItHappens: 'Cognitive compression and chunking. As the brain masters a domain, complex trees of information are compressed into single conceptual chunks. Because the brain cannot easily unpack these compressed chunks on the fly, it assumes the listener possesses the same decompressed files.',
-  evolutionaryMechanism: 'Information transmission in ancestral bands relied on shared physical environment and direct imitation. Complex abstract jargon did not exist; everyone in the band shared identical sensory reality, so cognitive perspective-taking did not need to decompress multi-layered abstractions.',
-
-  howItWorks: 'When speaking, the speaker working memory automatically accesses the rich context and sensory imagery associated with the subject. Because this internal simulation is vivid and effortless, the speaker fails to realize that the words leaving their mouth lack the necessary background context for the listener to reconstruct the same simulation.',
-  whereYouEncounterIt: 'Software user interfaces and onboarding flows, medical consultations, university lectures, legal contracts, and corporate documentation.',
-
+  howItWorks: "Expert acquires mastery -> Mental models compress into abstract chunks -> Expert communicates chunks directly -> Novice lacks foundational primitives -> Confusion and alienation ensue -> Expert blames student.",
   visualExplanation: {
     type: 'contrast_matrix',
     visualConceptType: 'comparison_matrix',
-    headline: 'The Tapper vs. The Listener',
-    description: 'How internal mental accompaniment creates an illusion of clear communication.',
+    headline: "Tapper’s Rich Symphony vs. Listener’s Random Thuds",
+    description: "Elizabeth Newton’s Stanford finger-tapping experiment.",
     analogySideA: {
-      label: 'The Tapper (The Expert)',
-      detail: 'Hears the entire symphony, vocals, and instruments playing vividly in their head while tapping on the desk.',
+      label: "Tapper’s Perception (Expert)",
+      detail: "Hears full orchestra, emotional lyrics, and harmony inside their skull. Predicts: \"50% will guess this easily!\"",
     },
     analogySideB: {
-      label: 'The Listener (The Beginner)',
-      detail: 'Hears only disjointed, rhythmic knocking sounds on wood, completely stripped of melody.',
+      label: "Listener’s Reality (Novice)",
+      detail: "Hears disconnected, monotone knocks on wood: *tap... tap... tap-tap*. Actual success rate: 2.5%!",
     },
   },
 
-  researchSummary: 'Camerer, Loewenstein & Weber (1989) demonstrated in economic bargaining experiments that better-informed market participants were systematically unable to ignore their privileged information, resulting in suboptimal pricing offers and missed trading opportunities.',
-  limitationsAndControversies: 'While the curse of knowledge impedes beginner communication, expert-to-expert communication between peers benefits enormously from compressed terminology and shared shorthand.',
-  commonMisconceptions: 'Common myth: "Smart people are naturally good communicators." Reality: The more specialized and intelligent an individual becomes in a narrow field, the more severe their curse of knowledge typically is.',
-
-  howToRecognize: [
-    'Using three-letter acronyms in company-wide presentations without expanding them once',
-    'Feeling irritated when someone asks you to explain what you consider a "basic, obvious" concept',
-    'Writing software documentation that explains how to configure an API without explaining what the API does or why it exists',
-    'Saying "it is simple, all you have to do is..." followed by six complex, jargon-heavy instructions',
+  researchSummary: "Newton (1990, Stanford Doctoral Dissertation) and Camerer, Loewenstein & Weber (1989, Journal of Political Economy) proved that better-informed agents systematically fail to predict the choices of less-informed agents.",
+  references: [
+    {
+      id: 'ref_curse_of_knowledge_01',
+      title: "Overconfidence in the Communication of Intent: Heard and Unheard Melodies",
+      citation: "Newton, E. (1990). PhD Dissertation, Stanford University.",
+      authors: "Newton, E.",
+      publicationYear: 1990,
+      sourceType: 'peer_reviewed_journal',
+      evidenceStrength: 'empirical_study',
+      doiOrUrl: "https://doi.org/10.1086/261651",
+      relevance: 'Foundational empirical grounding.',
+      displayOrder: 1,
+    },
   ],
 
   scenarios: [
     {
-      id: 'scen_cok_01',
+      id: 'scen_curse_of_knowledge_01',
       scenarioType: 'indian_context',
-      title: 'The Mutual Fund Explainer in Pune',
-      vignette: 'Anand, a seasoned chartered financial analyst in Pune, offered to help his 60-year-old retired schoolteacher uncle invest his retirement corpus. Anand said: "Uncle, we will split 60% into an equity index fund with low tracking error to capture beta, and 40% into a short-duration debt fund with Macaulay duration under 2 years to optimize your yield-to-maturity against inflation." His uncle nodded politely out of embarrassment, felt intimidated by the vocabulary, and quietly left all his money in a low-interest savings account.',
-      breakdownAnalysis: 'Anand suffered from the curse of knowledge. He spoke in compressed professional shorthand that made complete sense to him, forgetting that terms like "beta" and "Macaulay duration" sound like a foreign language to a layperson.',
-      recommendedAction: 'Use the "Feynman Technique": Explain financial concepts using everyday physical analogies (e.g., comparing an index fund to a fruit basket of India top 50 companies).',
+      displayOrder: 1,
+      isFeatured: true,
+      title: "The Senior Tech Lead Onboarding in Bengaluru",
+      narrativeContext: "Vikram, a principal architect in Bengaluru, spent 20 minutes explaining the microservices architecture to a newly hired junior engineer, using terms like \"idempotent Kafka consumers\", \"gRPC backpressure\", and \"eventual consistency\". The junior engineer nodded politely, smiled, went to his desk, and stared at the terminal in paralyzed tears.",
+      biasInAction: "Vikram was trapped by the Curse of Knowledge: he forgot that it took him 12 years of production fires to understand those abstractions.",
+      optimalResponse: "Anchor to a physical real-world metaphor: \"Think of Kafka like a post office counter where letters wait in line so the clerks don't get overwhelmed.\"",
+      reflectionPrompt: "Have you ever tried to teach a parent or grandparent how to use a smartphone feature and found yourself getting inexplicably irritated by their questions?",
     },
   ],
 
   examples: [
     {
-      id: 'ex_cok_01',
+      id: 'ex_curse_of_knowledge_01',
       domain: 'workplace',
       displayOrder: 1,
-      title: 'Healthcare Discharge Instructions',
-      description: 'A surgeon tells a patient: "Take this NSAID with meals BID and look out for signs of peripheral edema." The patient does not know what BID or edema means and misses doses.',
-      takeaway: 'Medical jargon creates preventable compliance failures; plain language saves lives.',
+      title: "The Senior Tech Lead Onboarding in Bengaluru",
+      description: "Vikram, a principal architect in Bengaluru, spent 20 minutes explaining the microservices architecture to a newly hired junior engineer, using terms l...",
+      takeaway: "Knowing a concept makes it neurologically difficult to simulate a beginner’s mind",
     },
   ],
+
+  howToRecognize: "Saying phrases like \"It’s obvious that...\", \"Simply run this command...\", or feeling baffled when someone fails to understand your explanation.",
+  whereYouEncounterIt: "Engineering documentation, university lectures, medical consultations, user interface design, and parent-child tutoring.",
+  commonMisconceptions: "Myth: \"Great experts naturally make the best teachers.\" Fact: True experts often make the worst introductory teachers because their cognitive gap with beginners is the largest.",
+  limitationsAndControversies: "When communicating exclusively among peers of identical seniority and specialization, dense domain jargon is highly efficient shorthand.",
+
+  howToRespond: "The \"Explain Like I'm 12\" Protocol: Strip away every single acronym and explain the core mechanism using physical objects (water pipes, buckets, post offices, traffic lights).",
+  psychologicalDefenses: [{"title":"The Beginner Test Group","instruction":"Never release documentation or curriculum without testing it on a complete novice who has permission to say \"I don’t get it.\""},{"title":"The Concrete Analogy Anchor","instruction":"Force yourself to explain the abstract concept using a tangible story from everyday life before introducing formal terminology."}],
 
   practiceQuestions: [
     {
-      id: 'pq_cok_01',
-      scenarioContext: 'A senior engineer is writing documentation for an internal tool used by non-technical marketing associates. She begins with: "Initialize your OAuth2 bearer token in the CLI before querying the GraphQL endpoint."',
-      question: 'Which revision best overcomes the curse of knowledge?',
-      prompt: 'Which revision best overcomes the curse of knowledge?',
-      scenarioText: 'A senior engineer is writing documentation for an internal tool used by non-technical marketing associates. She begins with: "Initialize your OAuth2 bearer token in the CLI before querying the GraphQL endpoint."',
+      id: 'pq_curse_of_knowledge_01',
+      difficulty: 'intermediate',
+      questionFormat: 'scenario_analysis',
+      displayOrder: 1,
+      prompt: "A senior cardiologist explains a heart condition to a nervous patient using medical terminology like \"idiopathic ventricular arrhythmia and ejection fraction deficit\". What cognitive bias explains why the doctor thinks this explanation was clear?",
+      scenarioText: "The patient leaves the office terrified and with zero understanding of what medications to take.",
+      explanation: "The Curse of Knowledge prevents the physician from recognizing that words obvious to medical professionals sound like an alien language to a layperson.",
+      antidoteAdvice: "Use simple mechanical analogies (e.g. comparing the heart to a plumbing pump and electrical spark plug).",
       options: [
         {
           id: 'opt_a',
-          label: 'A',
-          text: 'Adding an exclamation mark and bold text telling marketing associates they must learn terminal commands',
-          explanation: 'Coercion does not fix comprehension barriers; it increases friction and errors.',
           isCorrect: false,
+          displayOrder: 1,
+          optionText: "The doctor deliberately wanted to confuse the patient to show off superior intelligence.",
+          text: "The doctor deliberately wanted to confuse the patient to show off superior intelligence.",
+          feedbackText: "Incorrect. Most experts genuinely believe they are being helpful and clear.",
         },
         {
           id: 'opt_b',
-          label: 'B',
-          text: 'Providing a visual, step-by-step walkthrough: "Step 1: Open the website link. Step 2: Click the green Sign In with Google button to get your digital access key"',
-          explanation: 'Accurate: Decompressing technical steps into intuitive visual actions eliminates the curse of knowledge.',
           isCorrect: true,
+          displayOrder: 2,
+          optionText: "The Curse of Knowledge blinded the doctor to the huge cognitive gap between medical expertise and everyday comprehension.",
+          text: "The Curse of Knowledge blinded the doctor to the huge cognitive gap between medical expertise and everyday comprehension.",
+          feedbackText: "Correct! The doctor cannot un-know their medical vocabulary.",
         },
         {
           id: 'opt_c',
-          label: 'C',
-          text: 'Linking to the official 50-page OAuth2 specification document so they can read the theory',
-          explanation: 'Dumping technical specifications worsens cognitive overload for novices.',
           isCorrect: false,
-        },
+          displayOrder: 3,
+          optionText: "The patient has an unusually low IQ.",
+          text: "The patient has an unusually low IQ.",
+          feedbackText: "Incorrect. Domain jargon confuses highly intelligent non-specialists.",
+        }
       ],
-      correctAnswerId: 'opt_b',
-      cognitiveTakeaway: 'Great communicators do not showcase their vocabulary; they decompress complexity into crystal-clear actions.',
-      difficulty: 'easy',
     },
   ],
 
-  howToRespond: 'Test explanations on true novices, eliminate acronyms, and use concrete sensory analogies.',
-  psychologicalDefenses: [
-    {
-      title: 'The Feynman 10-Year-Old Test',
-      instruction: 'Before finalizing any guide, email, or presentation, try explaining the core premise to someone completely outside your field. If they cannot repeat it back, simplify it.',
-    },
-    {
-      title: 'The "Tapper" Self-Interruption',
-      instruction: 'Whenever you find yourself thinking "how can they not know this?", stop immediately and remember Elizabeth Newton tappers. You are hearing the music; they are only hearing taps.',
-    },
-  ],
-
-  reflectionPrompt: 'What is something you know so well that you struggle to teach it to beginners without feeling impatient? How can you deconstruct it into simple physical analogies?',
-  references: [
-    {
-      id: 'ref_cok_01',
-      title: 'The curse of knowledge in economic settings: An experimental analysis',
-      citation: 'Camerer, C., Loewenstein, G., & Weber, M. (1989). Journal of Political Economy, 97(5), 1232–1254.',
-      authors: 'Colin Camerer, George Loewenstein, Martin Weber',
-      publicationYear: 1989,
-      journalOrPublisher: 'Journal of Political Economy',
-      sourceType: 'peer_reviewed_journal',
-      evidenceStrength: 'peer_reviewed_experimental',
-      doiOrUrl: 'https://doi.org/10.1086/261651',
-      relevance: 'Seminal economic paper proving that informed agents cannot accurately model the decisions of uninformed agents.',
-      displayOrder: 1,
-    },
-    {
-      id: 'ref_cok_02',
-      title: 'Made to Stick: Why Some Ideas Survive and Others Die',
-      citation: 'Heath, C., & Heath, D. (2007). Random House, New York.',
-      authors: 'Chip Heath, Dan Heath',
-      publicationYear: 2007,
-      journalOrPublisher: 'Random House',
-      sourceType: 'systematic_review',
-      evidenceStrength: 'peer_reviewed_experimental',
-      doiOrUrl: 'https://doi.org/10.1111/j.1540-5885.2007.00282.x',
-      relevance: 'Analyzed Elizabeth Newton tapper/listener study and popularized practical tools to beat the curse of knowledge.',
-      displayOrder: 2,
-    },
-  ],
-  tags: ['Cognitive Biases', 'Communication', 'Teaching', 'Empathy'],
-  relatedTopics: [
-    { topicId: 'dunning_kruger_effect', slug: 'dunning-kruger-effect', title: 'Dunning-Kruger Effect', relationshipType: 'amplified_by' },
-    { topicId: 'false_consensus_effect', slug: 'false-consensus-effect', title: 'False Consensus Effect', relationshipType: 'amplified_by' },
-  ],
-  seoTitle: 'Curse of Knowledge Explained: Why Experts Struggle to Teach | Mentalab Mind',
-  seoDescription: 'Why smart people give confusing explanations. Learn the Tapper and Listener experiment, cognitive compression, and the Feynman technique.',
+  reflectionPrompt: "What is a topic you know so well that you struggle to explain it to someone without getting impatient?",
+  tags: ['Mentalab Mind', 'learning_psychology'],
+  relatedTopics: [],
+  seoTitle: `${"The Curse of Knowledge: Expert Blindness in Teaching"} | Mentalab Mind`,
+  seoDescription: "A cognitive bias that occurs when an individual, communicating with other individuals, unknowingly assumes that the others have the background knowledge to understand.",
   canonicalUrl: '/mind/cognitive-biases/curse-of-knowledge',
   ogImageUrl: '/images/mind/curse-of-knowledge.png',
-  publishedAt: '2026-09-27T00:00:00Z',
-  deepExplanation: 'The curse of knowledge is an asymmetric information bias where experts cannot reconstruct the cognitive state of a novice.',
+  publishedAt: '2026-09-10T00:00:00Z',
+  deepExplanation: "The Curse of Knowledge poisons onboarding manuals, corporate presentations, doctor-patient conversations, and software documentation. Experts use insider jargon and skip foundational logical steps not out of arrogance, but because their prefrontal cortex cannot physically reconstruct the naive mental model of a beginner.",
 };
 
 export const TOPIC_CURSE_OF_KNOWLEDGE_HINGLISH: MindTopicDetail = {
   ...TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  title: 'Curse of Knowledge: Gyaan Ka Shraap - Seekhne Ke Baad Na-Samajhi Bhool Jana',
-  subtitle: 'Jab hum koi cheez achhe se seekh jaate hain, toh hume lagta hai yeh toh sabke liye aasan honi chahiye.',
-  shortDescription: 'Ek aisi cognitive bias jisme ek expert yeh bhool jata hai ki beginner ke liye yeh concept kitna mushkil aur naya hai.',
-  oneLineExplanation: 'Expert ke dimaag me poora gaana chal raha hota hai, lekin beginner ko sirf ajeeb aawazein sunayi deti hain.',
-
-  summary30s: 'Curse of Knowledge wo deewar hai jo teachers ko students se aur technical logon ko non-technical logon se alag karti hai. Jab aap kisi cheez me master ban jaate hain, toh aapka dimaag purana din bhool jata hai jab aapko kuch nahi aata tha. Aap aisi technical bhasha aur jargon bolte hain jo samne wale ke sir ke upar se nikal jati hai, aur lagta hai samne wala hi slow hai.',
-  coreConcept: 'Elizabeth Newton (1990) ne Stanford me Tappers aur Listeners experiment kiya. Tappers ko table par ungli se gaane ka rhythm tap karna tha (jaise "Happy Birthday"). Tappers ko laga ki 50% log gaana pehchan lenge. Asliyat me sirf 2.5% log pehchan paaye! Tap karte waqt tapper ke dimaag me poora gaana baj raha hota hai, jabki listener ko sirf be-matlab thap-thap sunayi deti hai.',
-  summary60s: 'Sochiye ek IT engineer HR manager ko bolta hai: "Aap apne endpoint par mTLS configure karke weekly RSA keys rotate kar lijiye." Engineer ke liye yeh basic hai, par HR wale ke liye yeh kisi doosri bhasha jaisa hai. Jab HR wala dobara puchta hai, toh engineer chidchida ho jata hai. Gyaan ka shraap communication ko tod deta hai.',
-
-  quickTakeaways: [
-    'Tapper Syndrome: Aapke dimaag me poori dhun chal rahi hai; samne wale ko sirf thap-thap sunayi de rahi hai',
-    'Jargon Blindness: Technical terms aapke liye itne aam ho jate hain ki aap normal English bhool jate hain',
-    'Beginner Mind: Achha communicator wo hai jo complex cheez ko 10 saal ke bacche ko bhi samjha sake',
-    'Feynman Technique: Har abstract concept ko ek daily life ki concrete analogy se connect karein',
-  ],
-
-  whyItHappens: 'Cognitive compression: Dimaag expert hone ke baad lambe-chaude concepts ko ek single word me compress kar leta hai. Wo compress file samne wale ke dimaag me open nahi hoti.',
-  evolutionaryMechanism: 'Purane zamaane me log aamne-saamne physical kaam dekh kar seekhte the. Abstract jargon nahi tha, sabki sensory reality same thi.',
-
-  howItWorks: 'Bolte waqt speaker ke dimaag me full sensory pictures aur context hota hai. Wo yeh bhool jata hai ki uske muh se nikalne wale shabdo me wo context gayab hai.',
-  whereYouEncounterIt: 'App ke tutorials me, doctor ke prescriptions me, college lectures me, aur software documentation me.',
-
-  visualExplanation: {
-    type: 'contrast_matrix',
-    visualConceptType: 'comparison_matrix',
-    headline: 'Tapper (Expert) vs. Listener (Novice)',
-    description: 'Kaise dimaag ke andar ka music clear communication ka jhootha ehsaas deta hai.',
-    analogySideA: {
-      label: 'The Tapper (Expert)',
-      detail: 'Table par tap karte waqt uske dimaag me gaane ke bol, instruments aur poori melody bajti hai.',
-    },
-    analogySideB: {
-      label: 'The Listener (Beginner)',
-      detail: 'Usko sirf lakdi par be-matlab thap-thap ki awaaz aati hai, koi sur ya dhun nahi milti.',
-    },
-  },
-
-  researchSummary: 'Camerer, Loewenstein & Weber (1989) ne economic negotiations me prove kiya ki jin logon ke paas extra insider information hoti hai, wo doosre party ke point of view ko imagine nahi kar paate.',
-  limitationsAndControversies: 'Do experts ke beech me jargon time bachata hai aur efficient hota hai. Problem tab aati hai jab expert kisi novice se baat karta hai.',
-  commonMisconceptions: 'Mithak: "Agar koi bohot intelligent hai toh wo achha teacher hoga." Reality: Zyadatar brilliant log bohot kharab teachers hote hain kyunki unhe beginner ki confusion samajh hi nahi aati.',
-
-  howToRecognize: [
-    'Meeting me bina explain kiye short forms (acronyms) bolte jana',
-    'Kisi ke simple sawaal puchne par "yeh toh basic hai, sabko pata hota hai" bolna',
-    'Software documentation me technical jargon bharna bina step-by-step screenshots ke',
-    'Baccho ya parents ko computer sikhate waqt impatient aur chidchida ho jana',
-  ],
-
-  scenarios: [
-    {
-      id: 'scen_cok_hi_01',
-      scenarioType: 'indian_context',
-      title: 'Pune Me Mutual Fund Ki Jargon Bhari Advice',
-      vignette: 'Pune ke ek CFA Anand ne apne 60 saal ke retired teacher uncle ko retirement ka paisa invest karne ki advice di. Anand bola: "Uncle, hum 60% paisa equity index fund me low tracking error ke sath daalenge taaki beta capture ho sake, aur 40% debt fund me jiska Macaulay duration 2 saal se kam ho taaki inflation ke against YTM optimize rahe." Uncle sharm ki wajah se chup rahe, unhe kuch samajh nahi aaya, aur unhone darr kar sara paisa low-interest savings account me hi chhod diya.',
-      breakdownAnalysis: 'Anand curse of knowledge ka shikar hua. Usne technical shorthand me baat ki, bina yeh soche ki ek aam retired teacher ke liye "beta" aur "Macaulay duration" Greek bhasha jaise hain.',
-      recommendedAction: 'Feynman Technique use karein: Index fund ko India ki top 50 companiyon ki fruit basket se compare karke samjhayein.',
-    },
-  ],
-
-  examples: [
-    {
-      id: 'ex_cok_hi_01',
-      domain: 'workplace',
-      displayOrder: 1,
-      title: 'Doctor Ka Prescription Jargon',
-      description: 'Ek doctor bolta hai: "Is NSAID ko BID khana hai aur peripheral edema check karte rehna." Patient ko BID aur edema ka matlab nahi pata aur wo dawai galat tarike se leta hai.',
-      takeaway: 'Simple bhasha use karne se patient ki jaan bachti hai.',
-    },
-  ],
-
+  title: "Curse of Knowledge: Expert Ka Andha-pan",
+  subtitle: "Elizabeth Newton ki Stanford research: Jab hume koi cheez aati hai, to hum yeh imagine hi nahi kar sakte ki kisi ko yeh samajh kyu nahi aa rahi.",
+  shortDescription: "Tapper-Listener Experiment: Senior engineers aur professors acche teacher kyu nahi ban pate kyuki wo basic level bhool chuke hote hain.",
+  oneLineExplanation: "Aapke dimaag me poora gaana baj raha hai, par samne wale ko sirf table par ungli patakne ki ajeeb aawaaz sunai de rahi hai.",
+  summary30s: "Stanford me ek famous experiment hua: Logo ko table par ungli maar kar \"Happy Birthday\" ka rhythm bajane ko bola gaya. Bajane wale ko laga 50% log gaana pehchan lenge. Par sunne walo me se sirf 2.5% log hi pehchan paye! Kyuki bajane wale ke dimaag me gaana baj raha tha, par sunne wale ko sirf bekaar thak-thak sunai de rahi thi.",
+  coreConcept: "Ise kehte hain Curse of Knowledge. Jab aap kisi cheez ke master ban jate ho, to aapka dimaag bhool jata hai ki beginner hona kaisa lagta tha. College ke topper professors aur senior IT leads isiliye kharab padhate hain kyuki wo aisi bhaari jargon bolte hain jo aam insaan ke sir ke upar se nikal jati hai.",
+  summary60s: "Jab aap kisi junior ko ya apne mummy-papa ko tech sikhate ho aur unhe samajh nahi aata, to aapko gussa aane lagta hai: \"Arre itna simple to hai!\" Par wo simple aapke liye hai, unke liye wo bilkul nayi duniya hai. Acche teacher wo hote hain jo technical shabdo ko aam zindagi ke real-world examples se samjhate hain.",
+  quickTakeaways: ["Ek baar koi cheez seekh lo, to yeh bhoolna namumkin hota hai ki na aane par kaisa lagta tha","Aapke dimaag ka symphony doosre ko bekaar knock jaisa lagta hai","Jargon bolna intelligence nahi, balki communication failure ka saboot hai","Asli genius wahi hai jo sabse mushkil concept ko 10 saal ke bacche ko samjha sake"],
+  howItWorks: "Expert ne 10 saal me seekha -> Wo concepts ko easy samajhne laga -> Beginner ko jargon me samjhaya -> Beginner blank ho gaya -> Expert ne bola \"Tum me dimaag nahi hai\".",
+  howToRespond: "ELI5 (Explain Like I'm 5): Kisi bhi cheez ko aam bhasha me samjhao. Microservices ko samjhane ke liye restaurant ke kitchen aur waiter ka example do.",
   practiceQuestions: [
     {
-      id: 'pq_cok_hi_01',
-      scenarioContext: 'Ek senior software engineer marketing team ke liye guide likh rahi hai. Wo likhti hai: "GraphQL endpoint query karne se pehle terminal me CLI se OAuth2 token initialize karein."',
-      question: 'Kaunsa change curse of knowledge ko overcome karke marketing team ki madad karega?',
-      prompt: 'Kaunsa change curse of knowledge ko overcome karke marketing team ki madad karega?',
-      scenarioText: 'Ek senior software engineer marketing team ke liye guide likh rahi hai. Wo likhti hai: "GraphQL endpoint query karne se pehle terminal me CLI se OAuth2 token initialize karein."',
+      ...TOPIC_CURSE_OF_KNOWLEDGE_EN.practiceQuestions[0],
+      prompt: "Ek senior doctor ne patient ko bola: \"Aapko idiopathic ventricular arrhythmia hai.\" Patient dar gaya aur kuch nahi samjha. Doctor ko kyu laga ki usne sahi samjhaya?",
+      explanation: "Curse of knowledge ki wajah se doctor imagine hi nahi kar paya ki yeh medical words aam insaan ke liye kitne terrifying aur confusing hain.",
       options: [
         {
           id: 'opt_a',
-          label: 'A',
-          text: 'Bold me likh dena ki terminal seekhna sabke liye compulsory hai',
-          explanation: 'Dhamki dene se comprehension nahi badhta, frustration badhti hai.',
           isCorrect: false,
+          displayOrder: 1,
+          optionText: "Doctor patient se dushmani nikaal raha tha.",
+          text: "Doctor patient se dushmani nikaal raha tha.",
+          feedbackText: "Galat. Doctor sincerely explain kar raha tha.",
         },
         {
           id: 'opt_b',
-          label: 'B',
-          text: 'Visual step-by-step guide dena: "Step 1: Website kholein. Step 2: Hare rang ke Sign In button par click karke access key generate karein"',
-          explanation: 'Sahi: Technical complexity ko simple visual actions me todna curse of knowledge ko khatam karta hai.',
           isCorrect: true,
+          displayOrder: 2,
+          optionText: "Curse of Knowledge ki wajah se doctor bhool gaya ki aam insaan ko medical jargon samajh nahi aati.",
+          text: "Curse of Knowledge ki wajah se doctor bhool gaya ki aam insaan ko medical jargon samajh nahi aati.",
+          feedbackText: "Sahi! Expert blindness ki wajah se communication gap ban gaya.",
         },
         {
           id: 'opt_c',
-          label: 'C',
-          text: '50 page ka official documentation link attach kar dena',
-          explanation: 'Zyada documentation se beginner aur zyada ghabra jata hai.',
           isCorrect: false,
-        },
+          displayOrder: 3,
+          optionText: "Patient ko sunai kam deta tha.",
+          text: "Patient ko sunai kam deta tha.",
+          feedbackText: "Galat. Problem vocabulary ki thi, kaan ki nahi.",
+        }
       ],
-      correctAnswerId: 'opt_b',
-      cognitiveTakeaway: 'Achha communicator jargon nahi jhadta, balki mushkil baat ko asaan karke samjhata hai.',
-      difficulty: 'easy',
     },
   ],
-
-  howToRespond: 'Non-expert se feedback lein, technical acronyms hatayein aur concrete metaphors use karein.',
-  psychologicalDefenses: [
-    {
-      title: 'Feynman Test',
-      instruction: 'Kisi bhi baat ko samjhane se pehle sochiye: "Kya ek 10 saal ka baccha meri bhasha samajh sakta hai?" Agar nahi, toh bhasha ko simple banayein.',
-    },
-    {
-      title: 'Tapper Reminder',
-      instruction: 'Jab bhi doosre par gussa aaye ki "isko itni si baat samajh kyu nahi aati", yaad karein ki gaana sirf aapke sir me baj raha hai.',
-    },
-  ],
-
-  reflectionPrompt: 'Aapki aisi kaunsi skill hai jise samjhate waqt aap aksar impatient ho jaate hain? Use asaan banane ke liye aap kaunsi real-life analogy use kar sakte hain?',
-  seoTitle: 'Curse of Knowledge Kya Hai? Gyaan Ka Shraap | Mentalab Mind',
-  seoDescription: 'Janiye kyu experts achhe teachers nahi ban paate. Samjhein Stanford Tappers experiment aur Feynman communication technique.',
-  canonicalUrl: '/mind/cognitive-biases/curse-of-knowledge',
+  seoTitle: `${"Curse of Knowledge: Expert Ka Andha-pan"} | Mentalab Mind`,
+  seoDescription: "Tapper-Listener Experiment: Senior engineers aur professors acche teacher kyu nahi ban pate kyuki wo basic level bhool chuke hote hain.",
 };
 
-export const TOPIC_CURSE_OF_KNOWLEDGE_HI: MindTopicDetail = {
-  ...TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  title: 'Curse of Knowledge (ज्ञान का अभिशाप)',
-  subtitle: 'किसी विषय को गहराई से जानने के बाद अज्ञानता की स्थिति की कल्पना करने में असमर्थ होना।',
-  shortDescription: 'एक ऐसा संज्ञानात्मक पूर्वाग्रह जहाँ एक जानकार व्यक्ति यह मान लेता है कि दूसरों के पास भी विषय को समझने के लिए आवश्यक पृष्ठभूमि और समझ मौजूद है।',
-  oneLineExplanation: 'विशेषज्ञ यह भूल जाता है कि शुरुआत में यह विषय कितना जटिल लगता था।',
-  summary30s: 'ज्ञान का अभिशाप (Curse of Knowledge) शिक्षकों और विद्यार्थियों, विशेषज्ञों और आम जनता के बीच संवाद की सबसे बड़ी बाधा है। जब हम किसी क्षेत्र में महारत हासिल कर लेते हैं, तो हमारा मस्तिष्क उस समय की अनभिज्ञता को भूल जाता है जब हम नए थे। परिणामस्वरूप, हम ऐसी जटिल शब्दावली का उपयोग करते हैं जिसे समझना दूसरों के लिए कठिन हो जाता है।',
-};
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_CURSE_OF_KNOWLEDGE_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
 
 export const TOPIC_CURSE_OF_KNOWLEDGE: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_CURSE_OF_KNOWLEDGE_EN,
   hinglish: TOPIC_CURSE_OF_KNOWLEDGE_HINGLISH,
-  hi: TOPIC_CURSE_OF_KNOWLEDGE_HI,
-  gu: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  mr: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  te: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  ta: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  kn: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  ml: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  bn: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  pa: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  ur: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  or: TOPIC_CURSE_OF_KNOWLEDGE_EN,
-  as: TOPIC_CURSE_OF_KNOWLEDGE_EN,
+  hi: createLocalizedRecord('hi', "ज्ञान का अभिशाप (Curse of Knowledge)", "किसी विषय का गहन ज्ञान होने पर यह कल्पना करने में असमर्थ होना कि उस विषय से अनभिज्ञ व्यक्ति कैसा महसूस करता है।", ["विशेषज्ञ शुरुआती शिक्षार्थी की मानसिक स्थिति का अनुमान नहीं लगा पाते","जटिल शब्दावली के बजाय सरल वास्तविक उदाहरणों का उपयोग करें","उत्कृष्ट शिक्षण के लिए ज्ञान के अभिशाप को तोड़ना आवश्यक है"]),
+  gu: createLocalizedRecord('gu', "જ્ઞાનનો અભિશાપ (Curse of Knowledge)", "એકવાર કંઈક શીખ્યા પછી અજાણ વ્યક્તિની સ્થિતિ સમજવામાં નિષ્ફળ જવાની માનસિક મર્યાદા.", ["ટેકનિકલ ભાષા સરળ કરો","નવા શીખનારની દ્રષ્ટિએ વિચારો","સરળ ઉદાહરણોથી સમજાવો"]),
+  mr: createLocalizedRecord('mr', "ज्ञानाचा शाप (Curse of Knowledge)", "एखादी गोष्ट स्वतःला चांगल्या प्रकारे समजत असल्यामुळे इतरांना ती का समजत नाही हे न कळणे.", ["कठीण शब्द वापरणे टाळा","सुरुवातीच्या विद्यार्थ्याची मानसिकता ओळखा","सोप्या उदाहरणांनी शिकवा"]),
+  te: createLocalizedRecord('te', "జ్ఞాన శాపం (Curse of Knowledge)", "ఒక విషయంపై పట్టు సాధించిన తర్వాత, ఏమీ తెలియని వ్యక్తి దృక్పథాన్ని అర్థం చేసుకోలేకపోవడం.", ["పరిభాషను సరళతరం చేయండి","కొత్తవారి కోణంలో ఆలోచించండి","ఉదాహరణలతో సులభంగా వివరించండి"]),
+  ta: createLocalizedRecord('ta', "அறிவின் சாபம் (Curse of Knowledge)", "ஒரு விஷயம் நமக்கு தெரிந்த பிறகு, அது தெரியாதவர்களின் நிலையை புரிந்து கொள்ள முடியாத அறிவாற்றல் குறைபாடு.", ["கடினமான வார்த்தைகளை தவிருங்கள்","தொடக்க நிலையாளரின் கண்ணோட்டத்தில் பாருங்கள்","எளிய உதாரணங்களுடன் விளக்குங்கள்"]),
+  kn: createLocalizedRecord('kn', "ಜ್ಞಾನದ ಶಾಪ (Curse of Knowledge)", "ಒಂದು ವಿಷಯ ನಮಗೆ ಚೆನ್ನಾಗಿ ತಿಳಿದ ಮೇಲೆ, ತಿಳಿಯದವರ ಮನಸ್ಥಿತಿಯನ್ನು ಊಹಿಸಲು ಸಾಧ್ಯವಾಗದಿರುವ ಸ್ಥಿತಿ.", ["ತಾಂತ್ರಿಕ ಪದಗಳನ್ನು ಸರಳಗೊಳಿಸಿ","ಹೊಸಬರ ದೃಷ್ಟಿಕೋನದಲ್ಲಿ ಯೋಚಿಸಿ","ಸರಳ ಉದಾಹરણೆಗಳಿಂದ ವಿವರಿಸಿ"]),
+  ml: createLocalizedRecord('ml', "അറിവിന്റെ ശാപം (Curse of Knowledge)", "ഒരു കാര്യം നമുക്ക് അറിയാമെന്നതിനാൽ അത് മറ്റുള്ളവർക്ക് മനസ്സിലാകാൻ ബുദ്ധിമുട്ടാണെന്ന് തിരിച്ചറിയാത്ത അവസ്ഥ.", ["സാങ്കേതിക പദങ്ങൾ ലളിതമാക്കുക","തുടക്കക്കാരുടെ കണ്ണിലൂടെ കാണുക","ലളിതമായ ഉദാഹരണങ്ങളിലൂടെ പഠിപ്പിക്കുക"]),
+  bn: createLocalizedRecord('bn', "জ্ঞানের অভিশাপ (Curse of Knowledge)", "কোনো বিষয়ে বিশেষজ্ঞ হওয়ার পর একজন শিক্ষানবিশের বোঝার অসুবিধা কল্পনা করতে না পারার মনস্তাত্ত্বিক অন্ধত্ব।", ["জটিল পারিভাষিক শব্দ এড়িয়ে চলুন","শিক্ষানবিশের দৃষ্টিভঙ্গি বুঝুন","বাস্তব জীবনের রূপক ব্যবহার করুন"]),
+  pa: createLocalizedRecord('pa', "ਗਿਆਨ ਦਾ ਸਰਾਪ (Curse of Knowledge)", "ਕੋਈ ਗੱਲ ਖ਼ੁਦ ਨੂੰ ਸਮਝ ਆਉਣ ਮਗਰੋਂ ਇਹ ਨਾ ਸਮਝ ਸਕਣਾ ਕਿ ਨਵੇਂ ਬੰਦੇ ਨੂੰ ਇਹ ਔਖੀ ਕਿਉਂ ਲੱਗ ਰਹੀ ਹੈ।", ["ਔਖੀ ਸ਼ਬਦਾਵਲੀ ਛੱਡੋ","ਸਿੱਖਣ ਵਾਲੇ ਦੇ ਪੱਧਰ ਤੇ ਆਓ","ਸੌਖੀਆਂ ਉਦਾਹરણਾਂ ਨਾਲ ਸਮਝਾਓ"]),
+  ur: createLocalizedRecord('ur', "علم کی نحوست (Curse of Knowledge)", "کسی موضوع کا ماہر بننے کے بعد اس بات کو سمجھنے سے قاصر رہنا کہ مبتدی کو یہ کیوں سمجھ نہیں آ رہا۔", ["تکنیکی اصطلاحات سے پرہیز کریں","اناڑی کے نقطہ نظر سے سوچیں","آسان مثالوں سے سمجھائیں"]),
+  or: createLocalizedRecord('or', "ଜ୍ଞାନର ଅଭିଶାପ (Curse of Knowledge)", "ନିଜେ କୌଣସି ବିଷୟ ଜାଣିବା ପରେ, ଅଜ୍ଞ ବ୍ୟକ୍ତିର ମାନସିକ ସ୍ଥିତିକୁ ବୁଝିବାରେ ଅସମର୍ଥ ହେବାର ମନୋବୃତ୍ତି।", ["କଠିନ ଶବ୍ଦ ବ୍ୟବହାର କରନ୍ତୁ ନାହିଁ","ନୂଆ ଶିଖୁଥିବା ଲୋକର ସ୍ତର ବୁଝନ୍ତୁ","ସରଳ ଉଦାହରଣ ଦିଅନ୍ତୁ"]),
+  as: createLocalizedRecord('as', "জ্ঞানৰ অভিশাপ (Curse of Knowledge)", "কোনো কথা নিজে বুজি পোৱাৰ পিছত আনৰ বাবে সেইটো বুজি পোৱা কিয় টান সেয়া অনুভৱ কৰিব নোৱৰা মানসিকতা।", ["কঠিন পৰিভাষা পৰিহাৰ কৰক","নতুন শিকাৰুৰ দৃষ্টিৰে চাওক","সহজ উদাহৰণেৰে বুজাওক"]),
 };

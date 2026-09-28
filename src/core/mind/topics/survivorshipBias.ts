@@ -184,6 +184,26 @@ export const TOPIC_SURVIVORSHIP_BIAS_EN: MindTopicDetail = {
   ],
 };
 
+
+function createLocalizedRecord(
+  lang: MindLanguageCode,
+  title: string,
+  summary: string,
+  takeaways: string[]
+): MindTopicDetail {
+  return {
+    ...TOPIC_SURVIVORSHIP_BIAS_EN,
+    title,
+    subtitle: summary.slice(0, 80) + '...',
+    oneLineExplanation: summary.slice(0, 60),
+    summary30s: summary,
+    coreConcept: summary,
+    quickTakeaways: takeaways,
+    seoTitle: `${title} | Mentalab Mind`,
+    seoDescription: `${summary.slice(0, 150)}...`,
+  };
+}
+
 export const TOPIC_SURVIVORSHIP_BIAS: Record<MindLanguageCode, MindTopicDetail> = {
   en: TOPIC_SURVIVORSHIP_BIAS_EN,
   hinglish: {
@@ -202,15 +222,59 @@ export const TOPIC_SURVIVORSHIP_BIAS: Record<MindLanguageCode, MindTopicDetail> 
     oneLineExplanation: 'केवल सफल कॉलेज ड्रॉपआउट्स को देखकर यह निष्कर्ष निकालना कि कॉलेज छोड़ना सफलता की कुंजी है।',
     summary30s: 'उत्तरजीविता पूर्वाग्रह (Survivorship Bias) तब होता है जब हम केवल सफलता की कहानियों का अध्ययन करते हैं और उस प्रक्रिया में विफल होने वाले लाखों लोगों को भूल जाते हैं। द्वितीय विश्व युद्ध में अब्राहम वाल्ड ने सिद्ध किया कि सुरक्षित लौटने वाले विमानों के आधार पर निर्णय लेना घातक हो सकता है क्योंकि नष्ट हो चुके विमानों का डेटा उपलब्ध नहीं होता।',
   },
-  gu: TOPIC_SURVIVORSHIP_BIAS_EN,
-  mr: TOPIC_SURVIVORSHIP_BIAS_EN,
-  te: TOPIC_SURVIVORSHIP_BIAS_EN,
-  ta: TOPIC_SURVIVORSHIP_BIAS_EN,
-  kn: TOPIC_SURVIVORSHIP_BIAS_EN,
-  ml: TOPIC_SURVIVORSHIP_BIAS_EN,
-  bn: TOPIC_SURVIVORSHIP_BIAS_EN,
-  pa: TOPIC_SURVIVORSHIP_BIAS_EN,
-  ur: TOPIC_SURVIVORSHIP_BIAS_EN,
-  or: TOPIC_SURVIVORSHIP_BIAS_EN,
-  as: TOPIC_SURVIVORSHIP_BIAS_EN,
-  };
+  gu: createLocalizedRecord('gu', "Survivorship Bias: The Hidden Cemetery of Failures (પૂર્વગ્રહ)", "Survivorship Bias: The Hidden Cemetery of Failures એ માનવ મગજનો એક એવો મનોવૈજ્ઞાનિક પ્રભાવ છે જે વિચારસરણી અને નિર્ણયોને પ્રભાવિત કરે છે.", [
+    "તથ્યોનું નિષ્પક્ષ વિશ્લેષણ કરો",
+    "જૂથના દબાણથી સાવધાન રહો",
+    "સ્વતંત્ર નિર્ણય લેવાની ટેવ પાડો"
+  ]),
+  mr: createLocalizedRecord('mr', "Survivorship Bias: The Hidden Cemetery of Failures (पूर्वग्रह)", "Survivorship Bias: The Hidden Cemetery of Failures हा मानवी मेंदूचा असा एक मनोवैज्ञानिक प्रभाव आहे जो निर्णयप्रक्रियेवर थेट परिणाम करतो.", [
+    "तथ्यांची योग्य पडताळणी करा",
+    "भावनिक दबावाखाली निर्णय घेऊ नका",
+    "वैयक्तिक जबाबदारी स्वीकारा"
+  ]),
+  te: createLocalizedRecord('te', "Survivorship Bias: The Hidden Cemetery of Failures (పక్షపాతం)", "Survivorship Bias: The Hidden Cemetery of Failures అనేది నిర్ణయాలు తీసుకునే సమయంలో మానవ మనస్తత్వం ప్రదర్శించే ముఖ్యమైన ప్రభావం.", [
+    "వాస్తవాలను నిష్పాక్షికంగా విశ్లేషించండి",
+    "సమూహ ఒత్తిడికి లొంగకండి",
+    "స్వతంత్ర నిర్ణయాలు తీసుకోండి"
+  ]),
+  ta: createLocalizedRecord('ta', "Survivorship Bias: The Hidden Cemetery of Failures (சார்புநிலை)", "Survivorship Bias: The Hidden Cemetery of Failures என்பது மனித முடிவெடுக்கும் திறனை மறைமுகமாக பாதிக்கும் ஒரு முக்கியமான உளவியல் விளைவு.", [
+    "உண்மைகளை நடுநிலையோடு ஆராயுங்கள்",
+    "குழு அழுத்தத்திற்கு அடிபணியாதீர்கள்",
+    "சுயாதீன முடிவுகளை எடுங்கள்"
+  ]),
+  kn: createLocalizedRecord('kn', "Survivorship Bias: The Hidden Cemetery of Failures (ಪಕ್ಷಪಾತ)", "Survivorship Bias: The Hidden Cemetery of Failures ಎಂಬುದು ನಿರ್ಧಾರ ತೆಗೆದುಕೊಳ್ಳುವಲ್ಲಿ ಮಾನವ ಮನಸ್ಸು ತೋರುವ ಪ್ರಮುಖ ಮಾನಸಿಕ ಪರಿಣಾಮ.", [
+    "ವಾಸ್ತವಗಳನ್ನು ನಿಷ್ಪಕ್ಷಪಾತವಾಗಿ ವಿಶ್ಲೇಷಿಸಿ",
+    "ಸಾಮಾಜಿಕ ಒತ್ತಡಕ್ಕೆ ಮಣಿಯಬೇಡಿ",
+    "ಸ್ವತಂತ್ರ ನಿರ್ಧಾರಗಳನ್ನು ಕೈಗೊಳ್ಳಿ"
+  ]),
+  ml: createLocalizedRecord('ml', "Survivorship Bias: The Hidden Cemetery of Failures (പക്ഷപാതം)", "Survivorship Bias: The Hidden Cemetery of Failures എന്നത് തീരുമാനങ്ങൾ എടുക്കുമ്പോൾ മനുഷ്യൻ്റെ മനസ്സ് കാണിക്കുന്ന ഒരു പ്രധാന മനശാസ്ത്രപരമായ സ്വാധീനം.", [
+    "വസ്തുതകളെ നിഷ്പക്ഷമായി പരിശോധിക്കുക",
+    "ഗ്രൂപ്പ് സമ്മർദ്ദത്തിന് വഴങ്ങരുത്",
+    "സ്വതന്ത്രമായി ചിന്തിക്കുക"
+  ]),
+  bn: createLocalizedRecord('bn', "Survivorship Bias: The Hidden Cemetery of Failures (পক্ষপাতিত্ব)", "Survivorship Bias: The Hidden Cemetery of Failures হলো সিদ্ধান্ত গ্রহণের সময় মানুষের মনস্তাত্ত্বিক চিন্তাভাবনার একটি গুরুত্বপূর্ণ প্রভাব।", [
+    "তথ্য নিরপেক্ষভাবে বিশ্লেষণ করুন",
+    "সামাজিক চাপের বশবর্তী হবেন না",
+    "স্বাধীনভাবে সিদ্ধান্ত নিন"
+  ]),
+  pa: createLocalizedRecord('pa', "Survivorship Bias: The Hidden Cemetery of Failures (ਪੱਖਪਾਤ)", "Survivorship Bias: The Hidden Cemetery of Failures ਫੈਸਲੇ ਲੈਣ ਸਮੇਂ ਮਨੁੱਖੀ ਦਿਮਾਗ ਦੀ ਸੋਚ ਨੂੰ ਪ੍ਰਭਾਵਿਤ ਕਰਨ ਵਾਲਾ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਮਨੋਵਿਗਿਆਨਕ ਪ੍ਰਭਾਵ ਹੈ।", [
+    "ਤੱਥਾਂ ਦੀ ਨਿਰਪੱਖ ਪੜਤਾਲ ਕਰੋ",
+    "ਗਰੁੱਪ ਦਬਾਅ ਤੋਂ ਸੁਚੇਤ ਰਹੋ",
+    "ਸੁਤੰਤਰ ਫੈਸਲੇ ਲਓ"
+  ]),
+  ur: createLocalizedRecord('ur', "Survivorship Bias: The Hidden Cemetery of Failures (جانبداری)", "Survivorship Bias: The Hidden Cemetery of Failures انسانی سوچ اور فیصلوں کو متاثر کرنے والا ایک اہم نفسیاتی اثر ہے۔", [
+    "حقائق کا غیر جانبدارانہ تجزیہ کریں",
+    "گروہی دباؤ سے ہوشیار رہیں",
+    "آزادانہ فیصلے کرنے کی عادت ڈالیں"
+  ]),
+  or: createLocalizedRecord('or', "Survivorship Bias: The Hidden Cemetery of Failures (ପକ୍ଷପାତିତା)", "Survivorship Bias: The Hidden Cemetery of Failures ମନୁଷ୍ୟର ନିଷ୍ପତ୍ତି ନେବା ପ୍ରକ୍ରିୟାକୁ ପ୍ରଭାବିତ କରୁଥିବା ଏକ ଗୁରୁତ୍ୱପୂର୍ଣ୍ଣ ମନୋବୈଜ୍ଞାନିକ ପ୍ରଭାବ।", [
+    "ତଥ୍ୟର ନିରପେକ୍ଷ ବିଶ୍ଳେଷଣ କରନ୍ତୁ",
+    "ସାମାଜିକ ଚାପରୁ ସାବଧାନ ରୁହନ୍ତୁ",
+    "ନିଜେ ସ୍ୱତନ୍ତ୍ର ନିଷ୍ପତ୍ତି ନିଅନ୍ତୁ"
+  ]),
+  as: createLocalizedRecord('as', "Survivorship Bias: The Hidden Cemetery of Failures (পক্ষপাতিত্ব)", "Survivorship Bias: The Hidden Cemetery of Failures সিদ্ধান্ত গ্ৰহণৰ ক্ষেত্ৰত মানুহৰ চিন্তাশক্তিক প্ৰভাৱিত কৰা এটা উল্লেখযোগ্য মানসিক প্ৰভাৱ।", [
+    "তথ্যসমূহ নিৰপেক্ষভাৱে বিশ্লেষণ কৰক",
+    "সামাজিক চাপৰ বশৱৰ্তী নহ’ব",
+    "স্বাধীন সিদ্ধান্ত গ্ৰহণ কৰক"
+  ]),
+};
