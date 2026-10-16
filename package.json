@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:keepalive": "node scripts/daily-db-maintenance.mjs",
+    "db:pulse": "node scripts/daily-db-maintenance.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

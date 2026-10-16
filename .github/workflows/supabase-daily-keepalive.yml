@@ -1,0 +1,37 @@
+name: Supabase Daily Keep-Alive & Platform Pulse
+
+on:
+  schedule:
+    # Runs every day at 06:00 UTC (11:30 AM IST)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: true
+
+jobs:
+  database-health-pulse:
+    name: Database Pulse & Health Maintenance
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --prefer-offline || npm install --legacy-peer-deps
+
+      - name: Execute Daily Database Maintenance & Pulse
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://aqgjnqsuwdoegpjznfag.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxZ2pucXN1d2RvZWdwanpuZmFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzODMxMDMsImV4cCI6MjEwNDk1OTEwM30.cpDrw0YBART1uXFxxGX-d1Am1xyYU52lg4TzQRQ0iPQ' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/daily-db-maintenance.mjs
