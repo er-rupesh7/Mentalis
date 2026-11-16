@@ -2612,6 +2612,30 @@ export const useQuizStore = create<QuizState>()(
           console.error('[Mentalis] initializeAuthAndSync error:', err);
         }
 
+        // Background lightweight keep-alive pulse (runs at most once every 12 hours per browser)
+        if (typeof window !== 'undefined') {
+          try {
+            const LAST_PULSE_KEY = 'mentalis_last_supabase_pulse';
+            const lastPulse = localStorage.getItem(LAST_PULSE_KEY);
+            const now = Date.now();
+            const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+            if (!lastPulse || now - Number(lastPulse) > TWELVE_HOURS) {
+              localStorage.setItem(LAST_PULSE_KEY, String(now));
+              const supabase = getSupabase();
+              if (supabase) {
+                // Non-blocking light query to reset Supabase inactivity timer
+                supabase
+                  .from('profiles')
+                  .select('id', { count: 'exact', head: true })
+                  .then(() => {})
+                  .catch(() => {});
+              }
+            }
+          } catch {
+            // Non-critical local storage access
+          }
+        }
+
         onAuthStateChange(async (event, session) => {
           if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
             await syncUser(session.user);
