@@ -2623,12 +2623,14 @@ export const useQuizStore = create<QuizState>()(
               localStorage.setItem(LAST_PULSE_KEY, String(now));
               const supabase = getSupabase();
               if (supabase) {
-                // Non-blocking light query to reset Supabase inactivity timer
-                supabase
-                  .from('profiles')
-                  .select('id', { count: 'exact', head: true })
-                  .then(() => {})
-                  .catch(() => {});
+                // Non-blocking background query to reset Supabase inactivity timer
+                (async () => {
+                  try {
+                    await supabase.from('profiles').select('id', { count: 'exact', head: true });
+                  } catch {
+                    // Non-critical background ping
+                  }
+                })();
               }
             }
           } catch {
