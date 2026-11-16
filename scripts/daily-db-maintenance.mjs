@@ -29,11 +29,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
-// Hardcoded fallback credentials for the official Mentalis Supabase instance
-const FALLBACK_SUPABASE_URL = 'https://aqgjnqsuwdoegpjznfag.supabase.co';
-const FALLBACK_SUPABASE_ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFxZ2pucXN1d2RvZWdwanpuZmFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzODMxMDMsImV4cCI6MjEwNDk1OTEwM30.cpDrw0YBART1uXFxxGX-d1Am1xyYU52lg4TzQRQ0iPQ';
-
 /**
  * Load environment variables from .env.local or .env if not already set
  */
@@ -69,32 +64,27 @@ loadEnvFile(path.join(projectRoot, '.env'));
  * Robust sanitizer: handles empty strings, literal 'true'/'false' (from GitHub Actions expressions),
  * 'undefined', 'null', or placeholder strings.
  */
-function sanitizeEnv(value, fallback) {
+function sanitizeEnv(value, fallback = '') {
   if (!value) return fallback;
   const trimmed = String(value).trim();
-  const invalidLiterals = ['', 'true', 'false', 'undefined', 'null', 'placeholder', 'none'];
-  if (invalidLiterals.includes(trimmed.toLowerCase())) {
+  const invalidLiterals = ['', 'true', 'false', 'undefined', 'null', 'placeholder', 'none', 'your-project-id', 'your-supabase-anon-key-here'];
+  if (invalidLiterals.includes(trimmed.toLowerCase()) || trimmed.includes('your-project-id')) {
     return fallback;
   }
   return trimmed;
 }
 
-let supabaseUrl = sanitizeEnv(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL,
-  FALLBACK_SUPABASE_URL
-);
-if (!supabaseUrl.startsWith('http://') && !supabaseUrl.startsWith('https://')) {
-  console.warn(`[Mentalis DB Pulse] Warning: Invalid Supabase URL ("${supabaseUrl}"). Falling back to default URL.`);
-  supabaseUrl = FALLBACK_SUPABASE_URL;
-}
+// Environment variable lookups are populated via .env.local, .env, or system environment
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+const rawAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
-let supabaseAnonKey = sanitizeEnv(
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY,
-  FALLBACK_SUPABASE_ANON_KEY
-);
-if (supabaseAnonKey.length < 20) {
-  console.warn(`[Mentalis DB Pulse] Warning: Invalid Supabase Anon Key. Falling back to default key.`);
-  supabaseAnonKey = FALLBACK_SUPABASE_ANON_KEY;
+let supabaseUrl = sanitizeEnv(rawUrl, '');
+let supabaseAnonKey = sanitizeEnv(rawAnonKey, '');
+
+if (!supabaseUrl || !supabaseAnonKey || !supabaseUrl.startsWith('http') || supabaseAnonKey.length < 20) {
+  console.error('\n❌ [Mentalis DB Pulse] Missing or invalid Supabase credentials!');
+  console.error('Please configure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local or environment variables.\n');
+  process.exit(1);
 }
 
 const supabaseServiceRoleKey = sanitizeEnv(process.env.SUPABASE_SERVICE_ROLE_KEY, null);

@@ -15,7 +15,7 @@ When a Supabase project is paused, you will observe the following signature in t
 ## 🔍 Root Cause of the Previous Failure
 In the earlier configuration, the GitHub Actions workflow used:
 ```yaml
-NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://aqgjnqsuwdoegpjznfag.supabase.co' }}
+NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project-id.supabase.co' }}
 ```
 In GitHub Actions expression syntax (`${{ ... }}`), the `||` operator evaluates to a **boolean** (`true`), **not** a JavaScript fallback! As a result, the runner set `NEXT_PUBLIC_SUPABASE_URL="true"`, causing the Supabase client to throw `Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL` and terminate in 0.0 seconds without making any network calls.
 
